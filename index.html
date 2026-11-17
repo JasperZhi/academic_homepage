@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jiazhi (Jasper) Xie — Undergraduate in Linguistics and Computation</title>
-  <meta name="description" content="Personal academic homepage of Jiazhi (Jasper) Xie, undergraduate at The Chinese University of Hong Kong, Shenzhen. Research interests: multilingual NLP, computational linguistics, and evaluating large language models. Applying to graduate programs in NLP and computational linguistics.">
+  <title>Jiazhi (Jasper) Xie — Language Technology, CUHK-Shenzhen</title>
+  <meta name="description" content="Personal academic homepage of Jiazhi (Jasper) Xie, undergraduate in English Studies (Language Technology stream) with a minor in Philosophy at The Chinese University of Hong Kong, Shenzhen. Research interests: evaluating large language models across languages and cultures, multilingual NLP, and computational linguistics. Applying to graduate programs in NLP and computational linguistics.">
   <style>
     :root {
       --bg: #ffffff;
@@ -151,13 +151,6 @@
       color: var(--muted);
     }
 
-    .confirmtag {
-      background: var(--accent-bg);
-      padding: 0 0.3em;
-      border-radius: 3px;
-      font-size: 0.85em;
-    }
-
     footer {
       max-width: 760px;
       margin: 0 auto;
@@ -205,9 +198,6 @@
       .entry {
         break-inside: avoid;
       }
-      a::after {
-        content: "";
-      }
     }
   </style>
 </head>
@@ -215,7 +205,7 @@
 
   <header>
     <h1>Jiazhi (Jasper) Xie</h1>
-    <p class="subtitle">Undergraduate at The Chinese University of Hong Kong, Shenzhen</p>
+    <p class="subtitle">Undergraduate in Language Technology at The Chinese University of Hong Kong, Shenzhen</p>
     <div class="header-actions">
       <a class="button" href="cv.pdf" download>Download CV</a>
       <a class="button" href="mailto:jiazhixie@link.cuhk.edu.cn">Email</a>
@@ -227,15 +217,20 @@
     <section id="about">
       <h2>About</h2>
       <p>I am an undergraduate at The Chinese University of Hong Kong, Shenzhen,
-      <span class="confirmtag">[CONFIRM: official degree wording from transcript, e.g. B.A. in English (Language Technology track), minor in Philosophy]</span>,
-      expected to graduate in July 2027. I work at the boundary of linguistics and computation,
-      and I am applying to graduate programs in natural language processing and computational linguistics.</p>
+      pursuing a B.A. in English Studies (for Professional Purposes) with a stream
+      in Language Technology, and a minor in Philosophy. I expect to graduate in
+      July 2027. I work at the boundary of linguistics and computation, and I am
+      applying to graduate programs in natural language processing and
+      computational linguistics.</p>
+      <p>A question runs through my current work: what linguistic structure have
+      large language models absorbed, what have they missed, and how does that
+      differ across languages and cultures?</p>
     </section>
 
     <section id="research-interests">
       <h2>Research Interests</h2>
       <ul>
-        <li>Evaluating what language models have and have not absorbed, especially across languages and cultures</li>
+        <li>What linguistic structure language models do and do not capture, and how to evaluate them across languages and cultures</li>
         <li>Computational linguistics and multilingual NLP</li>
         <li>Grounded language and conversational systems</li>
       </ul>
@@ -247,7 +242,8 @@
         <h3>AI Gatekeeping and Technographic Power: Longitudinal and Cross-National Evidence from Large Language Models</h3>
         <p class="entry-meta">Research Assistant, March 2026 to present. Authors: Jun Luo, Jiazhi Xie, Xinqing Li.</p>
         <p class="status-note">Status: abstract accepted at two conferences in 2026 (Artificial Intelligence, Communication, and Social Transformation, Xi'an Jiaotong-Liverpool University; the 12th International Journal of Press/Politics Conference, Singapore). Not yet published.</p>
-        <p>My role: reviewed about 40 related papers on gatekeeping theory, large language models, political bias and methodology; labeled 800+ LLM-generated paragraphs by category; summarized output differences between models.</p>
+        <p>I took part in design discussions: which models to sample, which topics to compare across countries, and whether to build our own coding framework or adapt a gatekeeping-theory taxonomy written for human editors. I reviewed about 40 related papers on gatekeeping theory, large language models, political bias and methodology; I coded more than 800 LLM-generated paragraphs for categorical and ideological patterns; and I summarized output differences between models.</p>
+        <p>Preliminary observations from my hand-coding: outputs on American crime topics default to a narrow script of guns, domestic violence, and criminal networks, almost regardless of the case; outputs on Chinese political topics default to the government as the narrative actor, almost regardless of who the story is about. Metrics such as cross-entropy can measure such skews, but explaining what they mean for a culture's default script is still mostly manual work.</p>
       </div>
     </section>
 
@@ -256,7 +252,7 @@
       <div class="entry">
         <h3>Hong Kong Data Ltd. — Intern and Tech Lead</h3>
         <p class="entry-meta">Jun 2026 to Sep 2026, Shenzhen</p>
-        <p>Led the HKEdgeApp project (see <a href="#projects">Projects</a>).</p>
+        <p>Led the HKEdgeApp project (see <a href="#projects">Projects</a>). Established the team's GitHub human collaboration and human–AI collaboration paradigm, documented in BRANCH_STRATEGY.md.</p>
       </div>
       <div class="entry">
         <h3>Boston Consulting Group — Part-time Assistant</h3>
@@ -266,12 +262,12 @@
       <div class="entry">
         <h3>Shenzhen Research Institute of Big Data — Intern</h3>
         <p class="entry-meta">Sep 2024 to Mar 2025</p>
-        <p>Web-crawled 700+ medical guidelines to build the database for a team project on multilingual alignment of medical terms and knowledge.</p>
+        <p>Web-crawled 700+ medical guidelines to build the database for a team project on multilingual alignment of medical terms and knowledge, intended for future AI applications in medical science and hospitals. Also assisted in designing an automatic medical checklist workflow (AI-Adapt) that checks whether a medical guideline is qualified for implementation.</p>
       </div>
       <div class="entry">
         <h3>Shenzhen Today Talent Information Technology Co., Ltd. — NLP Algorithm Intern</h3>
         <p class="entry-meta">May 2024 to Aug 2024</p>
-        <p><span class="confirmtag">[CONFIRM wording]</span> Reproduced code for BERT and Transformer algorithms; did prompt engineering on agents for government scenarios; tested retrieval-augmented generation in LangChain.</p>
+        <p>Reproduced code for state-of-the-art algorithms including BERT and Transformer, working through the basics of machine learning and neural networks; did prompt engineering on agents for government-facing scenarios; tested retrieval-augmented generation in LangChain.</p>
       </div>
     </section>
 
@@ -279,9 +275,8 @@
       <h2>Projects</h2>
       <div class="entry">
         <h3>HKEdgeApp</h3>
-        <p>A cross-border Hong Kong-Shenzhen medical data application for iOS and Android with 19 front-end screens, 14 API modules, 57 documented files and 64 GitHub commits. I led the technical side and wrote the team's Git collaboration rules, documented in BRANCH_STRATEGY.md. Code and documents:
-        <a href="https://github.com/cuhkszdev/Cross-Boarder-Data-Cloud-CUHKSZ-" rel="noopener">GitHub repository</a>
-        <span class="confirmtag">[CONFIRM: link opens correctly]</span>.</p>
+        <p>A cross-border Hong Kong-Shenzhen medical data application for iOS and Android with 19 front-end screens, 14 API modules, 57 documented files and 64 GitHub commits, built by a team of four developers through a school-enterprise internship with Hong Kong Data Ltd. I led the technical side, wrote the team's Git collaboration rules (documented in BRANCH_STRATEGY.md so they could outlive any one member), and reported jointly to our company mentor and the director of the university's AI institute. After the internship, the project was open-sourced and is now carried forward by engineers at China Unicom. Code and documents:
+        <a href="https://github.com/cuhkszdev/Cross-Boarder-Data-Cloud-CUHKSZ-" rel="noopener">GitHub repository</a>.</p>
       </div>
     </section>
 
@@ -289,7 +284,7 @@
       <h2>Leadership and Community</h2>
       <ul>
         <li>Co-founder, Linguistic Science Association, CUHK-Shenzhen (200+ students), Sep 2025 to present</li>
-        <li>Co-founder and Captain, Public Speaking Team, CUHK-Shenzhen (30+ members; hosted 3 campus events; the team won 20+ medals), Nov 2024 to Sep 2025</li>
+        <li>Co-founder and Captain, Public Speaking Team, CUHK-Shenzhen (30+ members; hosted 3 campus events, including the 21st Century Cup and an impromptu contest; the team won 20+ medals), Nov 2024 to Sep 2025</li>
         <li>Group Leader, Oxford Prospect Program, STEM Track, Jul 2026 to Aug 2026; our group won Best Presentation (1 of 6 groups)</li>
         <li>Founder of a student group of 20+ students from several years interested in computational linguistics and translation technology</li>
       </ul>
@@ -300,8 +295,9 @@
       <div class="entry">
         <h3>The Chinese University of Hong Kong, Shenzhen</h3>
         <p class="entry-meta">Sep 2023 to Jul 2027 (expected)</p>
-        <p>GPA 3.63/4.00. First Honor (expected). Dean's List 2023–24, 2024–25, 2025–26.</p>
-        <p>Selected coursework: Logic, Syntax, Semantics, Cognitive Linguistics, Phonetics and Phonology, Python, Data Structures and Algorithms, Calculus, Linear Algebra, Discrete Mathematics, Probability and Statistics, Optimization, Fundamentals of SLP <span class="confirmtag">[CONFIRM full course name]</span>.</p>
+        <p>B.A. in English Studies (for Professional Purposes), Language Technology stream; minor in Philosophy.</p>
+        <p>GPA 3.63/4.00 (major GPA 3.74/4.00). First Honor (expected). Four-Year Half Admission Scholarship. Dean's List 2023–24, 2024–25, 2025–26.</p>
+        <p>Selected coursework: Logic, Syntax, Semantics, Cognitive Linguistics, Phonetics and Phonology, Python, Data Structures and Algorithms, Calculus, Linear Algebra, Discrete Mathematics, Probability and Statistics, Modern Optimization, Fundamentals of Speech and Language Processing.</p>
       </div>
     </section>
 
@@ -309,6 +305,7 @@
       <h2>Awards</h2>
       <ul>
         <li>FLTRP "Understanding Contemporary China" contest: 2023 Beijing final, National Gold (English writing), National Silver (reading), National Bronze (comprehensive communication); 2024 Zhuhai semi-final, Provincial Gold (public speaking), Provincial Silver (comprehensive)</li>
+        <li>Oxford Prospect Program, STEM Track: Best Presentation Group (1 of 6), for the group's self-sustaining engineering solution for a Venus habitat</li>
         <li>Excellent Camper, CUHK-Shenzhen Leadership Camp, March 2024 (1 of 30 core students)</li>
       </ul>
     </section>
@@ -317,6 +314,7 @@
       <h2>Skills</h2>
       <p><strong>Technical:</strong> Python, Java, STATA, Git, Linux.</p>
       <p><strong>Languages:</strong> Mandarin (native), English (IELTS 8.0), Cantonese (business proficiency), French and Russian (beginner).</p>
+      <p><strong>Interests:</strong> public speaking and debating, board games, philosophy, hiking, travelling.</p>
     </section>
 
     <section id="contact">
