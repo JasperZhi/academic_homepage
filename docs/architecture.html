@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>System Architecture — HKEdgeApp | Jiazhi (Jasper) Xie</title>
-  <meta name="description" content="Project documentation, rendered from ARCHITECTURE.md for the HKEdgeApp project.">
+  <meta name="description" content="System Architecture for the HKEdgeApp project, available in English and Chinese.">
   <style>
     :root {
       --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
@@ -60,23 +60,1441 @@
     th { background: var(--pre-bg); }
     hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
     footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    .lang-toggle {
+      display: inline-flex; gap: 0; border: 1px solid var(--rule);
+      border-radius: 999px; overflow: hidden; margin-top: 0.9rem;
+    }
+    .lang-btn {
+      appearance: none; border: none; background: transparent; cursor: pointer;
+      font: inherit; font-size: 0.9rem; padding: 0.25rem 0.9rem;
+      color: var(--muted); font-family: inherit;
+    }
+    .lang-btn.active { background: var(--pre-bg); color: var(--heading); font-weight: 600; }
+    .lang-note { color: var(--muted); font-size: 0.9rem; margin-top: 0.8rem; }
+    html[data-lang="en"] .only-zh { display: none; }
+    html[data-lang="zh"] .only-en { display: none; }
     @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
     @media print {
       body { background: #ffffff; color: #000000; font-size: 10pt; }
       h1, h2, h3, h4 { color: #000000; }
       a { color: #000000; text-decoration: none; }
       pre, code { background: #f4f4f4; }
+      .lang-toggle, .lang-note { display: none; }
     }
 </style>
 </head>
 <body>
   <header>
-    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <p class="back"><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a></p>
     <h1>System Architecture</h1>
-    <p class="subtitle">Project documentation, rendered from ARCHITECTURE.md · reproduced from the private project repository</p>
+    <p class="subtitle"><span class="only-en">Project documentation · reproduced from the private project repository</span><span class="only-zh" lang="zh-CN">项目文档 · 转载自私有项目仓库</span></p>
+    
+    <div class="lang-toggle" role="group" aria-label="Language / 语言">
+      <button type="button" class="lang-btn active" data-lang-set="en" aria-pressed="true">English</button>
+      <button type="button" class="lang-btn" data-lang-set="zh" aria-pressed="false">中文</button>
+    </div>
+
   </header>
   <main>
-    <blockquote>
+    <div class="only-en"><p class="lang-note only-en">English translation of the original Chinese document.</p>
+<blockquote>
+<p>HK Medical Insurance Code for HK Residents · Cross-border Medical Insurance Mobile App<br />
+React Native 0.85.3 · Updated 2026-06-16</p>
+</blockquote>
+<hr />
+<h2>1. Project Positioning</h2>
+<p>HKEdgeApp is the consumer-side mobile app of the "HK Medical Insurance Code for HK Residents" project, serving Hong Kong residents who use cross-border medical insurance for <strong>direct billing</strong> in the Greater Bay Area (e.g., Chen Xinghai Hospital in Zhongshan). The user flow: identity verification → binding a Hong Kong insurance company policy → presenting a dynamic QR code to the hospital for scanning → tracking claim progress → requesting refunds.</p>
+<p>The backend is the <strong>Qianhai Data Platform Hospital-side Middleware</strong> (<code>HKEdge_Management console</code>).</p>
+<hr />
+<h2>2. Technology Stack</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Technology</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Framework</td>
+<td>React Native 0.85.3 (CLI)</td>
+</tr>
+<tr>
+<td>Language</td>
+<td>TypeScript + JavaScript mixed</td>
+</tr>
+<tr>
+<td>Navigation</td>
+<td><code>@react-navigation/native</code> v7 + Native Stack</td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td>Axios v1.16</td>
+</tr>
+<tr>
+<td>QR Code</td>
+<td><code>react-native-qrcode-svg</code></td>
+</tr>
+<tr>
+<td>Icons</td>
+<td><code>react-native-vector-icons</code> (Ionicons + MaterialCommunityIcons)</td>
+</tr>
+<tr>
+<td>Backend</td>
+<td>Qianhai middleware <code>localhost:3000</code> + n8n AI chat</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. Layered Architecture Overview</h2>
+<pre><code class="language-mermaid">graph TB
+    subgraph &quot;Platform Layer&quot;
+        IOS[iOS&lt;br/&gt;CocoaPods + Xcode]
+        ANDROID[Android&lt;br/&gt;Gradle + SDK 35]
+    end
+
+    subgraph &quot;Entry&quot;
+        INDEX[index.js&lt;br/&gt;AppRegistry]
+        APP[App.tsx&lt;br/&gt;Provider assembly]
+    end
+
+    subgraph &quot;State Layer (Context)&quot;
+        THEME[ThemeContext&lt;br/&gt;dark/light/elder mode]
+        USER[UserContext&lt;br/&gt;user/policies/login/logout]
+        LANG[LanguageContext&lt;br/&gt;trilingual: EN/SC/TC]
+    end
+
+    subgraph &quot;Navigation&quot;
+        NAV[React Navigation&lt;br/&gt;Native Stack]
+    end
+
+    subgraph &quot;Screen Layer&quot;
+        HOME[HomeScreen]
+        ELDER[ElderHomeScreen]
+        REG[RegistrationScreen]
+        QR[QRCodeScreen]
+        CLAIMS[ClaimsListScreen]
+        DETAIL[ClaimDetailsScreen]
+        PROFILE[ProfileScreen]
+        CAT[CategoriesScreen]
+        ACT[ActivitiesScreen]
+        SCAN[QrScanScreen]
+    end
+
+    subgraph &quot;Business Layer API&quot;
+        POLICY[policyApi.js&lt;br/&gt;middleware-first → Mock fallback]
+    end
+
+    subgraph &quot;Component Layer&quot;
+        BUTTON[Button]
+        INPUT[Input/PasswordInput]
+        DROPDOWN[Dropdown/MultiSelect]
+        FORM[FormControls&lt;br/&gt;Checkbox/Radio/Switch]
+        CARD[Card/CardHeader/CardRow]
+        BADGE[StatusBadge]
+        MODAL[Modal]
+        PICKER[PolicyPickerModal]
+    end
+
+    subgraph &quot;Constants&quot;
+        THEME_C[theme.js&lt;br/&gt;light/dark palette]
+        TRANS[translations.js&lt;br/&gt;432-line trilingual dictionary]
+    end
+
+    INDEX --&gt; APP
+    APP --&gt; THEME --&gt; USER --&gt; LANG --&gt; NAV
+    NAV --&gt; HOME &amp; ELDER &amp; REG &amp; QR &amp; CLAIMS &amp; DETAIL &amp; PROFILE &amp; CAT &amp; ACT &amp; SCAN
+    HOME --&gt; POLICY
+    QR --&gt; POLICY
+    HOME --&gt; PICKER
+    ALL[All screens] --&gt; BUTTON &amp; INPUT &amp; DROPDOWN &amp; FORM &amp; CARD &amp; BADGE &amp; MODAL
+    ALL --&gt; THEME_C &amp; TRANS
+    IOS --&gt; INDEX
+    ANDROID --&gt; INDEX
+</code></pre>
+<hr />
+<h2>4. Startup Flow</h2>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant OS as Operating System
+    participant RN as React Native
+    participant Index as index.js
+    participant App as App.tsx
+    participant Theme as ThemeContext
+    participant User as UserContext
+    participant Lang as LanguageContext
+    participant Nav as Stack.Navigator
+
+    OS-&gt;&gt;RN: Launch app
+    RN-&gt;&gt;Index: AppRegistry.registerComponent()
+    Index-&gt;&gt;App: Render &lt;App/&gt;
+    App-&gt;&gt;Theme: ThemeProvider mounts
+    Theme-&gt;&gt;User: UserProvider mounts
+    User-&gt;&gt;Lang: LanguageProvider mounts
+    Lang-&gt;&gt;Nav: RootNavigator renders
+    Nav-&gt;&gt;Nav: Check isElderMode
+    alt isElderMode = true
+        Nav-&gt;&gt;Nav: initialRoute = 'ElderHome'
+    else isElderMode = false
+        Nav-&gt;&gt;Nav: initialRoute = 'Home'
+    end
+</code></pre>
+<hr />
+<h2>5. State Management — Three-Layer Context</h2>
+<pre><code class="language-mermaid">graph TD
+    subgraph &quot;ThemeContext (outermost)&quot;
+        T1[isDarkMode: bool&lt;br/&gt;default true (dark)]
+        T2[isElderMode: bool&lt;br/&gt;default false]
+        T3[colors: object&lt;br/&gt;dynamic light/dark switching]
+        T4[toggleTheme()]
+        T5[toggleElderMode()]
+    end
+
+    subgraph &quot;UserContext (middle layer)&quot;
+        U1[user: object | null]
+        U2[policies: array]
+        U3[activePolicy: object]
+        U4[isLoggedIn: bool]
+        U5[login / logout]
+        U6[setPolicies / setActivePolicy]
+    end
+
+    subgraph &quot;LanguageContext (innermost)&quot;
+        L1[language: 'en' | 'zh_CN' | 'zh_HK']
+        L2[toggleLanguage()&lt;br/&gt;trilingual cycle]
+        L3[t(key) translation function]
+    end
+
+    ThemeContext --&gt; UserContext --&gt; LanguageContext
+</code></pre>
+<p><strong>Trilingual cycle logic:</strong> <code>EN → Simplified Chinese → Traditional Chinese → EN</code></p>
+<hr />
+<h2>6. Navigation Route Map</h2>
+<pre><code class="language-mermaid">graph LR
+    NAV[NavigationContainer&lt;br/&gt;Native Stack]
+
+    NAV --&gt; HOME[🏠 HomeScreen]
+    NAV --&gt; ELDER[👴 ElderHomeScreen]
+    NAV --&gt; REG[🪪 RegistrationScreen]
+    NAV --&gt; QR[📱 QRCodeScreen]
+    NAV --&gt; CLAIMS[📋 ClaimsListScreen]
+    NAV --&gt; DETAIL[📝 ClaimDetailsScreen]
+    NAV --&gt; PROFILE[👤 ProfileScreen]
+    NAV --&gt; CAT[🔲 CategoriesScreen]
+    NAV --&gt; ACT[📊 ActivitiesScreen]
+    NAV --&gt; SCAN[🏥 QrScanScreen]
+
+    HOME -- &quot;Not logged in&quot; --&gt; REG
+    HOME -- &quot;Logged in&quot; --&gt; QR
+    HOME -- &quot;Logged in&quot; --&gt; CLAIMS
+    HOME -- &quot;Logged in&quot; --&gt; PROFILE
+    HOME -- &quot;Logged in&quot; --&gt; CAT
+    HOME -- &quot;Logged in&quot; --&gt; ACT
+    PROFILE -- &quot;Elder mode ON&quot; --&gt; ELDER
+    ELDER -- &quot;Elder mode OFF&quot; --&gt; HOME
+    CLAIMS -- &quot;Tap a claim&quot; --&gt; DETAIL
+    QR -- &quot;Switch policy&quot; --&gt; HOME
+    PROFILE -- &quot;Log out&quot; --&gt; HOME
+</code></pre>
+<h3>Route Guard Logic</h3>
+<pre><code>User taps a feature
+  ├─ Not logged in → Alert prompt + guide to Registration
+  ├─ Logged in but no insurer bound + trying to enter ClaimsList → Alert asking to bind first
+  ├─ Logged in and bound → navigate normally
+</code></pre>
+<hr />
+<h2>7. Core Business Flows</h2>
+<h3>7.1 Identity Activation → Bind Insurer → Present Medical Insurance Code</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor User as HK Resident
+    participant App as HKEdgeApp
+    participant Console as Middleware :3000
+    participant Hospital as Hospital HIS
+
+    Note over User,App: Step 1: Identity verification
+    User-&gt;&gt;App: Open app, tap &quot;Activate&quot;
+    App-&gt;&gt;User: RegistrationScreen
+    User-&gt;&gt;App: Enter name + HKID + phone number
+    App-&gt;&gt;App: Form validation (regex for HKID/phone)
+    App-&gt;&gt;User: login() → navigate to Home
+
+    Note over User,Console: Step 2: Bind insurance company
+    User-&gt;&gt;App: Tap Hero Card to select insurer
+    App-&gt;&gt;User: Modal showing 9 insurers
+    User-&gt;&gt;App: Select AIA / ChinaLife / ...
+    App-&gt;&gt;Console: GET /api/app/policies?company=&amp;hkid=
+    Console--&gt;&gt;App: Return policy list
+    App-&gt;&gt;App: setPolicies() + activate first policy
+    App-&gt;&gt;User: Hero Card turns green, shows insurer badge + policy name
+
+    Note over User,Hospital: Step 3: Present medical insurance code
+    User-&gt;&gt;App: Tap &quot;Present cross-border medical insurance code&quot;
+    App-&gt;&gt;Console: POST /api/app/qr/issue
+    Console--&gt;&gt;App: { token, exp: 60s }
+    App-&gt;&gt;User: QR code + 60s countdown
+    App-&gt;&gt;App: Refresh countdown every second, auto-rotate token on expiry
+
+    Note over Hospital,App: Step 4: Hospital scans and settles
+    Hospital-&gt;&gt;Console: POST /api/hospital/scan {token, hospital_id}
+    Console--&gt;&gt;Hospital: Patient + policy info
+    Hospital-&gt;&gt;Hospital: Direct billing settlement
+</code></pre>
+<h3>7.2 Claim Tracking → Refund</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor User as User
+    participant App as HKEdgeApp
+    participant Console as Middleware
+
+    User-&gt;&gt;App: Open ClaimsList
+    App-&gt;&gt;Console: GET /api/app/claims?hkid=
+    Console--&gt;&gt;App: Claim list
+    App-&gt;&gt;User: Claim cards (hospital/amount/status/formula)
+
+    alt Status = Settled
+        User-&gt;&gt;App: Tap to enter ClaimDetails
+        App-&gt;&gt;User: Timeline + expense breakdown
+        User-&gt;&gt;App: Tap &quot;Request refund&quot;
+        App-&gt;&gt;App: Update local state isRefunded=true
+        App-&gt;&gt;User: Refund submitted → arrives in 1-3 business days
+    else Status = Pending
+        App-&gt;&gt;User: Show review progress
+    else Status = Refunded
+        App-&gt;&gt;User: Show refund completed
+    end
+</code></pre>
+<h3>7.3 QR Token Lifecycle</h3>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; RequestToken: enter QRCodeScreen
+    RequestToken --&gt; IssueSuccess: POST /api/app/qr/issue
+    RequestToken --&gt; LocalFallback: middleware unavailable
+    IssueSuccess --&gt; Active: token + 60s TTL
+    LocalFallback --&gt; Active: base64 generated locally
+    Active --&gt; Countdown: timeLeft-- every second
+    Countdown --&gt; Active: timeLeft &gt; 0
+    Countdown --&gt; AutoRefresh: timeLeft = 0
+    AutoRefresh --&gt; RequestToken: refreshQrToken()
+    Active --&gt; ManualRefresh: user taps refresh
+    ManualRefresh --&gt; RequestToken
+    Active --&gt; SwitchPolicy: user changes policy
+    SwitchPolicy --&gt; RequestToken
+</code></pre>
+<hr />
+<h2>8. API Layer Design</h2>
+<h3>8.1 Request Interceptor</h3>
+<p>Each request automatically injects the following headers:</p>
+<pre><code>X-API-Version: 2.6
+X-Request-ID:  &lt;UUID&gt;
+X-Timestamp:   &lt;Unix seconds&gt;
+X-Nonce:       &lt;random string&gt;
+X-WeChat-AppId: wx1234567890abcdef
+</code></pre>
+<h3>8.2 Endpoint List</h3>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fetchPoliciesByCompany</code></td>
+<td>GET</td>
+<td><code>/api/app/policies?hkid=&amp;company=</code></td>
+<td>Query policies by insurer</td>
+</tr>
+<tr>
+<td><code>fetchHospitalsByPolicy</code></td>
+<td>GET</td>
+<td><code>/api/app/policies/:policyNo/hospitals</code></td>
+<td>Hospitals covered by a policy</td>
+</tr>
+<tr>
+<td><code>issueQrToken</code></td>
+<td>POST</td>
+<td><code>/api/app/qr/issue</code></td>
+<td>Issue 60s QR token</td>
+</tr>
+<tr>
+<td><code>refreshQrToken</code></td>
+<td>—</td>
+<td>Same as issueQrToken</td>
+<td>Rotate token on expiry</td>
+</tr>
+<tr>
+<td><code>syncFromConsole</code></td>
+<td>GET</td>
+<td><code>/api/app/sync</code></td>
+<td>Fetch sync snapshot</td>
+</tr>
+</tbody>
+</table>
+<h3>8.3 Fallback Strategy</h3>
+<pre><code>Middleware call  →  success? → return console data
+              ↓ failure/timeout
+           Mock database (9 insurers × 1-3 fake policies)
+              ↓
+           Return mock data, app does not crash
+</code></pre>
+<h3>8.4 Additional Endpoints (fetched directly by screens)</h3>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Endpoint</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HomeScreen</td>
+<td><code>GET /api/app/claims?hkid=</code></td>
+<td>Claim progress overview (pending/settled/saved)</td>
+</tr>
+<tr>
+<td>HomeScreen</td>
+<td><code>POST /api/chat</code></td>
+<td>AI chat (n8n)</td>
+</tr>
+<tr>
+<td>ClaimsListScreen</td>
+<td><code>GET /api/app/claims?hkid=</code></td>
+<td>Claim list</td>
+</tr>
+<tr>
+<td>QrScanScreen</td>
+<td><code>POST /api/qr/verify</code></td>
+<td>Hospital-side code verification</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>9. Screen Feature Matrix</h2>
+<h3>HomeScreen (Home)</h3>
+<pre><code>┌─────────────────────────────────────┐
+│  Header: avatar + username + theme/language switch │
+├─────────────────────────────────────┤
+│  Hero Card (three states)           │
+│  ┌─ Not logged in:    guide to activate ─────────┐   │
+│  ┌─ Logged in, not bound: guide to bind insurer ───┐   │
+│  ┌─ Bound:    show insurer+policy → QR code│   │
+├─────────────────────────────────────┤
+│  Categories (horizontal scroll)     │
+│  [Medical code] [Claims] [AI assistant] [Hospital map]  │
+├─────────────────────────────────────┤
+│  Your Progress (claim overview)     │
+│  [Pending N] [Settled N] [Saved HKD]        │
+├─────────────────────────────────────┤
+│  Dock: [Home] [Scan] [Claims] [Me]    │
+└─────────────────────────────────────┘
+</code></pre>
+<h3>QRCodeScreen (Cross-border Medical Insurance Code)</h3>
+<ul>
+<li>Dynamic QR code (60-second TTL, auto-refresh)</li>
+<li>Shows username + current policy number</li>
+<li>Switch entry shown when multiple policies exist</li>
+<li>Empty state: when no policy, guide back to binding</li>
+</ul>
+<h3>ClaimsListScreen (Claim Records)</h3>
+<ul>
+<li>FlatList rendering claim cards</li>
+<li>Filter chips: All / Current policy / AIA / CL</li>
+<li>Pull-to-refresh (RefreshControl)</li>
+<li>Bottom of each card: <code>Total - Covered = You Pay</code> formula</li>
+<li>Three-state badges: Pending (red) / Settled (green) / Refunded (blue)</li>
+</ul>
+<h3>ClaimDetailsScreen (Claim Details)</h3>
+<ul>
+<li>Timeline status tracking (4-5 steps)</li>
+<li>Expense breakdown: total bill - deductible = insurance payment + out-of-pocket</li>
+<li>Refund entry (visible only when settled and not yet refunded)</li>
+<li>Refund confirmation → status change → prompt</li>
+</ul>
+<h3>RegistrationScreen (Identity Verification)</h3>
+<ul>
+<li>Three fields: name + HKID (regex validation) + phone number</li>
+<li>iAM Smart one-tap autofill demo</li>
+<li>On success → login() → navigate to Home</li>
+</ul>
+<h3>ProfileScreen (Profile)</h3>
+<ul>
+<li>User info card (avatar/name/insurer)</li>
+<li>Personal info display (HKID/phone/policy number)</li>
+<li>Elder mode Switch</li>
+<li>Contact support / version number</li>
+<li>Log out</li>
+</ul>
+<h3>ElderHomeScreen (Elder Mode)</h3>
+<ul>
+<li>Large fonts + large buttons + minimal interface</li>
+<li>Three main entries: present medical code / my claims / contact support</li>
+<li>Exit elder mode entry</li>
+</ul>
+<hr />
+<h2>10. Component Tree</h2>
+<pre><code>components/
+├── Button.js             General button
+├── Input.js              Input / password field
+├── Dropdown.js           Single-select / multi-select dropdown
+├── FormControls.js       Checkbox / radio / switch
+├── Card.js               Card kit (Card + CardHeader + CardRow + CardDivider)
+├── StatusBadge.js        Status label
+├── Modal.js              General modal
+└── PolicyPickerModal.js  Policy selection bottom sheet
+</code></pre>
+<hr />
+<h2>11. Theming and Internationalization</h2>
+<h3>Color Palette (Dual Mode)</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Dark</th>
+<th>Light</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>background</code></td>
+<td><code>#121212</code></td>
+<td><code>#F4F6F8</code></td>
+<td>Global background</td>
+</tr>
+<tr>
+<td><code>card</code></td>
+<td><code>#222325</code></td>
+<td><code>#FFFFFF</code></td>
+<td>Card background</td>
+</tr>
+<tr>
+<td><code>heroCard</code></td>
+<td><code>#556B50</code></td>
+<td><code>#556B50</code></td>
+<td>Brand olive green (unchanged in both modes)</td>
+</tr>
+<tr>
+<td><code>activeTab</code></td>
+<td><code>#E57B65</code></td>
+<td><code>#E57B65</code></td>
+<td>Brand coral red (unchanged in both modes)</td>
+</tr>
+<tr>
+<td><code>textPrimary</code></td>
+<td><code>#FFFFFF</code></td>
+<td><code>#111827</code></td>
+<td>Primary text</td>
+</tr>
+<tr>
+<td><code>textSecondary</code></td>
+<td><code>#A0A0A0</code></td>
+<td><code>#6B7280</code></td>
+<td>Secondary text</td>
+</tr>
+<tr>
+<td><code>textDark</code></td>
+<td><code>#121212</code></td>
+<td><code>#FFFFFF</code></td>
+<td>Inverted text</td>
+</tr>
+<tr>
+<td><code>border</code></td>
+<td><code>#333333</code></td>
+<td><code>#E5E7EB</code></td>
+<td>Border</td>
+</tr>
+</tbody>
+</table>
+<h3>Internationalization (Trilingual)</h3>
+<p><code>translations.js</code> contains a 432-line trilingual dictionary covering about 90 keys:</p>
+<pre><code>translations: {
+  en:    { ... },    // English (default)
+  zh_CN: { ... },    // Simplified Chinese
+  zh_HK: { ... },    // Traditional Chinese
+}
+</code></pre>
+<hr />
+<h2>12. Directory Structure (after reorganization)</h2>
+<pre><code>HKEdgeApp/
+├── index.js                    # RN entry
+├── App.tsx                     # Provider assembly + Stack navigation
+├── app.json                    # RN config
+├── package.json                # Dependency declarations
+├── tsconfig.json               # TypeScript config
+├── babel.config.js             # Babel config
+├── metro.config.js             # Metro bundler config
+├── jest.config.js              # Test config
+├── .eslintrc.js                # ESLint config
+├── .prettierrc.js              # Prettier config
+├── Gemfile                     # iOS CocoaPods dependencies
+│
+├── api/
+│   └── policyApi.js            # Business API (middleware-first + Mock fallback)
+│
+├── context/
+│   ├── ThemeContext.js          # Theme state (dark/light/elder mode)
+│   ├── UserContext.js           # User/policies/login/logout
+│   └── LanguageContext.js       # Trilingual i18n
+│
+├── screen/
+│   ├── HomeScreen.js           # Home (three-state Hero + insurer selection + AI chat)
+│   ├── ElderHomeScreen.js      # Elder mode home
+│   ├── RegistrationScreen.tsx  # Identity verification (KYC)
+│   ├── QRCodeScreen.tsx        # Cross-border medical code (QR + countdown)
+│   ├── ClaimsListScreen.js     # Claim record list
+│   ├── ClaimDetailsScreen.js   # Claim details (timeline + refund)
+│   ├── ProfileScreen.js        # Profile
+│   ├── CategoriesScreen.js     # Service categories
+│   ├── ActivitiesScreen.js     # Activity feed
+│   └── QrScanScreen.js         # Hospital-side scan verification
+│
+├── components/
+│   ├── index.js                # Component exports
+│   ├── Button.js
+│   ├── Input.js
+│   ├── Dropdown.js
+│   ├── FormControls.js
+│   ├── Card.js
+│   ├── StatusBadge.js
+│   ├── Modal.js
+│   └── PolicyPickerModal.js
+│
+├── constants/
+│   ├── theme.js                # Light/dark palette
+│   └── translations.js         # 432-line trilingual dictionary
+│
+├── assets/
+│   └── logo.jpg
+│
+├── docs/                       # 📁 Documentation
+│   ├── ARCHITECTURE.md         # This document
+│   ├── CHANGES.md              # Change log
+│   ├── SETUP.md                # Environment setup guide
+│   ├── GIT_UPLOAD.md           # Git upload guide
+│   └── GITHUB_README.md        # GitHub repository description
+│
+├── scripts/                    # 📁 Scripts
+│   ├── setup.sh                # One-click setup script
+│   └── link-fonts.js           # Font linking
+│
+├── __tests__/
+│   └── App.test.tsx
+│
+├── android/                    # Android native code
+│   ├── app/
+│   ├── build.gradle
+│   └── settings.gradle
+│
+├── ios/                        # iOS native code
+│   ├── HKEdgeApp/
+│   ├── HKEdgeApp.xcodeproj/
+│   ├── HKEdgeApp.xcworkspace/
+│   ├── Podfile
+│   └── Pods/
+│
+└── node_modules/               # npm dependencies
+</code></pre>
+<hr />
+<h2>13. Mock Data Coverage</h2>
+<p>Built-in mock data for 9 Hong Kong insurance companies:</p>
+<table>
+<thead>
+<tr>
+<th>Insurer</th>
+<th>Policy Count</th>
+<th>Sample Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AIA Hong Kong</td>
+<td>2</td>
+<td>HKD 5,000,000 / 1,000,000</td>
+</tr>
+<tr>
+<td>China Life</td>
+<td>3</td>
+<td>HKD 3,000,000 / 500,000 / 2,000,000</td>
+</tr>
+<tr>
+<td>Prudential</td>
+<td>2</td>
+<td>HKD 4,000,000 / 800,000</td>
+</tr>
+<tr>
+<td>Manulife</td>
+<td>1</td>
+<td>HKD 3,500,000</td>
+</tr>
+<tr>
+<td>AXA</td>
+<td>1</td>
+<td>HKD 2,500,000</td>
+</tr>
+<tr>
+<td>FWD</td>
+<td>1</td>
+<td>HKD 2,000,000</td>
+</tr>
+<tr>
+<td>Bupa</td>
+<td>1</td>
+<td>HKD 6,000,000</td>
+</tr>
+<tr>
+<td>Cigna</td>
+<td>1</td>
+<td>HKD 3,000,000</td>
+</tr>
+<tr>
+<td>Bowtie</td>
+<td>1</td>
+<td>HKD 1,500,000</td>
+</tr>
+</tbody>
+</table>
+<p>Each insurer name is stored with English/Simplified/Traditional keys to support trilingual matching.</p>
+<hr />
+<h2>14. Security Design</h2>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QR Token TTL</td>
+<td>60-second auto-expiry</td>
+</tr>
+<tr>
+<td>Token refresh</td>
+<td>Auto-rotation on expiry; old token invalidated immediately</td>
+</tr>
+<tr>
+<td>Route guard</td>
+<td><code>handleProtectedAction()</code> checks login and insurer-binding status</td>
+</tr>
+<tr>
+<td>Header signing</td>
+<td>UUID + Timestamp + Nonce injected per request</td>
+</tr>
+<tr>
+<td>Local fallback</td>
+<td>When middleware is unavailable, token is generated locally as base64 so the Demo remains usable</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>15. Architecture Review and Improvement Plan</h2>
+<blockquote>
+<p>2026-06-16 Code Review · item-by-item analysis of 9 feedback items</p>
+</blockquote>
+<h3>15.1 Unified Service Layer — Resolving Excessive Backend Exposure</h3>
+<p><strong>Current problem:</strong></p>
+<p><code>CONSOLE_BASE_URL</code> is hardcoded in 4 files, and 3 screens use raw <code>fetch()</code>, bypassing the interceptors in <code>policyApi.js</code> (no header injection):</p>
+<pre><code>screen/HomeScreen.js:17     ❌ const CONSOLE_BASE_URL = ...
+screen/ClaimsListScreen.js:14 ❌ const CONSOLE_BASE_URL = ...
+screen/QrScanScreen.js:18   ❌ const CONSOLE_BASE_URL = ...
+api/policyApi.js:5          ✅ (the only correct location)
+</code></pre>
+<p><strong>Improvement:</strong> Consolidate all HTTP calls into the <code>api/</code> directory, issued through a unified <code>apiClient</code> (Axios instance); screens are prohibited from fetching directly.</p>
+<pre><code class="language-mermaid">graph LR
+    subgraph &quot;Before ❌&quot;
+        S1[HomeScreen] -- fetch --&gt; B1[localhost:3000]
+        S2[ClaimsListScreen] -- fetch --&gt; B2[localhost:3000]
+        S3[QrScanScreen] -- axios --&gt; B3[localhost:3000]
+        S4[policyApi.js] -- axios --&gt; B4[localhost:3000]
+    end
+
+    subgraph &quot;After ✅&quot;
+        S5[All screens] --&gt; SVC[api/index.js&lt;br/&gt;unified service layer]
+        SVC --&gt; CLIENT[apiClient&lt;br/&gt;interceptors/cache/fallback]
+        CLIENT --&gt; BACKEND[localhost:3000]
+    end
+</code></pre>
+<p><strong>Specific changes:</strong><br />
+- Create <code>api/index.js</code> — export all API functions<br />
+- Move fetch calls out of <code>HomeScreen</code>, <code>ClaimsListScreen</code>, <code>QrScanScreen</code><br />
+- <code>CONSOLE_BASE_URL</code> defined only once, inside <code>api/</code></p>
+<hr />
+<h3>15.2 Coverage Preview First — Show Coverage Info Before Activation</h3>
+<p><strong>Current problem:</strong></p>
+<pre><code>Current flow: KYC registration → select insurer → fetch policies → select policy → only then know if usable
+                     ↑ User binds here, only to find it is not applicable
+</code></pre>
+<p><strong>Improvement:</strong> When the user selects an insurer, immediately show a coverage preview card so key information is visible before binding.</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor User as User
+    participant App as App
+    participant API as Middleware
+
+    User-&gt;&gt;App: Tap an insurer (e.g., AIA)
+    App-&gt;&gt;API: Query coverage preview immediately
+
+    alt Covered
+        API--&gt;&gt;App: { status: eligible, hospitals: [ChenXinghai, HKU-Shenzhen], coverage: 5M, validUntil: 2027-01 }
+        App-&gt;&gt;User: Show preview card ✅&lt;br/&gt;&quot;2 network hospitals covered · HKD 5M coverage · valid until 2027-01&quot;
+        User-&gt;&gt;App: Confirm binding → then run activation flow
+    else Not covered
+        API--&gt;&gt;App: { status: not_covered, reason: this insurer is not connected to the cross-border direct billing network }
+        App-&gt;&gt;User: ⚠️ Not applicable prompt&lt;br/&gt;&quot;This insurer does not yet support GBA direct billing; try another insurer&quot;
+        Note over User,App: User skips registration and tries the next insurer directly
+    else Policy expired
+        API--&gt;&gt;App: { status: expired, expiredAt: 2026-01 }
+        App-&gt;&gt;User: ⚠️ &quot;Policy expired, contact the insurer to renew&quot;
+    end
+</code></pre>
+<p><strong>Specific changes:</strong><br />
+- Add <code>GET /api/app/coverage/preview?hkid=&amp;company=</code> or a Mock simulation<br />
+- Change the HomeScreen insurer selection modal to a two-step interaction: preview card + confirm button<br />
+- Add a <code>CoveragePreviewCard</code> component</p>
+<hr />
+<h3>15.3 Session Cache — Reduce Redundant API Calls</h3>
+<p><strong>Current problem:</strong> Every insurer switch and every visit to the QR screen triggers a new request; there is no caching mechanism.</p>
+<p><strong>Improvement:</strong></p>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor User
+    participant Cache as Session Cache
+    participant API as Middleware
+
+    User-&gt;&gt;Cache: First policy query (company=AIA)
+    Cache-&gt;&gt;API: GET /api/app/policies?company=AIA
+    API--&gt;&gt;Cache: Policy list { ttl: 300s }
+    Cache--&gt;&gt;User: Return + cache for 5 minutes
+
+    User-&gt;&gt;Cache: Query policies again (company=AIA)
+    Cache--&gt;&gt;User: Return from cache directly ✅ (no API call)
+
+    User-&gt;&gt;Cache: Switch insurer (company=ChinaLife)
+    Cache-&gt;&gt;API: New insurer, no cache → call API
+    API--&gt;&gt;Cache: Return + cache
+    Cache--&gt;&gt;User: Return
+
+    User-&gt;&gt;Cache: Query again after 5 minutes
+    Cache-&gt;&gt;Cache: TTL expired, mark stale
+    Cache-&gt;&gt;API: Request again
+    API--&gt;&gt;Cache: Update cache
+</code></pre>
+<p><strong>Specific changes:</strong><br />
+- Add a <code>CacheManager</code> in the <code>api/</code> layer — in-memory cache based on key + TTL<br />
+- Cache key: <code>policies:${companyName}:${hkid}</code>, TTL: 300s<br />
+- Cache key: <code>qr:${policyNo}</code>, TTL: 55s (slightly shorter than the token's actual 60s validity)<br />
+- On user logout → clear all cache</p>
+<hr />
+<h3>15.4 QR Code Robustness — Pre-generate + Offline + Save</h3>
+<p><strong>Current problem:</strong><br />
+- Request is made only upon entering the QR screen → user waits idle when the network is slow while queuing at a hospital<br />
+- Network failure only triggers console.warn → user sees a blank QR<br />
+- No pre-generation, no offline support, no saving</p>
+<p><strong>Improvement:</strong></p>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; PolicyActivated
+    PolicyActivated --&gt; PreGenerateQR: generate in background immediately (do not wait for user to open)
+
+    state PreGenerateQR {
+        [*] --&gt; OnlineGeneration: POST /api/app/qr/issue
+        OnlineGeneration --&gt; CacheQR: success
+        OnlineGeneration --&gt; LocalFallback: network failure
+        LocalFallback --&gt; CacheQR: base64(token+hkid+ts)
+        CacheQR --&gt; SaveLocally: AsyncStorage
+    }
+
+    CacheQR --&gt; QRReady
+    QRReady --&gt; OpenQRScreen: user taps (instant render)
+    OpenQRScreen --&gt; ShowQR: &lt; 100ms, no loading
+    ShowQR --&gt; RefreshOnExpiry: silent background refresh
+    RefreshOnExpiry --&gt; ShowQR
+
+    ShowQR --&gt; SaveToGallery: user long-press/tap
+    ShowQR --&gt; Share: system share sheet
+    ShowQR --&gt; ScreenshotWarning: detect screenshot → prompt &quot;for on-site use only&quot;
+</code></pre>
+<p><strong>Specific changes:</strong><br />
+- Add <code>qrToken: { token, exp, policyNo }</code> state to <code>UserContext</code><br />
+- Call <code>issueQrToken()</code> asynchronously immediately after policy activation to pre-generate<br />
+- Write QR token to <code>AsyncStorage</code>; read local cache when offline<br />
+- Add a save button on the QR screen → <code>react-native-share</code> / write to gallery<br />
+- Replace the blank loading state with a skeleton screen</p>
+<hr />
+<h3>15.5 Identity Verification Automation — Hospital Scan Self-Verification</h3>
+<p><strong>Current problem:</strong> RegistrationScreen is purely client-side regex validation; <code>verifyPolicy()</code> is always a Mock. There is no backend cross-validation of identity.</p>
+<p><strong>Improvement (requires backend support):</strong></p>
+<pre><code>Hospital HIS scans QR → extract { token, hkid_hash, timestamp }
+  → POST /api/hospital/verify
+    → Validate token validity period
+    → Validate hkid_hash matches the HKID bound to the policy
+    → Validate timestamp is within a reasonable window (±5min anti-replay)
+    → Return { patient_name, policy_status, coverage }
+</code></pre>
+<p>App-side changes are small, mainly upgrading the <code>QrScanScreen</code> payload structure to include an HKID hash field.</p>
+<hr />
+<h3>15.6 Add Missing Error Paths</h3>
+<p><strong>Current problem:</strong> The architecture document and code cover only the happy path. Actual scenarios:</p>
+<table>
+<thead>
+<tr>
+<th>Error Scenario</th>
+<th>Current Handling</th>
+<th>Required Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Policy expired</td>
+<td>No check</td>
+<td>Mark expired in UI + refuse to generate QR</td>
+</tr>
+<tr>
+<td>Insurer not covered</td>
+<td>No prompt</td>
+<td>Intercept at preview stage</td>
+</tr>
+<tr>
+<td>Network timeout</td>
+<td>console.warn</td>
+<td>Toast + retry button</td>
+</tr>
+<tr>
+<td>Identity mismatch</td>
+<td>No check</td>
+<td>Backend validation + frontend blocking</td>
+</tr>
+<tr>
+<td>Token stolen</td>
+<td>Undetected</td>
+<td>Anomalous login detection + refresh</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The improved state machine includes all error branches:</strong></p>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; UNVERIFIED
+    UNVERIFIED --&gt; VERIFIED: KYC success
+    UNVERIFIED --&gt; UNVERIFIED: KYC failure / format error
+
+    VERIFIED --&gt; INSURANCE_PREVIEW: query insurer coverage
+    INSURANCE_PREVIEW --&gt; POLICY_ACTIVE: covered ✅ user confirms binding
+    INSURANCE_PREVIEW --&gt; INSURANCE_PREVIEW: not covered ⚠️ switch insurer
+    INSURANCE_PREVIEW --&gt; VERIFIED: policy expired ❌
+
+    POLICY_ACTIVE --&gt; QR_READY: pre-generate QR
+    QR_READY --&gt; TOKEN_EXPIRED: 60s expiry
+    TOKEN_EXPIRED --&gt; QR_READY: refresh success
+    TOKEN_EXPIRED --&gt; QR_ERROR: refresh failure (network)
+    QR_ERROR --&gt; QR_READY: retry success
+
+    POLICY_ACTIVE --&gt; POLICY_EXPIRED: insurer pushes expiry notice
+    POLICY_EXPIRED --&gt; INSURANCE_PREVIEW: reselect insurer
+</code></pre>
+<hr />
+<h3>15.7 Settlement Flow Optimization — Direct Billing First</h3>
+<p><strong>Current problem:</strong> The formula shown in ClaimsListScreen, <code>Total - Covered = You Pay</code>, resembles a reimbursement model.</p>
+<p><strong>Improvement:</strong> In the QR direct-billing scenario, the settlement flow becomes:</p>
+<pre><code>Treatment completed → hospital submits settlement request → middleware computes covered amount in real time → user pays only the difference
+</code></pre>
+<p>App-side changes:<br />
+- Add <code>SettlementScreen</code> — display instant settlement results (direct-billed amount + out-of-pocket amount)<br />
+- ClaimsListScreen distinguishes two card types: "direct billing" and "traditional claim"<br />
+- Direct billing card shows: <code>Total - DirectBilling = YouPay</code> (reduces user anxiety)</p>
+<hr />
+<h3>15.8 User Notifications</h3>
+<p><strong>Current problem:</strong> Zero push capability; status changes can only be seen via manual pull-to-refresh.</p>
+<p><strong>Improvement (requires backend support):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Notification Point</th>
+<th>Trigger</th>
+<th>Channel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claim review approved</td>
+<td>Middleware status change</td>
+<td>Push + in-app Toast</td>
+</tr>
+<tr>
+<td>Refund received</td>
+<td>Hospital confirms refund</td>
+<td>Push</td>
+</tr>
+<tr>
+<td>QR about to expire</td>
+<td>Token has 10s remaining</td>
+<td>In-app vibration alert</td>
+</tr>
+<tr>
+<td>Policy about to expire</td>
+<td>30 days before expiry date</td>
+<td>Push</td>
+</tr>
+</tbody>
+</table>
+<p><strong>App-side changes:</strong><br />
+- Integrate <code>@react-native-firebase/messaging</code> or <code>react-native-push-notification</code><br />
+- Add notification bell + unread red dot in the top-right corner of HomeScreen<br />
+- Create a <code>NotificationContext</code> to manage notification state</p>
+<hr />
+<h3>15.9 Event-Driven → State-Driven</h3>
+<p><strong>Current problem:</strong> Business logic is pieced together from scattered booleans; state transitions are implicitly scattered across screens.</p>
+<pre><code class="language-javascript">// Current state: pieced together from multiple independent variables
+isLoggedIn        // true/false
+user.company      // null | string
+policies.length   // 0 | N
+activePolicy      // null | object
+// Impossible to tell at a glance which business stage the user is in
+</code></pre>
+<p><strong>Improvement:</strong> Introduce an explicit state machine with all transitions managed centrally.</p>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; GUEST: app launch
+    GUEST --&gt; VERIFIED: KYC completed
+    GUEST --&gt; GUEST: browse home (restricted)
+
+    VERIFIED --&gt; PREVIEWING: view insurer coverage
+    PREVIEWING --&gt; ACTIVATED: confirm binding insurer+policy
+    PREVIEWING --&gt; VERIFIED: not applicable, switch insurer
+    PREVIEWING --&gt; VERIFIED: policy expired
+
+    ACTIVATED --&gt; QR_READY: QR pre-generation success
+    QR_READY --&gt; TOKEN_EXPIRING: counting down
+    TOKEN_EXPIRING --&gt; QR_READY: auto refresh
+    TOKEN_EXPIRING --&gt; ACTIVATED: network failure, retry needed
+
+    ACTIVATED --&gt; ACTIVATED: switch policy
+    ACTIVATED --&gt; VERIFIED: unbind insurer
+    ACTIVATED --&gt; POLICY_EXPIRED: policy expired
+
+    VERIFIED --&gt; GUEST: logout
+    ACTIVATED --&gt; GUEST: logout
+</code></pre>
+<p><strong>UserContext refactoring example:</strong></p>
+<pre><code class="language-javascript">// After refactoring: single state enum
+const USER_STATES = {
+  GUEST:            'GUEST',             // not logged in
+  VERIFIED:         'VERIFIED',          // KYC done, no insurer bound
+  PREVIEWING:       'PREVIEWING',        // viewing insurer coverage
+  ACTIVATED:        'ACTIVATED',         // insurer+policy bound
+  QR_READY:         'QR_READY',          // QR pre-generated
+  TOKEN_EXPIRING:   'TOKEN_EXPIRING',    // about to expire
+  POLICY_EXPIRED:   'POLICY_EXPIRED',    // policy expired
+};
+
+const [userState, setUserState] = useState(USER_STATES.GUEST);
+const [stateContext, setStateContext] = useState({
+  user: null,
+  selectedInsurer: null,
+  policies: [],
+  activePolicy: null,
+  qrToken: null,
+  error: null,
+});
+
+// Transition function (defined in one place only)
+const transition = (newState, context) =&gt; {
+  // Validate transition legality
+  if (!isValidTransition(userState, newState)) {
+    console.error(`Invalid state transition: ${userState} → ${newState}`);
+    return;
+  }
+  setUserState(newState);
+  setStateContext(prev =&gt; ({ ...prev, ...context, error: null }));
+};
+</code></pre>
+<hr />
+<h2>16. Improvement Priorities</h2>
+<h3>P0 — Resolve This Week (Blocks Other Improvements)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Improvement</th>
+<th>Rationale</th>
+<th>Estimated Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>#9</strong></td>
+<td>State-driven architecture</td>
+<td>The foundation for all other improvements. Without an explicit state enum, error handling, caching strategy, and QR pre-generation cannot be reliably implemented</td>
+<td>2-3 days</td>
+</tr>
+<tr>
+<td><strong>#1</strong></td>
+<td>Unified service layer</td>
+<td>The largest current code smell. 4 hardcoded URLs + screens bypassing the API layer with direct fetch; without this fix, other API-layer improvements (caching, unified error handling) cannot be done</td>
+<td>1 day</td>
+</tr>
+<tr>
+<td><strong>#4</strong></td>
+<td>QR robustness</td>
+<td>Directly determines whether the core business works on-site at a hospital. QR failure = wasted hospital trip = collapse of trust</td>
+<td>1-2 days</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Dependency graph:</strong></p>
+<pre><code>#9 (state machine) ──→ #6 (error paths) ──→ #4 (QR robustness)
+     └──→ #1 (service layer) ──→ #3 (caching) ──→ #2 (coverage preview)
+                              └──→ #7 (settlement optimization)
+</code></pre>
+<h3>P1 — Resolve Next Week (Depends on P0 Completion)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Improvement</th>
+<th>Rationale</th>
+<th>Estimated Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>#6</strong></td>
+<td>Add error paths</td>
+<td>Users must not hit silent failures. The state machine (#9) must first define all states, then the error UI can be completed</td>
+<td>1-2 days</td>
+</tr>
+<tr>
+<td><strong>#3</strong></td>
+<td>API caching</td>
+<td>Depends on the unified service layer (#1). Reduces redundant requests and improves response speed in hospital scenarios</td>
+<td>1 day</td>
+</tr>
+<tr>
+<td><strong>#2</strong></td>
+<td>Coverage preview first</td>
+<td>UX improvement. Avoids users discovering an inapplicable insurer only after binding</td>
+<td>1 day</td>
+</tr>
+</tbody>
+</table>
+<h3>P2 — Later Iterations</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Improvement</th>
+<th>Rationale</th>
+<th>Estimated Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>#7</strong></td>
+<td>Settlement flow alignment</td>
+<td>QR direct billing already has the foundation; mainly UI/copy adjustments in ClaimsList</td>
+<td>0.5 day</td>
+</tr>
+<tr>
+<td><strong>#8</strong></td>
+<td>User notifications</td>
+<td>Requires backend push infrastructure; app-side changes are minor</td>
+<td>1-2 days (including backend)</td>
+</tr>
+<tr>
+<td><strong>#5</strong></td>
+<td>Identity verification automation</td>
+<td>Mostly backend; app side only needs to add an HKID hash to the QR payload</td>
+<td>0.5 day (app side)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>Suggested Execution Order</h3>
+<pre><code>Week 1:  #9 state-driven architecture (2-3 days)
+         #1 unified service layer (1 day)
+         #4 QR robustness     (1-2 days)
+
+Week 2:  #6 error paths       (1-2 days)
+         #3 API caching       (1 day)
+         #2 coverage preview  (1 day)
+
+Week 3+:  #7 settlement alignment (0.5 day)
+         #8 notification system  (1-2 days)
+         #5 identity verification (0.5 day)
+</code></pre>
+<hr />
+<h2>17. Implementation Contract — #9 State-Driven + #1 Unified Service Layer</h2>
+<blockquote>
+<p>Interface agreement as a prerequisite for developing the two improvements in parallel. All subsequent implementations follow this.</p>
+</blockquote>
+<h3>17.1 #9 State Machine Contract</h3>
+<h4>State Enum</h4>
+<pre><code class="language-typescript">// context/UserContext.js
+
+const USER_STATES = {
+  GUEST:            'GUEST',           // not logged in, may browse home (restricted)
+  VERIFIED:         'VERIFIED',        // KYC done, no insurer bound
+  PREVIEWING:       'PREVIEWING',      // viewing coverage preview of an insurer
+  ACTIVATED:        'ACTIVATED',       // insurer+policy bound, QR pending generation
+  QR_READY:         'QR_READY',        // QR pre-generated, can be shown directly
+  TOKEN_EXPIRING:   'TOKEN_EXPIRING',  // token about to expire (last 10s)
+  POLICY_EXPIRED:   'POLICY_EXPIRED',  // policy expired
+};
+</code></pre>
+<h4>State Context</h4>
+<pre><code class="language-typescript">interface StateContext {
+  user: { name: string; phone: string; hkid: string } | null;
+  selectedInsurer: string | null;
+  policies: Policy[];
+  activePolicy: Policy | null;
+  qrToken: { token: string; exp: number; policyNo: string } | null;
+  coverage: CoveragePreview | null;
+  error: { code: string; message: string } | null;
+}
+</code></pre>
+<h4>Valid State Transitions</h4>
+<pre><code>GUEST       → VERIFIED        (KYC success)
+GUEST       → GUEST           (browse home)
+
+VERIFIED    → PREVIEWING      (view insurer coverage)
+VERIFIED    → GUEST           (logout)
+
+PREVIEWING  → ACTIVATED       (confirm binding)
+PREVIEWING  → VERIFIED        (not applicable/expired/cancelled)
+
+ACTIVATED   → QR_READY        (QR pre-generation success)
+ACTIVATED   → PREVIEWING      (switch insurer)
+ACTIVATED   → ACTIVATED       (switch policy)
+ACTIVATED   → VERIFIED        (unbind insurer)
+ACTIVATED   → POLICY_EXPIRED  (policy expiry notice)
+ACTIVATED   → GUEST           (logout)
+
+QR_READY    → TOKEN_EXPIRING  (countdown reaches 10s)
+QR_READY    → PREVIEWING      (switch insurer)
+TOKEN_EXPIRING → QR_READY     (refresh success)
+TOKEN_EXPIRING → ACTIVATED    (refresh failure, manual retry needed)
+TOKEN_EXPIRING → PREVIEWING   (switch insurer)
+
+POLICY_EXPIRED → PREVIEWING   (reselect insurer)
+POLICY_EXPIRED → GUEST        (logout)
+</code></pre>
+<h4>Hook Interface</h4>
+<pre><code class="language-typescript">const { userState, stateContext, transition, logout } = useUser();
+
+// Usage examples
+transition(USER_STATES.PREVIEWING, { selectedInsurer: 'AIA' });
+transition(USER_STATES.ACTIVATED, { policies, activePolicy: policies[0] });
+transition(USER_STATES.QR_READY, { qrToken });
+</code></pre>
+<hr />
+<h3>17.2 #1 Unified Service Layer Contract</h3>
+<h4>Directory Structure</h4>
+<pre><code>api/
+├── index.js          ← unified export; screens import only this file
+├── client.js         ← Axios instance + interceptors (extracted from policyApi.js)
+├── policyApi.js      ← policy-related (existing, signature unchanged)
+├── claimApi.js       ← claim-related (moved out of screens)
+├── chatApi.js        ← AI chat (moved out of HomeScreen)
+├── qrApi.js          ← QR verification (moved out of QrScanScreen)
+└── cache.js          ← in-memory cache (interface reserved for #3)
+</code></pre>
+<h4><code>api/index.js</code> Export List</h4>
+<pre><code class="language-typescript">// Unified export — any screen imports only this
+import * as api from '../api';
+
+// Policies
+api.fetchPoliciesByCompany(companyName, hkid)
+api.fetchHospitalsByPolicy(policyNo)
+api.issueQrToken(policyNo)
+api.refreshQrToken(policyNo)
+api.syncFromConsole(hkid)
+
+// Claims (moved out of screen fetch calls)
+api.fetchClaims(hkid)
+  // → GET /api/app/claims?hkid=
+  // → returns { success, data: Claim[] }
+
+// AI chat (moved out of HomeScreen fetch)
+api.sendChatMessage(sessionId, query)
+  // → POST /api/chat
+  // → returns { success, data: { reply } }
+
+// QR verification (moved out of QrScanScreen)
+api.verifyQrCode(qrData, hospitalId)
+  // → POST /api/qr/verify
+  // → returns { success, data: { patient, claim } }
+
+// Coverage preview (reserved for #2)
+api.fetchCoveragePreview(hkid, companyName)
+  // → GET /api/app/coverage/preview?hkid=&amp;company=
+  // → returns { eligible, hospitals[], coverage, validUntil }
+</code></pre>
+<h4>Prohibitions</h4>
+<pre><code>❌ Screens must not directly import axios or use fetch()
+❌ Screens must not define CONSOLE_BASE_URL / API_BASE_URL
+❌ Screens must not directly import api/policyApi.js (use api/index.js)
+</code></pre>
+<h4>Screen Migration Map</h4>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>Before</th>
+<th>After</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HomeScreen.js:57</code></td>
+<td><code>fetch(url)</code> claim overview</td>
+<td><code>api.fetchClaims(hkid)</code> + local computation</td>
+</tr>
+<tr>
+<td><code>HomeScreen.js:162</code></td>
+<td><code>fetch(serverUrl)</code> AI chat</td>
+<td><code>api.sendChatMessage(sessionId, query)</code></td>
+</tr>
+<tr>
+<td><code>ClaimsListScreen.js:33</code></td>
+<td><code>fetch(apiUrl)</code> query claims</td>
+<td><code>api.fetchClaims(hkid)</code></td>
+</tr>
+<tr>
+<td><code>QrScanScreen.js:32</code></td>
+<td><code>axios.post(url, body)</code> verify code</td>
+<td><code>api.verifyQrCode(qrData, hospitalId)</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>18. 20260616 Launch Verification and Bug Fixes</h2>
+<blockquote>
+<p>iPhone 17 Pro simulator (iOS 26.5) · Metro bundler · Fast Refresh hot reload<br />
+Starting commit: <code>e495e75</code> → fix commit: <code>a4e58d6</code></p>
+</blockquote>
+<h3>18.1 Verification Environment</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Device</td>
+<td>iPhone 17 Pro simulator (iOS 26.5 / 23F77)</td>
+</tr>
+<tr>
+<td>Node.js</td>
+<td>v25.6.0 (<code>/opt/homebrew/bin/node</code>)</td>
+</tr>
+<tr>
+<td>Launch method</td>
+<td><code>npx react-native start --reset-cache</code> + <code>npx react-native run-ios --no-packager</code></td>
+</tr>
+<tr>
+<td>Build issue</td>
+<td>AppIcon missing → removed <code>ASSETCATALOG_COMPILER_APPICON_NAME</code></td>
+</tr>
+</tbody>
+</table>
+<h3>18.2 UI Verification — Behavior of #9 #1 #4 Changes in the Simulator</h3>
+<h4>GUEST state (home initial state)</h4>
+<ul>
+<li>Hero Card olive green <code>#556B50</code>, prompting activation</li>
+<li>Header: avatar + "Welcome Back" + "Guest" + theme/language switch</li>
+<li>Categories: medical code / claims / AI assistant / hospital map</li>
+<li>Dock: Home (highlighted) / Scan / Claims / Me</li>
+<li><strong>Conclusion: no visual change in the GUEST state (#9 and #1 are architectural refactors; appearance unchanged)</strong></li>
+</ul>
+<h4>VERIFIED → PREVIEWING → ACTIVATED flow</h4>
+<ul>
+<li>After activation, Hero Card turns red in the prompt-to-bind state (<code>#E57B65</code>)</li>
+<li>Select insurer → modal with 9 insurers → select AIA → Hero Card turns green + shows insurer badge + policy name</li>
+<li><strong>Conclusion: state transitions work correctly; Hero Card's three states are identical to before the changes</strong></li>
+</ul>
+<h4>QRCodeScreen — #4 new feature confirmation</h4>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Skeleton screen loading state (replacing blank page)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>QR pre-generation (opens instantly after binding insurer)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Network failure retry UI (offline cloud icon + retry button)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Local fallback (btoa fallback token)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Save button + share sheet</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h3>18.3 Bugs Found and Fixes</h3>
+<h4>Bug 1: PolicyPickerModal cannot select a policy</h4>
+<p><strong>Symptom:</strong> After selecting AIA, two plans appear (尊尚醫療 Premier / 基礎醫療 Basic); tapping any row has no effect and the checkmark icon does not toggle.</p>
+<p><strong>Root cause:</strong> The <code>handlePickPolicy</code> handlers in <code>HomeScreen.js</code> and <code>QRCodeScreen.tsx</code> called <code>setActivePolicy(policy.id)</code>, passing a string (e.g., <code>"p_aia_001"</code>), but <code>setActivePolicy</code> expects a full policy object. This made <code>activePolicy</code> a string, so <code>.id</code> / <code>.policyNo</code> / <code>.planName</code> were all <code>undefined</code>. PolicyPickerModal's <code>isActive</code> check <code>item.id === activePolicyId</code> never matched.</p>
+<p><strong>Fix:</strong> Changed both <code>setActivePolicy(policy.id)</code> → <code>setActivePolicy(policy)</code>.</p>
+<p><strong>Affected files:</strong><br />
+- <code>screen/HomeScreen.js:95</code><br />
+- <code>screen/QRCodeScreen.tsx:111</code></p>
+<h4>Bug 2: Hero Card still shows the old insurer name after switching insurers</h4>
+<p><strong>Symptom:</strong> A user bound to AIA taps the insurer badge to switch to Prudential; the policy list correctly updates to Prudential's policies, but the Hero Card badge still shows "AIA Hong Kong (友邦)".</p>
+<p><strong>Root cause:</strong> <code>VALID_TRANSITIONS</code> was missing the <code>ACTIVATED → PREVIEWING</code> transition. <code>bindInsurer()</code>'s attempt to jump from ACTIVATED to PREVIEWING was blocked by the state machine and returned <code>false</code>, so <code>selectedInsurer</code> was not updated. But the subsequent <code>activatePolicies()</code> did not check the return value and proceeded anyway (<code>ACTIVATED → ACTIVATED</code> is a valid transition), resulting in "policies changed but company name did not".</p>
+<p><strong>Fix:</strong><br />
+- Added <code>ACTIVATED → PREVIEWING</code>, <code>QR_READY → PREVIEWING</code>, and <code>TOKEN_EXPIRING → PREVIEWING</code> to <code>VALID_TRANSITIONS</code><br />
+- Added a return-value check for <code>bindInsurer</code> in <code>handleBindCompany</code>, returning early on failure</p>
+<p><strong>Affected files:</strong><br />
+- <code>context/UserContext.js</code> — valid transition table<br />
+- <code>screen/HomeScreen.js</code> — defensive check</p>
+<h4>Bug 3: iOS build failure — AppIcon missing</h4>
+<p><strong>Symptom:</strong> <code>xcodebuild</code> reported <code>None of the input catalogs contained a matching stickers icon set, app icon set, or icon stack named "AppIcon"</code>.</p>
+<p><strong>Root cause:</strong> <code>project.pbxproj</code> contained <code>ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon</code>, but <code>Images.xcassets</code> had no <code>AppIcon.appiconset</code>.</p>
+<p><strong>Fix:</strong> Removed the <code>ASSETCATALOG_COMPILER_APPICON_NAME</code> configuration lines from both the Debug and Release configurations.</p>
+<p><strong>Affected files:</strong><br />
+- <code>ios/HKEdgeApp.xcodeproj/project.pbxproj</code></p>
+<h3>18.4 Final State</h3>
+<pre><code>Branch: main
+Remote: git@github.com:cuhkszdev/Cross-Boarder-Data-Cloud-CUHKSZ-.git
+Commit: a4e58d6 (HEAD)
+Diff:   +14 −9 across 4 files
+Date:   2026-06-16
+</code></pre>
+<h3>18.5 Remaining Issues and Follow-up Suggestions</h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AppIcon</td>
+<td>Currently bypassed; an AppIcon asset must be added in Xcode before official release</td>
+</tr>
+<tr>
+<td>P1 improvements</td>
+<td>#6 error paths / #3 API caching / #2 coverage preview (architecture doc §16 P1)</td>
+</tr>
+<tr>
+<td>QR pre-generation timing</td>
+<td>Currently <code>preGenerateQr()</code> is called immediately after <code>activatePolicies</code>, but due to a React state closure issue, <code>stateContext.activePolicy</code> may point to a stale value. Suggested to instead listen for <code>activePolicy</code> changes in a <code>useEffect</code> and trigger automatically</td>
+</tr>
+</tbody>
+</table></div>
+<div class="only-zh" lang="zh-CN"><blockquote>
 <p>港人就医商保码 · 跨境医疗保险移动端<br />
 React Native 0.85.3 · 更新于 2026-06-16</p>
 </blockquote>
@@ -1472,10 +2890,35 @@ Date:   2026-06-16
 <td>当前在 <code>activatePolicies</code> 后立即调用 <code>preGenerateQr()</code>，但由于 React state 闭包问题，<code>stateContext.activePolicy</code> 可能指向旧值。建议改为在 <code>useEffect</code> 中监听 <code>activePolicy</code> 变化自动触发</td>
 </tr>
 </tbody>
-</table>
+</table></div>
   </main>
   <footer>
-    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+    <p><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a> · © 2026 Jiazhi (Jasper) Xie</p>
   </footer>
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('site-lang'); } catch (e) {}
+      var lang = stored === 'zh' ? 'zh' : 'en';
+      function apply(l) {
+        document.documentElement.setAttribute('data-lang', l);
+        document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+        var btns = document.querySelectorAll('.lang-btn');
+        for (var i = 0; i < btns.length; i++) {
+          var on = btns[i].getAttribute('data-lang-set') === l;
+          btns[i].classList.toggle('active', on);
+          btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        try { localStorage.setItem('site-lang', l); } catch (e) {}
+      }
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener('click', function () {
+          apply(this.getAttribute('data-lang-set'));
+        });
+      }
+      apply(lang);
+    })();
+</script>
 </body>
 </html>

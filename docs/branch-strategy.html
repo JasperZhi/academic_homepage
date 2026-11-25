@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Git Branch Strategy — HKEdgeApp | Jiazhi (Jasper) Xie</title>
-  <meta name="description" content="Project documentation, rendered from BRANCH_STRATEGY.md for the HKEdgeApp project.">
+  <meta name="description" content="Git Branch Strategy for the HKEdgeApp project, available in English and Chinese.">
   <style>
     :root {
       --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
@@ -60,23 +60,693 @@
     th { background: var(--pre-bg); }
     hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
     footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    .lang-toggle {
+      display: inline-flex; gap: 0; border: 1px solid var(--rule);
+      border-radius: 999px; overflow: hidden; margin-top: 0.9rem;
+    }
+    .lang-btn {
+      appearance: none; border: none; background: transparent; cursor: pointer;
+      font: inherit; font-size: 0.9rem; padding: 0.25rem 0.9rem;
+      color: var(--muted); font-family: inherit;
+    }
+    .lang-btn.active { background: var(--pre-bg); color: var(--heading); font-weight: 600; }
+    .lang-note { color: var(--muted); font-size: 0.9rem; margin-top: 0.8rem; }
+    html[data-lang="en"] .only-zh { display: none; }
+    html[data-lang="zh"] .only-en { display: none; }
     @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
     @media print {
       body { background: #ffffff; color: #000000; font-size: 10pt; }
       h1, h2, h3, h4 { color: #000000; }
       a { color: #000000; text-decoration: none; }
       pre, code { background: #f4f4f4; }
+      .lang-toggle, .lang-note { display: none; }
     }
 </style>
 </head>
 <body>
   <header>
-    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <p class="back"><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a></p>
     <h1>Git Branch Strategy</h1>
-    <p class="subtitle">Project documentation, rendered from BRANCH_STRATEGY.md · reproduced from the private project repository</p>
+    <p class="subtitle"><span class="only-en">Project documentation · reproduced from the private project repository</span><span class="only-zh" lang="zh-CN">项目文档 · 转载自私有项目仓库</span></p>
+    
+    <div class="lang-toggle" role="group" aria-label="Language / 语言">
+      <button type="button" class="lang-btn active" data-lang-set="en" aria-pressed="true">English</button>
+      <button type="button" class="lang-btn" data-lang-set="zh" aria-pressed="false">中文</button>
+    </div>
+
   </header>
   <main>
-    <blockquote>
+    <div class="only-en"><p class="lang-note only-en">English translation of the original Chinese document.</p>
+<blockquote>
+<p>Last updated: 2026-06-18<br />
+Applies to: <code>github.com/cuhkszdev/Cross-Boarder-Data-Cloud-CUHKSZ-</code></p>
+</blockquote>
+<hr />
+<h2>1. Branch Architecture</h2>
+<pre><code>main ────────────────────────────────────────  Production (merge-only, no direct edits)
+  │
+  ├── develop ───────────────────────────────  Main development line (all features merge here)
+  │     │
+  │     ├── feature/&lt;name&gt; ──────────────────  Shared-code feature development
+  │     ├── fix/&lt;name&gt; ──────────────────────  Shared-code bug fixes
+  │     │
+  │     ├── ios/&lt;name&gt; ──────────────────────  iOS native-layer changes
+  │     └── android/&lt;name&gt; ──────────────────  Android native-layer changes
+  │
+  └── release/x.x.x ─────────────────────────  Release branch (temporary, deleted after release)
+</code></pre>
+<hr />
+<h2>2. ⚠️ Key Concept: Only 2 Permanent Branches</h2>
+<p><strong>This is the single most important point of the whole strategy; understand it first:</strong></p>
+<pre><code>GitHub keeps forever:          feature/ ios/ android/ are temporary:
+
+main     ← 1 (permanent)       someone starts work → create temporarily
+develop  ← 1 (permanent)       work merged into develop → delete immediately
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Branch</th>
+<th>Lifetime</th>
+<th>When it appears</th>
+<th>When it disappears</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main</code></td>
+<td>Permanent</td>
+<td>At project creation</td>
+<td>Never deleted</td>
+</tr>
+<tr>
+<td><code>develop</code></td>
+<td>Permanent</td>
+<td>At project creation</td>
+<td>Never deleted</td>
+</tr>
+<tr>
+<td><code>feature/*</code></td>
+<td>Temporary</td>
+<td>When developing a new feature: <code>git checkout -b feature/xxx</code></td>
+<td>Deleted after merging into develop</td>
+</tr>
+<tr>
+<td><code>ios/*</code></td>
+<td>Temporary</td>
+<td>When changing the iOS native layer: <code>git checkout -b ios/xxx</code></td>
+<td>Deleted after merging into develop</td>
+</tr>
+<tr>
+<td><code>android/*</code></td>
+<td>Temporary</td>
+<td>When changing the Android native layer: <code>git checkout -b android/xxx</code></td>
+<td>Deleted after merging into develop</td>
+</tr>
+<tr>
+<td><code>release/*</code></td>
+<td>Temporary</td>
+<td>When preparing a release</td>
+<td>Deleted after release</td>
+</tr>
+</tbody>
+</table>
+<h3>Actual evolution over time</h3>
+<pre><code>Starting point (now):
+──────────────────────────────────────────
+main    ──●
+develop ──●
+         (two branches at the same position, a clean start)
+
+
+Person A starts the offline QR feature (shared code):
+──────────────────────────────────────────
+develop ──●────────────────────────────────
+           │
+           └── feature/offline-qr ──●──●──●  ← temporary branch appears
+                                        │
+                                  merged into develop → branch disappears
+
+
+Person B changes iOS push (iOS native):
+──────────────────────────────────────────
+develop ──●────────────●──────────────────
+                       │ ← offline-qr already merged in
+                       │
+                       └── ios/push ──●──●  ← another temporary branch
+                                          │
+                                    merged into develop → disappears
+
+
+A week later, time to release:
+──────────────────────────────────────────
+main    ──●─────────────────────────────●── v1.0.0
+                                          │ ← merged from develop
+develop ──●──●──●──●──●──●──●──●──●──●──●
+           │  │  │  │  │  │
+           └──┴──┴──┴──┴──┴──┘ ← all temporary branches already deleted
+</code></pre>
+<h3>Do not confuse "branches" with "directories"</h3>
+<p><strong>Branches isolate different people's work</strong> — so that you and a teammate can edit code at the same time without conflict.</p>
+<p><strong>Directories provide the physical layering</strong> — the code itself is already split by platform:</p>
+<pre><code>HKEdgeApp/                  ← one repository, one branch strategy
+├── ios/          🍎        ← iOS native files only, physically isolated
+├── android/      🤖        ← Android native files only, physically isolated
+├── api/          🔷        ← shared code, cross-platform
+├── components/   🔷
+├── screen/       🔷
+├── context/      🔷
+└── constants/    🔷
+</code></pre>
+<blockquote>
+<p>The branch prefixes <code>ios/</code> and <code>android/</code> tell the team <strong>which directory the branch modifies</strong>. They mirror the directory structure so the scope of a change is visible at a glance.</p>
+</blockquote>
+<hr />
+<h2>3. Branch Types</h2>
+<h3>2.1 Shared-code branches <code>feature/*</code> <code>fix/*</code></h3>
+<p><strong>What they modify</strong>: <code>api/</code> <code>components/</code> <code>screen/</code> <code>context/</code> <code>constants/</code> <code>assets/</code> <code>docs/</code></p>
+<p>All of these are cross-platform JavaScript/TypeScript code, with no native-layer involvement.</p>
+<pre><code class="language-bash"># Start a new feature
+git checkout develop
+git checkout -b feature/qr-offline-support
+
+# Develop → commit → push
+git add -A
+git commit -m &quot;feat: offline QR code support&quot;
+git push origin feature/qr-offline-support
+
+# Create a PR on GitHub → target: develop
+</code></pre>
+<p><strong>Naming conventions</strong>:<br />
+- <code>feature/qr-offline</code> — offline QR code<br />
+- <code>feature/claim-pagination</code> — claim list pagination<br />
+- <code>fix/stale-closure-bug</code> — stale closure bug fix<br />
+- <code>fix/platform-font-crash</code> — font crash fix</p>
+<h3>2.2 iOS native branches <code>ios/*</code></h3>
+<p><strong>What they modify</strong>: files under the <code>ios/</code> directory only</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Typical changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Info.plist</code></td>
+<td>Permission declarations (camera, push, location)</td>
+</tr>
+<tr>
+<td><code>Podfile</code></td>
+<td>Adding/removing native dependencies</td>
+</tr>
+<tr>
+<td><code>AppDelegate.swift</code></td>
+<td>Lifecycle, push registration</td>
+</tr>
+<tr>
+<td><code>project.pbxproj</code></td>
+<td>Build configuration, signing</td>
+</tr>
+<tr>
+<td><code>LaunchScreen.storyboard</code></td>
+<td>Launch screen</td>
+</tr>
+<tr>
+<td><code>*.entitlements</code></td>
+<td>Capabilities configuration</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">git checkout develop
+git checkout -b ios/add-camera-permission
+
+# Only ios/Info.plist is touched
+git add ios/
+git commit -m &quot;ios: add camera permission for QR scanning&quot;
+git push origin ios/add-camera-permission
+</code></pre>
+<h3>2.3 Android native branches <code>android/*</code></h3>
+<p><strong>What they modify</strong>: files under the <code>android/</code> directory only</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Typical changes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AndroidManifest.xml</code></td>
+<td>Permission declarations, Activity configuration</td>
+</tr>
+<tr>
+<td><code>app/build.gradle</code></td>
+<td>Dependencies, version code, signing configuration</td>
+</tr>
+<tr>
+<td><code>MainActivity.kt</code></td>
+<td>Lifecycle, Intent handling</td>
+</tr>
+<tr>
+<td><code>build.gradle</code></td>
+<td>Global build configuration</td>
+</tr>
+<tr>
+<td><code>proguard-rules.pro</code></td>
+<td>Obfuscation rules</td>
+</tr>
+<tr>
+<td><code>mipmap-*</code></td>
+<td>App icons</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">git checkout develop
+git checkout -b android/fix-keystore
+
+# Only android/app/build.gradle is touched
+git add android/
+git commit -m &quot;android: fix release keystore config&quot;
+git push origin android/fix-keystore
+</code></pre>
+<h3>2.4 Release branches <code>release/*</code></h3>
+<pre><code class="language-bash"># Cut a release branch from develop
+git checkout develop
+git checkout -b release/1.0.0
+
+# Fix the last round of bugs → merge into main + develop
+git checkout main &amp;&amp; git merge release/1.0.0
+git checkout develop &amp;&amp; git merge release/1.0.0
+
+# Tag it
+git tag -a v1.0.0 -m &quot;First release&quot;
+git push origin main develop v1.0.0
+
+# Delete the release branch
+git branch -d release/1.0.0
+git push origin --delete release/1.0.0
+</code></pre>
+<hr />
+<h2>4. Platform File Map</h2>
+<h3>🍎 iOS only (14 files)</h3>
+<pre><code>ios/
+├── .xcode.env
+├── .xcode.env.local
+├── Podfile / Podfile.lock
+├── HKEdgeApp.xcodeproj/
+├── HKEdgeApp.xcworkspace/
+├── HKEdgeApp/
+│   ├── AppDelegate.swift
+│   ├── Info.plist
+│   ├── LaunchScreen.storyboard
+│   ├── PrivacyInfo.xcprivacy
+│   ├── Images.xcassets/
+│   └── Fonts/ (19 .ttf)
+</code></pre>
+<p><strong>Branch prefix</strong>: <code>ios/</code></p>
+<h3>🤖 Android only (24 files)</h3>
+<pre><code>android/
+├── build.gradle
+├── settings.gradle
+├── gradle.properties
+├── gradlew / gradlew.bat
+├── gradle/wrapper/
+├── app/
+│   ├── build.gradle
+│   ├── debug.keystore
+│   ├── proguard-rules.pro
+│   └── src/main/
+│       ├── AndroidManifest.xml
+│       ├── java/com/hkedgeapp/
+│       │   ├── MainActivity.kt
+│       │   └── MainApplication.kt
+│       └── res/
+│           ├── drawable/
+│           ├── mipmap-*/ (12 icons, 6 densities)
+│           └── values/
+</code></pre>
+<p><strong>Branch prefix</strong>: <code>android/</code></p>
+<h3>🔷 Shared / Cross-Platform (~40 files)</h3>
+<pre><code>api/          7 files    ← HTTP request layer (note: client.js contains Platform.OS)
+components/   9 files    ← reusable UI
+screen/      10 files    ← business pages (13 Platform.OS checks)
+context/      3 files    ← global state
+constants/    2 files    ← theme + translations
+assets/       1 file     ← logo.jpg
+docs/         8 files    ← documentation
+scripts/      2 files    ← helper scripts
+App.tsx                  ← entry point
+index.js                 ← registration
+package.json             ← dependencies
+*.config.js              ← build configuration
+</code></pre>
+<p><strong>Branch prefix</strong>: <code>feature/</code> or <code>fix/</code></p>
+<h3>⚠️ Note: 13 Platform.OS checkpoints inside shared code</h3>
+<p>These files live in shared directories, but the code contains a small number of platform differences:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Count</th>
+<th>Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api/client.js:5</code></td>
+<td>1</td>
+<td>Android emulator <code>10.0.2.2</code> ↔ iOS <code>localhost</code></td>
+</tr>
+<tr>
+<td><code>screen/HomeScreen.js</code></td>
+<td>2</td>
+<td>Keyboard avoidance + fonts</td>
+</tr>
+<tr>
+<td><code>screen/ClaimDetailsScreen.js</code></td>
+<td>2</td>
+<td>padding + fonts</td>
+</tr>
+<tr>
+<td><code>screen/ClaimsListScreen.js</code></td>
+<td>3</td>
+<td>fonts + padding</td>
+</tr>
+<tr>
+<td><code>screen/ProfileScreen.js</code></td>
+<td>2</td>
+<td><code>Platform.select</code></td>
+</tr>
+<tr>
+<td><code>screen/RegistrationScreen.tsx</code></td>
+<td>2</td>
+<td>keyboard + fonts</td>
+</tr>
+<tr>
+<td><code>screen/ElderHomeScreen.js</code></td>
+<td>1</td>
+<td>padding</td>
+</tr>
+<tr>
+<td><code>screen/QRCodeScreen.tsx</code></td>
+<td>1</td>
+<td>padding</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>These are normal framework-level differences in React Native (fonts, safe areas) and do not affect the branch strategy.</p>
+</blockquote>
+<hr />
+<h2>5. Workflow · Daily collaboration flow</h2>
+<h3>Scenario A: Developing a new feature (changing shared code)</h3>
+<pre><code class="language-bash"># 1. Branch from develop
+git checkout develop
+git pull origin develop
+git checkout -b feature/offline-qr
+
+# 2. Develop, touching only api/ screen/ components/ etc.
+# ...
+
+# 3. Commit
+git add api/cache.js screen/QRCodeScreen.tsx
+git commit -m &quot;feat: cache QR token for offline display&quot;
+git push origin feature/offline-qr
+
+# 4. Create a PR on GitHub
+#    base: develop  ← compare: feature/offline-qr
+
+# 5. Code review → merge → delete branch
+</code></pre>
+<h3>Scenario B: Changing iOS native configuration</h3>
+<pre><code class="language-bash">git checkout develop
+git checkout -b ios/push-notification
+# Modify ios/Info.plist, ios/HKEdgeApp/AppDelegate.swift
+git add ios/
+git commit -m &quot;ios: add push notification capability&quot;
+git push origin ios/push-notification
+# PR: base: develop ← compare: ios/push-notification
+</code></pre>
+<h3>Scenario C: Changing platform + shared code at the same time</h3>
+<pre><code class="language-bash"># Create a feature branch that includes platform changes
+git checkout -b feature/qr-with-camera
+
+# Change shared code
+vim screen/QrScanScreen.js
+vim api/qrApi.js
+
+# Change iOS
+vim ios/HKEdgeApp/Info.plist
+
+# Change Android
+vim android/app/src/main/AndroidManifest.xml
+
+# Explain each part separately in commits
+git add screen/ api/ &amp;&amp; git commit -m &quot;feat: add camera QR scanning UI + API&quot;
+git add ios/          &amp;&amp; git commit -m &quot;ios: add camera permission for QR scan&quot;
+git add android/      &amp;&amp; git commit -m &quot;android: add camera permission for QR scan&quot;
+</code></pre>
+<hr />
+<h2>6. Commit Message Convention</h2>
+<pre><code>&lt;type&gt;: &lt;description&gt;
+
+[optional body]
+
+Co-Authored-By: Claude Opus 4.8 &lt;noreply@anthropic.com&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Purpose</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>feat</code></td>
+<td>New feature</td>
+<td><code>feat: offline QR code support</code></td>
+</tr>
+<tr>
+<td><code>fix</code></td>
+<td>Bug fix</td>
+<td><code>fix: stale closure in userContext</code></td>
+</tr>
+<tr>
+<td><code>docs</code></td>
+<td>Documentation</td>
+<td><code>docs: add branch strategy guide</code></td>
+</tr>
+<tr>
+<td><code>style</code></td>
+<td>Formatting</td>
+<td><code>style: format with prettier</code></td>
+</tr>
+<tr>
+<td><code>refactor</code></td>
+<td>Refactoring</td>
+<td><code>refactor: extract pagination middleware</code></td>
+</tr>
+<tr>
+<td><code>perf</code></td>
+<td>Performance</td>
+<td><code>perf: parallelize dashboard queries</code></td>
+</tr>
+<tr>
+<td><code>test</code></td>
+<td>Testing</td>
+<td><code>test: add state machine unit tests</code></td>
+</tr>
+<tr>
+<td><code>chore</code></td>
+<td>Miscellaneous</td>
+<td><code>chore: update dependencies</code></td>
+</tr>
+<tr>
+<td><code>ios</code></td>
+<td>iOS native</td>
+<td><code>ios: add push notification</code></td>
+</tr>
+<tr>
+<td><code>android</code></td>
+<td>Android native</td>
+<td><code>android: fix release keystore</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>7. Branch Protection Rules (recommended)</h2>
+<p>Configure in GitHub → Settings → Branches:</p>
+<table>
+<thead>
+<tr>
+<th>Branch</th>
+<th>Rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main</code></td>
+<td>✅ Require PR before merging<br>✅ Require 1 approval<br>✅ Require status checks to pass<br>❌ No direct push</td>
+</tr>
+<tr>
+<td><code>develop</code></td>
+<td>✅ Require PR before merging<br>❌ No direct push<br>(approval optional; small teams can be a bit looser)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>8. Current Branches</h2>
+<table>
+<thead>
+<tr>
+<th>Branch</th>
+<th>Purpose</th>
+<th>Last activity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main</code></td>
+<td>Production / stable</td>
+<td>2026-06-18</td>
+</tr>
+<tr>
+<td><code>develop</code></td>
+<td>Development integration</td>
+<td>2026-06-18 (created)</td>
+</tr>
+</tbody>
+</table>
+<pre><code>   main          develop
+    ●               ●
+   (5a524f1)      (5a524f1)    ← currently at the same position; develop was cut from main
+</code></pre>
+<hr />
+<h2>9. Quick Reference · one-line commands</h2>
+<pre><code class="language-bash"># Start work
+git checkout develop &amp;&amp; git pull &amp;&amp; git checkout -b feature/xxx
+
+# Change shared code
+git add api/ components/ screen/ context/ constants/ &amp;&amp; git commit -m &quot;feat: ...&quot;
+
+# Change iOS
+git add ios/ &amp;&amp; git commit -m &quot;ios: ...&quot;
+
+# Change Android
+git add android/ &amp;&amp; git commit -m &quot;android: ...&quot;
+
+# Push + create PR
+git push origin feature/xxx
+# → open https://github.com/cuhkszdev/Cross-Boarder-Data-Cloud-CUHKSZ-/pull/new/feature/xxx
+
+# Switch back to develop when done
+git checkout develop &amp;&amp; git pull
+</code></pre>
+<hr />
+<h2>10. How to Avoid Merge Conflicts</h2>
+<h3>Git tracks "lines", not "files"</h3>
+<pre><code>Two people change different files          → never conflicts ✅
+Two people change different lines of the same file → Git merges automatically ✅
+Two people change the same line of the same file → human-made conflict ⚠️
+</code></pre>
+<h3>Worked example</h3>
+<pre><code>Scenario: Person A changes the frontend QR, Person B adds JWT on the backend
+
+Starting point:
+develop ──●
+
+Person A:                        Person B:
+git checkout -b                  git checkout -b
+feature/qr-offline               feature/backend-jwt
+      │                                │
+      ▼                                ▼
+  edits screen/QRCodeScreen.tsx    edits ../hkedge-server/server.js
+  edits api/cache.js               edits api/auth middleware
+      │                                │
+      ▼                                ▼
+  git push                         git push
+
+Files Person A changed:          Files Person B changed:
+├── screen/QRCodeScreen.tsx      ├── ../hkedge-server/server.js
+└── api/cache.js                 └── ../hkedge-server/middleware/auth.js
+
+               No overlapping files at all ✅
+
+
+Person B merges first:
+develop ──●────────────●
+                       │ ← backend-jwt merged in
+
+Person A merges second:
+develop ──●────────────●──────────●
+                                    │ ← qr-offline merged in
+                                    │
+                    Because the changed files are completely different,
+                    Git merges automatically with zero conflicts ✅
+</code></pre>
+<h3>When does a conflict occur?</h3>
+<pre><code>Person A changes line 50 of QRCodeScreen.tsx:
+  const [token, setToken] = useState(null)
+
+Person B also changes line 50 of QRCodeScreen.tsx:
+  const [token, setToken] = useState('')
+                                    ↑
+                              same line, different values
+</code></pre>
+<p>Git marks it in the file:</p>
+<pre><code class="language-typescript">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD           ← the version Person B merged in first
+const [token, setToken] = useState('')
+=======
+const [token, setToken] = useState(null)   ← Person A's version
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/qr-offline
+</code></pre>
+<p>Person A manually chooses which version to keep, saves, runs <code>git add</code> → <code>git commit</code>, and the conflict is resolved.</p>
+<h3>Three habits that prevent conflicts</h3>
+<p><strong>1. Keep branches small and short-lived</strong></p>
+<pre><code>❌ feature/all-backend        ← touches 30 files, lives 3 weeks
+✅ feature/add-jwt-auth       ← touches 3 files, merged in 2 days
+✅ feature/fix-pagination      ← touches 1 file, merged in half a day
+</code></pre>
+<p><strong>2. Before merging, pull develop into your own branch</strong></p>
+<pre><code class="language-bash"># Do not merge your branch into develop directly
+# Instead, first bring your branch up to the latest develop
+
+git checkout develop &amp;&amp; git pull          # get the latest develop
+git checkout my-branch                    # switch back to your branch
+git merge develop                         # merge develop into it
+
+# → If there are conflicts, resolve them now on your own branch
+# → Push after resolving; the PR will be clean and reviewers will see no conflicts
+</code></pre>
+<p><strong>3. Frontend and backend are naturally isolated</strong></p>
+<pre><code>The frontend and backend of this project are not in the same folder:
+
+Frontend person → touches only HKEdgeApp/api/ screen/ components/ context/
+Backend person → touches only hkedge-server/server.js hkedge-server/public/
+        → practically impossible to hit the same line of code
+</code></pre>
+<h3>What to do when a conflict happens</h3>
+<pre><code>1. Don't panic; conflicts are normal. Git is just asking &quot;which version do you want?&quot;
+2. Open the conflicted file and find the &lt;&lt;&lt;&lt;&lt;&lt;&lt; ======= &gt;&gt;&gt;&gt;&gt;&gt;&gt; markers
+3. Decide which version to keep (or combine both)
+4. Delete the markers and save the file
+5. git add &lt;file&gt; → git commit → git push
+6. The PR turns green automatically
+
+If you can't resolve it, sit down with the teammate who wrote the other side
+and pick one side each.
+</code></pre>
+<hr />
+<blockquote>
+<p>📁 Related docs:<br />
+- <code>TODO.md</code> — unified task board<br />
+- <code>API_CODE_REVIEW.md</code> — backend API review<br />
+- <code>ARCHITECTURE.md</code> — architecture overview</p>
+</blockquote></div>
+<div class="only-zh" lang="zh-CN"><blockquote>
 <p>Last updated: 2026-06-18<br />
 Applies to: <code>github.com/cuhkszdev/Cross-Boarder-Data-Cloud-CUHKSZ-</code></p>
 </blockquote>
@@ -722,10 +1392,35 @@ git merge develop                         # 把 develop 融进来
 - <code>TODO.md</code> — 统一任务看板<br />
 - <code>API_CODE_REVIEW.md</code> — 后端 API 审查<br />
 - <code>ARCHITECTURE.md</code> — 架构说明</p>
-</blockquote>
+</blockquote></div>
   </main>
   <footer>
-    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+    <p><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a> · © 2026 Jiazhi (Jasper) Xie</p>
   </footer>
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('site-lang'); } catch (e) {}
+      var lang = stored === 'zh' ? 'zh' : 'en';
+      function apply(l) {
+        document.documentElement.setAttribute('data-lang', l);
+        document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+        var btns = document.querySelectorAll('.lang-btn');
+        for (var i = 0; i < btns.length; i++) {
+          var on = btns[i].getAttribute('data-lang-set') === l;
+          btns[i].classList.toggle('active', on);
+          btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        try { localStorage.setItem('site-lang', l); } catch (e) {}
+      }
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener('click', function () {
+          apply(this.getAttribute('data-lang-set'));
+        });
+      }
+      apply(lang);
+    })();
+</script>
 </body>
 </html>

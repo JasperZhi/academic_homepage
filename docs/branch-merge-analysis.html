@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Branch Merge Analysis — HKEdgeApp | Jiazhi (Jasper) Xie</title>
-  <meta name="description" content="Project documentation, rendered from BRANCH_MERGE_ANALYSIS.md for the HKEdgeApp project.">
+  <meta name="description" content="Branch Merge Analysis for the HKEdgeApp project, available in English and Chinese.">
   <style>
     :root {
       --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
@@ -60,23 +60,609 @@
     th { background: var(--pre-bg); }
     hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
     footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    .lang-toggle {
+      display: inline-flex; gap: 0; border: 1px solid var(--rule);
+      border-radius: 999px; overflow: hidden; margin-top: 0.9rem;
+    }
+    .lang-btn {
+      appearance: none; border: none; background: transparent; cursor: pointer;
+      font: inherit; font-size: 0.9rem; padding: 0.25rem 0.9rem;
+      color: var(--muted); font-family: inherit;
+    }
+    .lang-btn.active { background: var(--pre-bg); color: var(--heading); font-weight: 600; }
+    .lang-note { color: var(--muted); font-size: 0.9rem; margin-top: 0.8rem; }
+    html[data-lang="en"] .only-zh { display: none; }
+    html[data-lang="zh"] .only-en { display: none; }
     @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
     @media print {
       body { background: #ffffff; color: #000000; font-size: 10pt; }
       h1, h2, h3, h4 { color: #000000; }
       a { color: #000000; text-decoration: none; }
       pre, code { background: #f4f4f4; }
+      .lang-toggle, .lang-note { display: none; }
     }
 </style>
 </head>
 <body>
   <header>
-    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <p class="back"><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a></p>
     <h1>Branch Merge Analysis</h1>
-    <p class="subtitle">Project documentation, rendered from BRANCH_MERGE_ANALYSIS.md · reproduced from the private project repository</p>
+    <p class="subtitle"><span class="only-en">Project documentation · reproduced from the private project repository</span><span class="only-zh" lang="zh-CN">项目文档 · 转载自私有项目仓库</span></p>
+    
+    <div class="lang-toggle" role="group" aria-label="Language / 语言">
+      <button type="button" class="lang-btn active" data-lang-set="en" aria-pressed="true">English</button>
+      <button type="button" class="lang-btn" data-lang-set="zh" aria-pressed="false">中文</button>
+    </div>
+
   </header>
   <main>
-    <blockquote>
+    <div class="only-en"><p class="lang-note only-en">English translation of the original Chinese document.</p>
+<blockquote>
+<p>Generated: 2026-07-08<br />
+Analysis scope: <code>Sandbox_0702</code> vs <code>android_merged</code> vs <code>develop</code></p>
+</blockquote>
+<hr />
+<h2>1. Branch Overview</h2>
+<table>
+<thead>
+<tr>
+<th>Branch</th>
+<th>HEAD Commit</th>
+<th>Commits ahead of base</th>
+<th>Direction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main</code></td>
+<td><code>ce3daf9</code></td>
+<td>—</td>
+<td>Main branch</td>
+</tr>
+<tr>
+<td><code>Sandbox_0702</code></td>
+<td><code>36998c3</code></td>
+<td><strong>20 commits</strong></td>
+<td>Full iOS + React Native feature development</td>
+</tr>
+<tr>
+<td><code>android_merged</code></td>
+<td><code>7d2bba9</code></td>
+<td><strong>4 commits</strong></td>
+<td>Android notifications/settlement + docs</td>
+</tr>
+<tr>
+<td><code>develop</code></td>
+<td><code>d10be6a</code></td>
+<td><strong>1 commit</strong></td>
+<td>"Merge iOS and Android versions"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Common merge base</strong>: <code>6a9bb6e</code> ("Rename Copy of phase2.drawio.png to workflow_diagram.png")</p>
+<p>The three branches diverged from the same commit and have evolved independently since.</p>
+<hr />
+<h2>2. Core Differences: Sandbox_0702 vs android_merged</h2>
+<h3>2.1 Technical architecture differences</h3>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Sandbox_0702</th>
+<th>android_merged</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>State management</strong></td>
+<td>✅ Removed the <code>isHydrated</code> hydration-wait logic, simplifying startup</td>
+<td>❌ Kept the complex state machine (<code>isHydrated</code>, <code>createTransition</code>, etc.)</td>
+</tr>
+<tr>
+<td><strong>API layer</strong></td>
+<td>✅ Fully refactored <code>api/index.js</code> into a unified service layer (screens may not fetch directly)</td>
+<td>❌ Removed the <code>bookingApi</code> and <code>vaultApi</code> exports</td>
+</tr>
+<tr>
+<td><strong>Navigation routes</strong></td>
+<td>✅ Kept the three core screens: Booking / HealthVault / BookingList</td>
+<td>❌ Removed Booking / HealthVault / BookingList; added HospitalClaimFlow / HealthCloudDrive / DoctorAppointment / Notifications</td>
+</tr>
+<tr>
+<td><strong>i18n translations</strong></td>
+<td>✅ 1800+ added lines, fully covering 3 languages</td>
+<td>❌ Only 1 added line</td>
+</tr>
+<tr>
+<td><strong>Server side</strong></td>
+<td>✅ Added bookings/vault_files tables + QR scan verification / appointment ticketing / cloud drive APIs</td>
+<td>✅ Base server code (same as develop)</td>
+</tr>
+</tbody>
+</table>
+<h3>2.2 Feature module differences</h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th style="text-align: center;">Sandbox_0702</th>
+<th style="text-align: center;">android_merged</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🏠 Home (HomeScreen)</td>
+<td style="text-align: center;">✅ Major rewrite: added appointment card, queue-number notifications, ticket modal, QR ticket</td>
+<td style="text-align: center;">⚠️ Minor changes</td>
+</tr>
+<tr>
+<td>📅 Online booking (BookingScreen/List)</td>
+<td style="text-align: center;">✅ Kept and updated</td>
+<td style="text-align: center;">❌ <strong>Completely removed</strong></td>
+</tr>
+<tr>
+<td>🏥 Hospital claim flow (HospitalClaimFlow)</td>
+<td style="text-align: center;">❌ <strong>Completely removed</strong></td>
+<td style="text-align: center;">✅ Added the complete flow</td>
+</tr>
+<tr>
+<td>☁️ Health vault (HealthVaultScreen)</td>
+<td style="text-align: center;">✅ Kept (minor change: replaced SafeAreaView with built-in)</td>
+<td style="text-align: center;">❌ <strong>Completely removed</strong></td>
+</tr>
+<tr>
+<td>📁 Cloud drive (HealthCloudDrive)</td>
+<td style="text-align: center;">❌ <strong>Completely removed</strong></td>
+<td style="text-align: center;">✅ Added</td>
+</tr>
+<tr>
+<td>👨‍⚕️ Doctor appointment (DoctorAppointment)</td>
+<td style="text-align: center;">❌ <strong>Completely removed</strong></td>
+<td style="text-align: center;">✅ Added</td>
+</tr>
+<tr>
+<td>🔔 Notification center (Notifications)</td>
+<td style="text-align: center;">❌ <strong>Completely removed</strong></td>
+<td style="text-align: center;">✅ Added</td>
+</tr>
+<tr>
+<td>📋 Claim details/list</td>
+<td style="text-align: center;">✅ Major rewrite (450-550 line diff)</td>
+<td style="text-align: center;">✅ Equivalent rewrite</td>
+</tr>
+<tr>
+<td>🎫 Registration flow (RegistrationScreen)</td>
+<td style="text-align: center;">✅ Major rewrite (540 line diff)</td>
+<td style="text-align: center;">✅ Equivalent rewrite</td>
+</tr>
+<tr>
+<td>👤 Profile (ProfileScreen)</td>
+<td style="text-align: center;">✅ 90 lines changed</td>
+<td style="text-align: center;">⚠️ No changes</td>
+</tr>
+<tr>
+<td>📱 QR code screen (QRCodeScreen)</td>
+<td style="text-align: center;">✅ 200 lines changed (refactored refresh logic, appointment ticket QR)</td>
+<td style="text-align: center;">⚠️ 15-line tweaks</td>
+</tr>
+<tr>
+<td>👴 Elder mode (ElderHomeScreen)</td>
+<td style="text-align: center;">✅ 110 lines changed (enhanced language switching)</td>
+<td style="text-align: center;">⚠️ 15-line tweaks</td>
+</tr>
+<tr>
+<td>🏷️ Categories/activities pages</td>
+<td style="text-align: center;">✅ Major rewrite</td>
+<td style="text-align: center;">✅ Equivalent rewrite</td>
+</tr>
+</tbody>
+</table>
+<h3>2.3 Exclusive files</h3>
+<p><strong>Exclusive to Sandbox_0702</strong> (not in develop):<br />
+- <code>.agents/</code> — complete AI development skill library (dev/test/writing/obsidian etc., ~80 files)<br />
+- <code>HKEdgeApp_Appetize.zip</code> — Appetize simulator package artifact<br />
+- <code>HKEdgeApp_Source.zip</code> — full source code package artifact</p>
+<p><strong>Exclusive to android_merged</strong> (not in develop):<br />
+- <code>.idea/</code> — Android Studio project configuration<br />
+- <code>README_HKEdgeAPP_AMYUpdate.md</code> — AMY update notes<br />
+- <code>README_merged.md</code> — merge notes</p>
+<p><strong>Exclusive to develop</strong> (not in Sandbox_0702):<br />
+- <code>android/app/src/main/java/com/hkedgeapp/ShareModule.kt</code> — Android native share module<br />
+- <code>android/app/src/main/java/com/hkedgeapp/SharePackage.kt</code> — Android native share registration<br />
+- <code>android/app/src/main/res/xml/file_paths.xml</code> — Android FileProvider configuration<br />
+- <code>api/appointmentApi.js</code> — appointment API module<br />
+- <code>api/cloudDriveApi.js</code> — cloud drive API module<br />
+- <code>api/hospitalClaimFlowApi.js</code> — hospital claim API module<br />
+- <code>api/notificationApi.js</code> — notification API module<br />
+- <code>declarations.d.ts</code> — TypeScript type declarations<br />
+- <code>jest.setup.js</code> — test setup<br />
+- <code>MERGE_NOTES.md</code> — merge notes<br />
+- <code>screen/DoctorAppointmentScreen.js</code> — doctor appointment screen<br />
+- <code>screen/HealthCloudDriveScreen.js</code> — health cloud drive screen<br />
+- <code>screen/HospitalClaimFlowScreen.js</code> — hospital claim flow screen<br />
+- <code>screen/NotificationsScreen.js</code> — notification center screen</p>
+<hr />
+<h2>3. Detailed Analysis of the 20 Conflicting Files</h2>
+<p>Both branches modified the following files (relative to develop); merging will <strong>definitely conflict</strong>:</p>
+<h3>3.1 🔴 Severe conflicts (logically mutually exclusive)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th>Sandbox behavior</th>
+<th>android_merged behavior</th>
+<th>Nature of the conflict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>App.tsx</strong></td>
+<td>Kept Booking/HealthVault/BookingList; removed HospitalClaimFlow/HealthCloudDrive/DoctorAppointment/Notifications</td>
+<td>Removed Booking/BookingList/HealthVault; kept HospitalClaimFlow/HealthCloudDrive/DoctorAppointment/Notifications</td>
+<td><strong>Route registration is mutually exclusive</strong> — the two branches removed different screens</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>api/index.js</strong></td>
+<td>Completely rewritten into a unified service-layer architecture (includes all modules)</td>
+<td>Removed the bookingApi/vaultApi re-exports</td>
+<td><strong>Different API architectures</strong> — Sandbox rewrote the entire file</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>context/UserContext.js</strong></td>
+<td>Removed <code>isHydrated</code>/<code>createTransition</code>/<code>setPreviewPolicies</code>/<code>cancelPreview</code></td>
+<td>Removed <code>setPreviewPolicies</code>/<code>cancelPreview</code></td>
+<td><strong>Different state management logic</strong> — both deleted things, but different ones</td>
+</tr>
+</tbody>
+</table>
+<h3>3.2 🟡 Moderate conflicts (features changed in different directions)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th style="text-align: center;">Sandbox changes</th>
+<th style="text-align: center;">android changes</th>
+<th>Conflict description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td><strong>screen/HomeScreen.js</strong></td>
+<td style="text-align: center;">563 lines</td>
+<td style="text-align: center;">90 lines</td>
+<td>Sandbox added appointment card, queue numbers, ticket modal, QR ticket; android made minor changes</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>screen/QRCodeScreen.tsx</strong></td>
+<td style="text-align: center;">199 lines</td>
+<td style="text-align: center;">15 lines</td>
+<td>Sandbox refactored the QR refresh logic and added the appointment ticket QR; android made minor tweaks</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>screen/ElderHomeScreen.js</strong></td>
+<td style="text-align: center;">110 lines</td>
+<td style="text-align: center;">15 lines</td>
+<td>Sandbox enhanced language switching; android made minor tweaks</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>screen/ProfileScreen.js</strong></td>
+<td style="text-align: center;">90 lines</td>
+<td style="text-align: center;">0 lines</td>
+<td>Only Sandbox changed it; android did not touch it</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>screen/HealthVaultScreen.tsx</strong></td>
+<td style="text-align: center;">15 lines (kept)</td>
+<td style="text-align: center;">742 lines (<strong>deleted the entire file</strong>)</td>
+<td>⚠️ <strong>android deleted this file!</strong> Sandbox kept it with minor changes</td>
+</tr>
+</tbody>
+</table>
+<h3>3.3 🟢 Low-level conflicts (similar change sizes, possibly similar content)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th style="text-align: center;">Sandbox changes</th>
+<th style="text-align: center;">android changes</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>9</td>
+<td><strong>screen/ActivitiesScreen.js</strong></td>
+<td style="text-align: center;">146 lines</td>
+<td style="text-align: center;">146 lines</td>
+<td>Identical change sizes; content may be identical</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>screen/CategoriesScreen.js</strong></td>
+<td style="text-align: center;">138 lines</td>
+<td style="text-align: center;">138 lines</td>
+<td>Identical change sizes; content may be identical</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>screen/ClaimDetailsScreen.js</strong></td>
+<td style="text-align: center;">461 lines</td>
+<td style="text-align: center;">458 lines</td>
+<td>Very close change sizes</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>screen/ClaimsListScreen.js</strong></td>
+<td style="text-align: center;">547 lines</td>
+<td style="text-align: center;">534 lines</td>
+<td>Very close change sizes</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>screen/RegistrationScreen.tsx</strong></td>
+<td style="text-align: center;">542 lines</td>
+<td style="text-align: center;">542 lines</td>
+<td>Identical change sizes</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>constants/translations.js</strong></td>
+<td style="text-align: center;">+1081/-1418</td>
+<td style="text-align: center;">+1/-117</td>
+<td>Sandbox did a large-scale i18n rewrite; android barely changed it</td>
+</tr>
+<tr>
+<td>15</td>
+<td><strong>MERGE_NOTES.md</strong></td>
+<td style="text-align: center;">Added</td>
+<td style="text-align: center;">Deleted</td>
+<td>Sandbox added the file vs android deleted it (android does not have this file)</td>
+</tr>
+</tbody>
+</table>
+<h3>3.4 File existence conflicts</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>File</th>
+<th style="text-align: center;">Sandbox</th>
+<th style="text-align: center;">android_merged</th>
+<th style="text-align: center;">develop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>16</td>
+<td><strong>screen/BookingScreen.tsx</strong></td>
+<td style="text-align: center;">✅ Kept</td>
+<td style="text-align: center;">❌ Deleted</td>
+<td style="text-align: center;">✅ Exists</td>
+</tr>
+<tr>
+<td>17</td>
+<td><strong>screen/BookingListScreen.tsx</strong></td>
+<td style="text-align: center;">✅ Kept</td>
+<td style="text-align: center;">❌ Deleted</td>
+<td style="text-align: center;">✅ Exists</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>screen/DoctorAppointmentScreen.js</strong></td>
+<td style="text-align: center;">❌ Deleted</td>
+<td style="text-align: center;">✅ Kept</td>
+<td style="text-align: center;">✅ Exists</td>
+</tr>
+<tr>
+<td>19</td>
+<td><strong>screen/HealthCloudDriveScreen.js</strong></td>
+<td style="text-align: center;">❌ Deleted</td>
+<td style="text-align: center;">✅ Kept</td>
+<td style="text-align: center;">✅ Exists</td>
+</tr>
+<tr>
+<td>20</td>
+<td><strong>screen/HospitalClaimFlowScreen.js</strong></td>
+<td style="text-align: center;">❌ Deleted</td>
+<td style="text-align: center;">✅ Kept</td>
+<td style="text-align: center;">✅ Exists</td>
+</tr>
+<tr>
+<td>21</td>
+<td><strong>screen/NotificationsScreen.js</strong></td>
+<td style="text-align: center;">❌ Deleted</td>
+<td style="text-align: center;">✅ Kept</td>
+<td style="text-align: center;">✅ Exists</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>4. Intuitive Feature Comparison</h2>
+<h3>Sandbox_0702 focus → complete iOS experience</h3>
+<pre><code>🏠 Home (rich version)
+├── Appointment card → BookingScreen → BookingListScreen
+├── Queue-number notifications (simulated) → QR ticket modal
+├── Claim overview
+├── Personal health vault entry → HealthVaultScreen
+└── Bottom tab bar (redesigned)
+</code></pre>
+<p><strong>Keywords</strong>: full i18n coverage, light/dark theme, elder mode, Appetize packaging, code comments (Chinese)</p>
+<h3>android_merged focus → hospital business loop</h3>
+<pre><code>🏠 Home (lean version)
+├── Hospital claim flow → HospitalClaimFlowScreen
+├── Doctor appointment → DoctorAppointmentScreen
+├── Health vault → HealthCloudDriveScreen
+├── Notification center → NotificationsScreen
+└── Real-time settlement
+</code></pre>
+<p><strong>Keywords</strong>: push notifications, real-time settlement, hospital HIT integration, evidence documents, Android-focused work</p>
+<h3>Ideal state after merging (the two branches complement each other)</h3>
+<pre><code>🏠 Home (complete version)
+├── Appointment card → BookingScreen → BookingListScreen  ← Sandbox
+├── Queue-number notifications → QR ticket modal          ← Sandbox
+├── Hospital claim flow → HospitalClaimFlowScreen          ← android
+├── Doctor appointment → DoctorAppointmentScreen           ← android
+├── Health vault → HealthVaultScreen                        ← Sandbox
+├── Cloud drive → HealthCloudDriveScreen                    ← android
+├── Notification center → NotificationsScreen               ← android
+├── Claim overview
+└── Bottom tab bar (redesigned)                             ← Sandbox
+</code></pre>
+<hr />
+<h2>5. Recommended Merge Strategy</h2>
+<h3>Recommended plan: merge in two steps</h3>
+<pre><code>Step 1: android_merged → develop  (merge the smaller changes first)
+Step 2: Sandbox_0702 → develop    (then merge the larger changes)
+</code></pre>
+<h3>Step 1: <code>android_merged</code> → <code>develop</code></h3>
+<p><strong>Risk level</strong>: 🟢 Low<br />
+<strong>Conflicting files</strong>: 0 (develop is only 1 commit ahead of android, with no overlapping changes)</p>
+<pre><code>Merged content:
+  ✅ README_merged.md / README_HKEdgeAPP_AMYUpdate.md
+  ✅ .idea/ project configuration
+  ✅ server/server.js base version
+  ✅ All android_merged screen changes
+</code></pre>
+<h3>Step 2: <code>Sandbox_0702</code> → <code>develop</code></h3>
+<p><strong>Risk level</strong>: 🔴 High<br />
+<strong>Expected conflicts</strong>: 15-20 files</p>
+<p><strong>Key conflicts and recommended resolutions</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Conflicting file</th>
+<th>Recommended resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>App.tsx</code></td>
+<td><strong>Keep both sides</strong> — register all 7 screens (Booking + HealthVault + BookingList + HospitalClaimFlow + HealthCloudDrive + DoctorAppointment + Notifications)</td>
+</tr>
+<tr>
+<td><code>api/index.js</code></td>
+<td><strong>Use the Sandbox version</strong> — the unified service-layer architecture is more complete, then add android's API module exports</td>
+</tr>
+<tr>
+<td><code>context/UserContext.js</code></td>
+<td><strong>Use the Sandbox version</strong> — simplifies the hydration logic and removes the redundant state machine</td>
+</tr>
+<tr>
+<td><code>screen/HealthVaultScreen.tsx</code></td>
+<td><strong>Keep, do not delete</strong> — use the Sandbox version (the version with minor changes)</td>
+</tr>
+<tr>
+<td><code>screen/HomeScreen.js</code></td>
+<td><strong>Use the Sandbox version</strong> — more complete features (appointment card + queue notifications), then port android's changes</td>
+</tr>
+<tr>
+<td><code>screen/QRCodeScreen.tsx</code></td>
+<td><strong>Use the Sandbox version</strong> — the refactor is more thorough</td>
+</tr>
+<tr>
+<td><code>screen/ElderHomeScreen.js</code></td>
+<td><strong>Use the Sandbox version</strong></td>
+</tr>
+<tr>
+<td><code>screen/ProfileScreen.js</code></td>
+<td><strong>Use the Sandbox version</strong></td>
+</tr>
+<tr>
+<td><code>constants/translations.js</code></td>
+<td><strong>Use the Sandbox version</strong> — 1800+ lines of improved i18n</td>
+</tr>
+<tr>
+<td><code>screen/ActivitiesScreen.js</code> etc.</td>
+<td>Compare file by file; the changes may be identical on both sides — favor Sandbox</td>
+</tr>
+<tr>
+<td>BookingScreen/List (file existence)</td>
+<td><strong>Keep</strong> (Sandbox version)</td>
+</tr>
+<tr>
+<td>DoctorAppointment/HealthCloudDrive/HospitalClaimFlow/Notifications</td>
+<td><strong>Keep</strong> (android/develop version)</td>
+</tr>
+<tr>
+<td><code>MERGE_NOTES.md</code></td>
+<td><strong>Keep the develop version</strong></td>
+</tr>
+<tr>
+<td><code>.agents/</code></td>
+<td><strong>Include</strong> (exclusive to Sandbox; AI development skill library)</td>
+</tr>
+<tr>
+<td>Android native files</td>
+<td><strong>Keep</strong> (exclusive to develop; ShareModule etc., missing from Sandbox)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>6. Risk Assessment</h2>
+<table>
+<thead>
+<tr>
+<th>Risk item</th>
+<th style="text-align: center;">Level</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App.tsx route registration merge</td>
+<td style="text-align: center;">🔴 High</td>
+<td>The two branches deleted different screens; imports + Stack.Screen must be merged manually</td>
+</tr>
+<tr>
+<td>api/index.js architecture conflict</td>
+<td style="text-align: center;">🔴 High</td>
+<td>Sandbox rewrote the API layer; android changed the exports</td>
+</tr>
+<tr>
+<td>UserContext.js state machine</td>
+<td style="text-align: center;">🟡 Medium</td>
+<td>Sandbox removed isHydrated; confirm it does not break android features</td>
+</tr>
+<tr>
+<td>HealthVaultScreen deletion</td>
+<td style="text-align: center;">🔴 High</td>
+<td>android deleted the entire file; a keep-or-delete decision is required</td>
+</tr>
+<tr>
+<td>i18n translation coverage</td>
+<td style="text-align: center;">🟡 Medium</td>
+<td>Sandbox changed 2500+ lines, android barely changed any; large merge volume</td>
+</tr>
+<tr>
+<td>Runtime compatibility</td>
+<td style="text-align: center;">🟡 Medium</td>
+<td>After merging, verify that Booking + HospitalClaimFlow etc. coexist correctly</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>7. Conclusion</h2>
+<p><strong>Merging is feasible</strong>; the two branches' content is complementary:<br />
+- <code>Sandbox_0702</code> provides: complete iOS-side UI/UX improvements, i18n multilingual support, appointment booking, QR scanning, code quality improvements<br />
+- <code>android_merged</code> provides: hospital claim flow, doctor appointment, notification center, real-time settlement, Android-focused documentation</p>
+<p>It is recommended to merge in the order <strong>android first, then sandbox</strong>; expect <strong>15-20 conflicting files</strong> requiring manual resolution, the most complex being <code>App.tsx</code> (route registration) and <code>api/index.js</code> (API architecture).</p>
+<p>After merging, the following is needed:<br />
+1. Check that all 7 screen routes are registered correctly<br />
+2. Verify that <code>UserContext</code> state transitions between screens are correct<br />
+3. Run full regression testing of the i18n translations<br />
+4. Confirm the Android native modules (ShareModule etc.) were not accidentally deleted</p></div>
+<div class="only-zh" lang="zh-CN"><blockquote>
 <p>生成时间：2026-07-08<br />
 分析范围：<code>Sandbox_0702</code> vs <code>android_merged</code> vs <code>develop</code></p>
 </blockquote>
@@ -640,10 +1226,35 @@ Step 2: Sandbox_0702 → develop    （再合并改动大的）
 1. 检查所有 7 个页面路由是否正常注册<br />
 2. 验证 <code>UserContext</code> 状态机在各页面间流转是否正确<br />
 3. 全量回归测试 i18n 翻译<br />
-4. 确认 Android 原生模块（ShareModule 等）未被误删</p>
+4. 确认 Android 原生模块（ShareModule 等）未被误删</p></div>
   </main>
   <footer>
-    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+    <p><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a> · © 2026 Jiazhi (Jasper) Xie</p>
   </footer>
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('site-lang'); } catch (e) {}
+      var lang = stored === 'zh' ? 'zh' : 'en';
+      function apply(l) {
+        document.documentElement.setAttribute('data-lang', l);
+        document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+        var btns = document.querySelectorAll('.lang-btn');
+        for (var i = 0; i < btns.length; i++) {
+          var on = btns[i].getAttribute('data-lang-set') === l;
+          btns[i].classList.toggle('active', on);
+          btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        try { localStorage.setItem('site-lang', l); } catch (e) {}
+      }
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener('click', function () {
+          apply(this.getAttribute('data-lang-set'));
+        });
+      }
+      apply(lang);
+    })();
+</script>
 </body>
 </html>

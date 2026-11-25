@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Frontend–Backend API Map — HKEdgeApp | Jiazhi (Jasper) Xie</title>
-  <meta name="description" content="Project documentation, rendered from API_MAP.md for the HKEdgeApp project.">
+  <meta name="description" content="Frontend–Backend API Map for the HKEdgeApp project, available in English and Chinese.">
   <style>
     :root {
       --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
@@ -60,23 +60,407 @@
     th { background: var(--pre-bg); }
     hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
     footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    .lang-toggle {
+      display: inline-flex; gap: 0; border: 1px solid var(--rule);
+      border-radius: 999px; overflow: hidden; margin-top: 0.9rem;
+    }
+    .lang-btn {
+      appearance: none; border: none; background: transparent; cursor: pointer;
+      font: inherit; font-size: 0.9rem; padding: 0.25rem 0.9rem;
+      color: var(--muted); font-family: inherit;
+    }
+    .lang-btn.active { background: var(--pre-bg); color: var(--heading); font-weight: 600; }
+    .lang-note { color: var(--muted); font-size: 0.9rem; margin-top: 0.8rem; }
+    html[data-lang="en"] .only-zh { display: none; }
+    html[data-lang="zh"] .only-en { display: none; }
     @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
     @media print {
       body { background: #ffffff; color: #000000; font-size: 10pt; }
       h1, h2, h3, h4 { color: #000000; }
       a { color: #000000; text-decoration: none; }
       pre, code { background: #f4f4f4; }
+      .lang-toggle, .lang-note { display: none; }
     }
 </style>
 </head>
 <body>
   <header>
-    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <p class="back"><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a></p>
     <h1>Frontend–Backend API Map</h1>
-    <p class="subtitle">Project documentation, rendered from API_MAP.md · reproduced from the private project repository</p>
+    <p class="subtitle"><span class="only-en">Project documentation · reproduced from the private project repository</span><span class="only-zh" lang="zh-CN">项目文档 · 转载自私有项目仓库</span></p>
+    
+    <div class="lang-toggle" role="group" aria-label="Language / 语言">
+      <button type="button" class="lang-btn active" data-lang-set="en" aria-pressed="true">English</button>
+      <button type="button" class="lang-btn" data-lang-set="zh" aria-pressed="false">中文</button>
+    </div>
+
   </header>
   <main>
-    <blockquote>
+    <div class="only-en"><p class="lang-note only-en">English translation of the original Chinese document.</p>
+<blockquote>
+<p>Last updated: 2026-06-18</p>
+</blockquote>
+<hr />
+<h2>Overview Diagram</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────────┐
+│                          HKEdgeApp (React Native)                           │
+│                                                                             │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
+│  │HomeScreen│ │QRCodeScrn│ │ClaimsList│ │QrScanScrn│ │ProfileSrn│  ...10  │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘  Screen │
+│       │             │            │            │            │               │
+│       └─────────────┴────────────┴────────────┴────────────┘               │
+│                               │                                             │
+│                      import * as api from '../../api'                       │
+│                               │                                             │
+│       ┌───────────────────────┼───────────────────────┐                     │
+│       │                  HKEdgeApp/api/                │                    │
+│       │                                               │                     │
+│       │  ┌──────────┐ ┌──────────┐ ┌──────────┐      │                     │
+│       │  │policyApi │ │claimApi  │ │ chatApi  │  ... │     7 files         │
+│       │  └────┬─────┘ └────┬─────┘ └────┬─────┘      │                     │
+│       └───────┼─────────────┼────────────┼────────────┘                     │
+│               │             │            │                                  │
+│               │    axios / apiClient (HTTP)                                 │
+│               │     baseURL = localhost:3000/api                            │
+└───────────────┼─────────────┼────────────┼──────────────────────────────────┘
+                │             │            │
+                │             │            │
+        ════════╪═════════════╪════════════╪══════  Network  ════════════════
+                │             │            │
+                ▼             ▼            ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                   hkedge-server (Express on :3000)                          │
+│                                                                             │
+│  ┌─────────────────────┐  ┌──────────────────┐  ┌────────────────────┐      │
+│  │  /api/app/*        │  │  /api/admin/*    │  │  Others            │      │
+│  │  (mobile APP,      │  │  (admin console, │  │  /api/auth/*       │      │
+│  │   no login)        │  │   login required)│  │  /api/pos/charge   │      │
+│  │                    │  │                  │  │  /api/chat         │      │
+│  │  8 endpoints       │  │  15 endpoints    │  │                    │      │
+│  └────────┬───────────┘  └────────┬─────────┘  └────────┬───────────┘      │
+│           │                       │                      │                  │
+│           └───────────────────────┴──────────────────────┘                  │
+│                                   │                                         │
+│                              SQLite                                         │
+│                          (hkedge.db)                                        │
+│              contracts / patients / claims / visits / ...                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2>Mapping of 7 Frontend Functions → Backend Endpoints</h2>
+<pre><code>Frontend (api/*.js)                Backend (server.js)               Status
+───────────────────────────────────────────────────────────────────────────────
+
+① fetchPoliciesByCompany()  ────▶ GET /api/app/policies             ✅ Works
+     Params: hkid, company             └ Returns policy list
+     Purpose: load policies after selecting an insurer
+
+② fetchHospitalsByPolicy()  ────▶ GET /api/app/policies/:id/hospitals  ✅ Works
+     Params: policyNo                  └ Returns Completed contracted hospitals
+     Purpose: see which hospitals a policy covers
+
+③ issueQrToken()            ────▶ POST /api/app/qr/issue            ✅ Works
+     Params: policy_id                └ Returns 60s token
+     Purpose: generate dynamic QR code
+
+④ refreshQrToken()          ────▶ Same as above (calls issueQrToken) ✅ Works
+     Purpose: get a new token when the 60s one expires
+
+⑤ syncFromConsole()         ────▶ GET /api/app/sync                 ✅ Works
+     Params: hkid                       └ Returns policies + hospital stats
+     Purpose: polling sync while the APP is in the foreground
+
+⑥ fetchClaims()             ────▶ GET /api/app/claims               ✅ Works
+     Params: hkid                       └ Returns claim records
+     Purpose: view reimbursement history
+
+
+⑦ verifyQrCode()            ────▶ POST /api/qr/verify               ❌ Broken!
+     Params: qrData, hospitalId   The backend has no such route!
+     Purpose: hospital scans QR    Only admin/qrcode/checkin exists
+
+
+⑧ verifyPolicy()            ────▶ (no HTTP request)                 ❌ Fake!
+     Purpose: patient KYC registration    Pure frontend mock, setTimeout + fake patient_id
+
+
+⑨ sendChatMessage()         ────▶ POST /api/chat                    ⚠️ Half-working
+     Params: sessionId, query          └ Forwards to n8n :5678        500 if n8n is not running
+     Purpose: AI consultation
+</code></pre>
+<hr />
+<h2>Per-Endpoint Data Flow Diagrams</h2>
+<h3>① Policy query (works ✅)</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+ │ HomeScreen   │      │  policyApi   │      │  server.js   │
+ │              │      │              │      │              │
+ │ User selects │─────▶│ fetchPolici- │─────▶│ GET          │
+ │ insurer      │      │ esByCompany  │      │ /api/app/    │
+ │ &quot;AIA&quot;        │      │ (name, hkid) │      │ policies     │
+ │              │      │              │◀─────│ ?hkid=        │
+ │              │      │ Backend down?│      │  &amp;company=   │
+ │              │      │ ↓ auto-fallback│    │              │
+ │              │      │ MOCK_POLICY  │      │              │
+ │              │      │ _DB[AIA]     │      │              │
+ │              │◀─────│              │      │              │
+ │ Show policy  │      │              │      │              │
+ │ list:        │      │              │      │              │
+ │ · AIA-001    │      │              │      │              │
+ │ · AIA-077    │      │              │      │              │
+ └─────────────┘      └─────────────┘      └─────────────┘
+</code></pre>
+<h3>② Hospital query (works ✅)</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌──────────┐
+ │ HomeScreen   │      │  policyApi   │      │  server.js   │      │ SQLite   │
+ │              │      │              │      │              │      │          │
+ │ User picked  │─────▶│ fetchHospit- │─────▶│ GET          │─────▶│ contracts│
+ │ AIA-001      │      │ alsByPolicy  │      │ /api/app/    │      │ JOIN     │
+ │ wants to see │      │ (AIA-001)    │      │ policies/    │      │ hospitals│
+ │ which        │      │              │◀─────│ :id/hospitals│◀─────│ WHERE    │
+ │ hospitals    │      │              │      │              │      │ status=  │
+ │ are covered  │      │              │      │              │      │ Completed│
+ │              │◀─────│              │      │              │      │          │
+ │ Southern     │      │              │      │              │      │          │
+ │ Medical Univ.│      │              │      │              │      │          │
+ │ Sun Yat-sen  │      │              │      │              │      │          │
+ │ First Affil. │      │              │      │              │      │          │
+ │ Shenzhen UFH │      │              │      │              │      │          │
+ └─────────────┘      └─────────────┘      └─────────────┘      └──────────┘
+</code></pre>
+<h3>③ QR issue + refresh (works ✅)</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+ │ QRCodeScreen │      │  policyApi   │      │  server.js   │
+ │              │      │              │      │              │
+ │ Show medical │─────▶│ issueQrToken │─────▶│ POST         │
+ │ insurance QR │      │ (AIA-001)    │      │ /api/app/    │
+ │              │      │              │      │ qr/issue     │
+ │              │      │              │◀─────│              │
+ │              │      │              │      │ token=base64 │
+ │              │      │              │      │ exp=now+60s  │
+ │              │◀─────│              │      │              │
+ │              │      │              │      │              │
+ │ 60s countdown│      │              │      │              │
+ │  3s left!    │─────▶│ refreshQr    │─────▶│ POST         │
+ │              │      │ Token        │      │ /api/app/    │
+ │              │      │ (same as     │      │ qr/issue     │
+ │              │      │  issue logic)│      │              │
+ │              │◀─────│              │◀─────│ new token    │
+ │ Reset        │      │              │      │              │
+ │ countdown    │      │              │      │              │
+ └─────────────┘      └─────────────┘      └─────────────┘
+</code></pre>
+<h3>④ Sync snapshot (works ✅)</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌──────────┐
+ │ HomeScreen   │      │  policyApi   │      │  server.js   │      │ SQLite   │
+ │              │      │              │      │              │      │          │
+ │ APP in       │─────▶│ syncFrom     │─────▶│ GET          │─────▶│ patients │
+ │ foreground   │      │ Console      │      │ /api/app/    │      │ JOIN     │
+ │ polling      │      │ (hkid)       │      │ sync         │      │ contracts│
+ │ (every 30s)  │      │              │◀─────│ ?hkid=        │◀─────│          │
+ │              │      │              │      │              │      │          │
+ │ Snapshot:    │      │              │      │              │      │          │
+ │ {            │      │              │      │              │      │          │
+ │   policies:   │      │              │      │              │      │          │
+ │     [AIA-001, │      │              │      │              │      │          │
+ │      AIA-077, │      │              │      │              │      │          │
+ │      CL-A12,  │      │              │      │              │      │          │
+ │      CL-B08], │      │              │      │              │      │          │
+ │   hospitals:  │      │              │      │              │      │          │
+ │     {AIA: 6,  │      │              │      │              │      │          │
+ │      CL: 5}   │      │              │      │              │      │          │
+ │ }            │      │              │      │              │      │          │
+ └─────────────┘      └─────────────┘      └─────────────┘      └──────────┘
+</code></pre>
+<h3>⑤ Claims query (works ✅)</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌──────────┐
+ │ ClaimsList   │      │  claimApi    │      │  server.js   │      │ SQLite   │
+ │ Screen       │      │              │      │              │      │          │
+ │              │─────▶│ fetchClaims  │─────▶│ GET          │─────▶│ claims   │
+ │              │      │ (A1234567)   │      │ /api/app/    │      │ LEFT JOIN│
+ │              │      │              │      │ claims       │      │ patients │
+ │              │      │              │◀─────│ ?hkid=        │◀─────│          │
+ │              │◀─────│              │      │              │      │          │
+ │              │      │              │      │              │      │          │
+ │ Claim list:  │      │              │      │              │      │          │
+ │ · ER 6800    │      │              │      │              │      │          │
+ │   Settled    │      │              │      │              │      │          │
+ │ · Outpatient │      │              │      │              │      │          │
+ │   450        │      │              │      │              │      │          │
+ │   Settled    │      │              │      │              │      │          │
+ └─────────────┘      └─────────────┘      └─────────────┘      └──────────┘
+</code></pre>
+<h3>⑥ QR scan verification (broken ❌)</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────────────┐
+ │ QrScanScreen │      │   qrApi      │      │     server.js       │
+ │              │      │              │      │                     │
+ │ Hospital     │─────▶│ verifyQrCode │─────▶│ POST /api/qr/verify │
+ │ scans the    │      │ (qrData,     │      │                     │
+ │ patient's QR │      │  'HOSP-001') │      │ ❌ 404 NOT FOUND    │
+ │              │      │              │      │    this route does  │
+ │              │      │              │      │    not exist!       │
+ │              │◀─────│  error       │◀─────│                     │
+ │              │      │              │      │                     │
+ │ ❌ Verif.    │      │              │      │                     │
+ │    failed    │      │              │      │                     │
+ └─────────────┘      └─────────────┘      └─────────────────────┘
+
+Comparable endpoints that already exist on the backend:
+  POST /api/admin/qrcode/generate   ← generate check-in code (admin console)
+  POST /api/admin/qrcode/checkin    ← patient check-in (admin console)
+  GET  /api/admin/qrcode/history    ← check-in history (admin console)
+
+Gap: missing /api/app/qr/verify for the APP side (no login, used by hospital scanning)
+</code></pre>
+<h3>⑦ Patient registration (fake ❌)</h3>
+<pre><code> ┌─────────────┐      ┌──────────────────┐      ┌─────────────┐
+ │ Registration │      │    policyApi      │      │  server.js   │
+ │ Screen       │      │                  │      │              │
+ │              │─────▶│ verifyPolicy()    │      │              │
+ │ Form:        │      │                  │      │              │
+ │ Name: Chan   │      │ ╔══════════════╗  │      │              │
+ │ HKID: A1234  │      │ ║  Pure frontend║  │      │              │
+ │ Phone: 98765 │      │ ║  mock:        ║  │      │  ???  no      │
+ │              │      │ ║  setTimeout   ║  │      │   backend     │
+ │              │◀─────│ ║  1500ms fake  ║  │      │   processing  │
+ │              │      │ ║  request      ║  │      │   at all      │
+ │              │      │ ╚══════════════╝  │      │              │
+ │ ✅ Registered │      │                  │      │              │
+ │ patient_id = │      │ Returns:          │      │              │
+ │ PT-2024-MOCK │      │ { patient_id:     │      │              │
+ │ (fake!!!)    │      │   'PT-2024-MOCK'} │      │              │
+ └─────────────┘      └──────────────────┘      └─────────────┘
+
+Root problem:
+  The frontend puts on a show by itself; the backend is not involved at all.
+  No patient data is written to the database.
+  The patient_id is hardcoded; every registration returns the same one.
+</code></pre>
+<h3>⑧ AI chat (half-working ⚠️)</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌──────────┐
+ │ HomeScreen   │      │  chatApi     │      │  server.js   │      │   n8n    │
+ │              │      │              │      │              │      │ :5678    │
+ │ AI chat box  │─────▶│ sendChat     │─────▶│ POST /api/   │─────▶│ webhook  │
+ │ &quot;outpatient  │      │ Message      │      │ chat         │      │ ai-chat  │
+ │  reimbursement│     │ (session,    │      │              │      │          │
+ │  ratio?&quot;     │      │  query)      │      │ forwarding   │      │          │
+ │              │      │              │      │              │      │          │
+ │ Case A:      │      │              │      │  n8n online ─│◀─────│ ✅ Reply  │
+ │ &quot;outpatient  │◀─────│              │◀─────│              │─────▶│ AI       │
+ │  90%&quot;        │      │              │      │              │      │ response │
+ │              │      │              │      │              │      │          │
+ │ Case B:      │      │              │      │  n8n down ───│◀─────│ ❌ Timeout│
+ │ blank screen │◀─────│ error        │◀─────│ throws 500   │      │          │
+ │ / 500        │      │              │      │ directly     │      │          │
+ └─────────────┘      └─────────────┘      └─────────────┘      └──────────┘
+</code></pre>
+<hr />
+<h2>Frontend Built-in Mock Inventory</h2>
+<pre><code>┌────────────────────────────────────────────────────────────────┐
+│  Mock data built into the frontend api/ layer                  │
+│                                                                │
+│  policyApi.js:                                                 │
+│  ┌────────────────────────────────────────────────────────┐    │
+│  │ MOCK_POLICY_DB = {                                      │    │
+│  │   'AIA Hong Kong (友邦)': [2 fake policies],             │    │
+│  │   'China Life (中国人寿)': [3 fake policies],            │    │
+│  │   'Prudential (保诚)':     [2 fake policies],            │    │
+│  │   'Manulife (宏利)':       [1 fake policy],              │    │
+│  │   'AXA (安盛)':            [1 fake policy],              │    │
+│  │   'FWD (富卫)':            [1 fake policy],              │    │
+│  │   'Bupa (保柏)':           [1 fake policy],              │    │
+│  │   'Cigna (信诺)':          [1 fake policy],              │    │
+│  │   'Bowtie (保泰)':         [1 fake policy],              │    │
+│  │   + mapping of insurer names in Trad./Simplified Chinese│    │
+│  │ }                                                       │    │
+│  └────────────────────────────────────────────────────────┘    │
+│                                                                │
+│  verifyPolicy() — fully mocked, issues no HTTP request         │
+│  issueQrToken() — generates a base64 token locally if the      │
+│                    backend is down                             │
+│  fetchPoliciesByCompany() — falls back to MOCK_DB if the       │
+│                    backend is down                             │
+│                                                                │
+│  ⚠️ Risk: a bug in a backend API is silently taken over by     │
+│     the frontend, and you would never notice                   │
+└────────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2>Full Backend Route Map</h2>
+<pre><code>                              localhost:3000
+                                    │
+        ┌───────────────┬───────────┴───────────┬────────────────┐
+        │               │                       │                │
+   /api/app/*       /api/admin/*            /api/auth/*      Others
+   (APP, no login)  (admin console, login)  (auth)
+        │               │                       │                │
+ ┌──────┴──────┐ ┌──────┴────────┐      ┌──────┴──────┐  ┌──────┴──────┐
+ │GET  policies│ │GET  dashboard │      │POST login   │  │POST chat    │
+ │GET  policies│ │GET  hospitals │      │GET  user    │  │POST pos/    │
+ │     /:id/   │ │POST hospitals │      │POST logout  │  │     charge  │
+ │     hospitals│ │PUT  hospitals │      └─────────────┘  │GET  health  │
+ │POST qr/issue│ │GET  users     │                       │GET  history │
+ │GET  sync    │ │POST users     │                       │GET  claims  │
+ │GET  claims  │ │GET  data-     │                       │GET  /hospital│
+ │POST policies│ │     spaces    │                       │     /outbound│
+ │DEL  policies│ │POST data-     │                       │GET  /insuranc│
+ │POST contracts││     spaces    │                       │     e/inbound│
+ │DEL  contracts│ │GET  data-    │                       └─────────────┘
+ │POST demo/   │ │     flows    │
+ │     reset   │ │POST data-    │
+ │GET  contracts││     flows    │
+ │GET  hospitals│ │PUT  data-    │
+ └─────────────┘ │     flows    │
+     8 total     │GET  audit-   │
+                 │     logs     │
+                 │GET  contracts│
+                 │POST contracts│
+                 │GET  contracts│
+                 │     /:id     │
+                 │POST contracts│
+                 │     /:id/sign│
+                 │GET  patients │
+                 │POST patients │
+                 │GET  visits   │
+                 │POST qrcode/  │
+                 │     generate │
+                 │POST qrcode/  │
+                 │     checkin  │
+                 │GET  qrcode/  │
+                 │     history  │
+                 │GET  claims   │
+                 │GET  contracts│
+                 │     /:id/    │
+                 │     audit-   │
+                 │     trail    │
+                 │GET  data-    │
+                 │     space-   │
+                 │     stats    │
+                 └──────────────┘
+                     15 total
+</code></pre>
+<hr />
+<h2>Issue Summary Table</h2>
+<pre><code> ┌──────┬──────────────────────────────────────┬──────────┐
+ │ Status│ Issue                                │ Impact    │
+ ├──────┼──────────────────────────────────────┼──────────┤
+ │  ✅  │ 7 endpoints matched front/back       │ Runs fine │
+ │  ❌  │ POST /api/qr/verify missing on backend│ Scan verification dead│
+ │  ❌  │ verifyPolicy is pure frontend mock    │ Registration is fake│
+ │  ⚠️  │ AI chat depends on n8n; 500 if not up │ AI unusable│
+ │  ⚠️  │ Frontend mock fallback masks backend  │ Hidden bug│
+ │      │ failures                              │           │
+ │  ⚠️  │ src_0511/api/ legacy code leftovers   │ Confusion │
+ └──────┴──────────────────────────────────────┴──────────┘
+</code></pre>
+<hr />
+<blockquote>
+<p>📁 Related docs:<br />
+- <code>TODO.md</code> — unified task board<br />
+- <code>API_CODE_REVIEW.md</code> — backend API code review<br />
+- <code>BRANCH_STRATEGY.md</code> — branch strategy</p>
+</blockquote></div>
+<div class="only-zh" lang="zh-CN"><blockquote>
 <p>Last updated: 2026-06-18</p>
 </blockquote>
 <hr />
@@ -422,10 +806,35 @@
 - <code>TODO.md</code> — 统一任务看板<br />
 - <code>API_CODE_REVIEW.md</code> — 后端 API 代码审查<br />
 - <code>BRANCH_STRATEGY.md</code> — 分支策略</p>
-</blockquote>
+</blockquote></div>
   </main>
   <footer>
-    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+    <p><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a> · © 2026 Jiazhi (Jasper) Xie</p>
   </footer>
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('site-lang'); } catch (e) {}
+      var lang = stored === 'zh' ? 'zh' : 'en';
+      function apply(l) {
+        document.documentElement.setAttribute('data-lang', l);
+        document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+        var btns = document.querySelectorAll('.lang-btn');
+        for (var i = 0; i < btns.length; i++) {
+          var on = btns[i].getAttribute('data-lang-set') === l;
+          btns[i].classList.toggle('active', on);
+          btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        try { localStorage.setItem('site-lang', l); } catch (e) {}
+      }
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener('click', function () {
+          apply(this.getAttribute('data-lang-set'));
+        });
+      }
+      apply(lang);
+    })();
+</script>
 </body>
 </html>

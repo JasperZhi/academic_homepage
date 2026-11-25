@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,6 +96,33 @@
       background: var(--accent-bg);
     }
 
+    .lang-toggle {
+      display: inline-flex;
+      gap: 0;
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      overflow: hidden;
+      font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .lang-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.85rem;
+      color: var(--muted);
+      font-family: inherit;
+    }
+
+    .lang-btn.active {
+      background: var(--accent-bg);
+      color: var(--heading);
+      font-weight: 600;
+    }
+
     h2 {
       font-size: 1.25rem;
       color: var(--heading);
@@ -179,6 +206,9 @@
       font-size: 0.9rem;
     }
 
+    html[data-lang="en"] .only-zh { display: none; }
+    html[data-lang="zh"] .only-en { display: none; }
+
     @media (max-width: 480px) {
       body {
         font-size: 1rem;
@@ -205,7 +235,7 @@
         color: #000000;
         text-decoration: none;
       }
-      .button {
+      .button, .lang-toggle {
         display: none;
       }
       main, header, footer {
@@ -224,10 +254,14 @@
 
   <header>
     <h1>Jiazhi (Jasper) Xie</h1>
-    <p class="subtitle">Undergraduate in Language Technology at The Chinese University of Hong Kong, Shenzhen</p>
+    <p class="subtitle"><span class="only-en">Undergraduate in Language Technology at The Chinese University of Hong Kong, Shenzhen</span><span class="only-zh" lang="zh-CN">香港中文大学（深圳）语言科技方向本科生</span></p>
     <div class="header-actions">
-      <a class="button" href="cv.pdf" download>Download CV</a>
-      <a class="button" href="mailto:jiazhixie@link.cuhk.edu.cn">Email</a>
+      <a class="button" href="cv.pdf" download><span class="only-en">Download CV</span><span class="only-zh" lang="zh-CN">下载简历</span></a>
+      <a class="button" href="mailto:jiazhixie@link.cuhk.edu.cn"><span class="only-en">Email</span><span class="only-zh" lang="zh-CN">邮件联系</span></a>
+      <div class="lang-toggle" role="group" aria-label="Language / 语言">
+        <button type="button" class="lang-btn active" data-lang-set="en" aria-pressed="true">English</button>
+        <button type="button" class="lang-btn" data-lang-set="zh" aria-pressed="false">中文</button>
+      </div>
     </div>
   </header>
 
@@ -239,121 +273,172 @@
     </figure>
 
     <section id="about">
-      <h2>About</h2>
-      <p>I am an undergraduate at The Chinese University of Hong Kong, Shenzhen,
+      <h2><span class="only-en">About</span><span class="only-zh" lang="zh-CN">关于我</span></h2>
+      <p class="only-en">I am an undergraduate at The Chinese University of Hong Kong, Shenzhen,
       pursuing a B.A. in English Studies (for Professional Purposes) with a stream
       in Language Technology, and a minor in Philosophy. I expect to graduate in
       July 2027. I work at the boundary of linguistics and computation, and I am
       applying to graduate programs in natural language processing and
       computational linguistics.</p>
-      <p>A question runs through my current work: what linguistic structure have
+      <p class="only-zh" lang="zh-CN">我是香港中文大学（深圳）的本科生，攻读英语（职业用途）专业语言科技方向，辅修哲学，预计 2027 年 7 月毕业。我的工作处于语言学与计算的交叉地带，目前正申请自然语言处理与计算语言学方向的研究生项目。</p>
+      <p class="only-en">A question runs through my current work: what linguistic structure have
       large language models absorbed, what have they missed, and how does that
       differ across languages and cultures?</p>
+      <p class="only-zh" lang="zh-CN">贯穿我目前工作的问题是：大语言模型究竟吸收了哪些语言结构、遗漏了哪些，以及这在不同语言和文化之间有何差异？</p>
     </section>
 
     <section id="research-interests">
-      <h2>Research Interests</h2>
-      <ul>
+      <h2><span class="only-en">Research Interests</span><span class="only-zh" lang="zh-CN">研究兴趣</span></h2>
+      <ul class="only-en">
         <li>What linguistic structure language models do and do not capture, and how to evaluate them across languages and cultures</li>
         <li>Computational linguistics and multilingual NLP</li>
         <li>Grounded language and conversational systems</li>
       </ul>
+      <ul class="only-zh" lang="zh-CN">
+        <li>语言模型捕捉与未能捕捉的语言结构，以及跨语言、跨文化的评测方法</li>
+        <li>计算语言学与多语言 NLP</li>
+        <li>具身语言（grounded language）与对话系统</li>
+      </ul>
     </section>
 
     <section id="research">
-      <h2>Research</h2>
+      <h2><span class="only-en">Research</span><span class="only-zh" lang="zh-CN">科研经历</span></h2>
       <div class="entry">
         <h3>AI Gatekeeping and Technographic Power: Longitudinal and Cross-National Evidence from Large Language Models</h3>
-        <p class="entry-meta">Research Assistant, March 2026 to present. Authors: Jun Luo, Jiazhi Xie, Xinqing Li.</p>
-        <p class="status-note">Status: abstract accepted at two conferences in 2026 (Artificial Intelligence, Communication, and Social Transformation, Xi'an Jiaotong-Liverpool University; the 12th International Journal of Press/Politics Conference, Singapore). Not yet published.</p>
-        <p>I took part in design discussions: which models to sample, which topics to compare across countries, and whether to build our own coding framework or adapt a gatekeeping-theory taxonomy written for human editors. I reviewed about 40 related papers on gatekeeping theory, large language models, political bias and methodology; I coded more than 800 LLM-generated paragraphs for categorical and ideological patterns; and I summarized output differences between models.</p>
-        <p>Preliminary observations from my hand-coding: outputs on American crime topics default to a narrow script of guns, domestic violence, and criminal networks, almost regardless of the case; outputs on Chinese political topics default to the government as the narrative actor, almost regardless of who the story is about. Metrics such as cross-entropy can measure such skews, but explaining what they mean for a culture's default script is still mostly manual work.</p>
+        <p class="entry-meta"><span class="only-en">Research Assistant, March 2026 to present. Authors: Jun Luo, Jiazhi Xie, Xinqing Li.</span><span class="only-zh" lang="zh-CN">研究助理，2026 年 3 月至今。作者：罗军、谢佳志、李昕晴。</span></p>
+        <p class="status-note"><span class="only-en">Status: abstract accepted at two conferences in 2026 (Artificial Intelligence, Communication, and Social Transformation, Xi'an Jiaotong-Liverpool University; the 12th International Journal of Press/Politics Conference, Singapore). Not yet published.</span><span class="only-zh" lang="zh-CN">状态：摘要被 2026 年两个会议接收（西交利物浦大学"人工智能、传播与社会转型"会议；新加坡第 12 届 International Journal of Press/Politics 会议）。尚未正式发表论文。</span></p>
+        <p class="only-en">I took part in design discussions: which models to sample, which topics to compare across countries, and whether to build our own coding framework or adapt a gatekeeping-theory taxonomy written for human editors. I reviewed about 40 related papers on gatekeeping theory, large language models, political bias and methodology; I coded more than 800 LLM-generated paragraphs for categorical and ideological patterns; and I summarized output differences between models.</p>
+        <p class="only-zh" lang="zh-CN">我参与了研究设计讨论：抽样哪些模型、跨国比较哪些议题，以及是自建编码框架还是改用面向人类编辑的把关理论分类。我审阅了约 40 篇关于把关理论、大语言模型、政治偏见与研究方法的文献；对 800 余段大模型生成文本按类别与意识形态模式进行了编码；并总结了不同模型输出之间的差异。</p>
+        <p class="only-en">Preliminary observations from my hand-coding: outputs on American crime topics default to a narrow script of guns, domestic violence, and criminal networks, almost regardless of the case; outputs on Chinese political topics default to the government as the narrative actor, almost regardless of who the story is about. Metrics such as cross-entropy can measure such skews, but explaining what they mean for a culture's default script is still mostly manual work.</p>
+        <p class="only-zh" lang="zh-CN">人工编码得到的初步观察：涉及美国犯罪议题时，模型输出几乎不区分具体案件，默认采用枪支、家暴与犯罪网络的狭窄叙事；涉及中国政治议题时，几乎不区分新闻主角，默认把政府作为叙事者。交叉熵等指标可以度量这类偏差，但解释它们对一个文化的默认叙事意味着什么，仍主要依赖人工分析。</p>
       </div>
     </section>
 
     <section id="experience">
-      <h2>Experience</h2>
+      <h2><span class="only-en">Experience</span><span class="only-zh" lang="zh-CN">实习与工作经历</span></h2>
       <div class="entry">
-        <h3>Hong Kong Data Ltd. — Intern and Tech Lead</h3>
-        <p class="entry-meta">Jun 2026 to Sep 2026, Shenzhen</p>
-        <p>Led the HKEdgeApp project (see <a href="#projects">Projects</a>). Established the team's GitHub human collaboration and human–AI collaboration paradigm, documented in BRANCH_STRATEGY.md.</p>
+        <h3><span class="only-en">Hong Kong Data Ltd. — Intern and Tech Lead</span><span class="only-zh" lang="zh-CN">Hong Kong Data Ltd. — 实习生兼技术负责人</span></h3>
+        <p class="entry-meta"><span class="only-en">Jun 2026 to Sep 2026, Shenzhen</span><span class="only-zh" lang="zh-CN">2026 年 6 月至 9 月，深圳</span></p>
+        <p class="only-en">Led the HKEdgeApp project (see <a href="#projects">Projects</a>). Established the team's GitHub human collaboration and human–AI collaboration paradigm, documented in BRANCH_STRATEGY.md.</p>
+        <p class="only-zh" lang="zh-CN">主导 HKEdgeApp 项目（见<a href="#projects">项目</a>）。建立团队的 GitHub 人机协作与人际协作范式，记录于 BRANCH_STRATEGY.md。</p>
       </div>
       <div class="entry">
-        <h3>Boston Consulting Group — Part-time Assistant</h3>
-        <p class="entry-meta">Jun 2025 to Sep 2025, Shenzhen</p>
-        <p>Designed 1000+ ethical AI chatbot responses for a Hong Kong mobile network operator, covering non-factual information, sensitive topics and false-input detection. Researched smart restaurants and AI applications in the supply chain for a strategy case.</p>
+        <h3><span class="only-en">Boston Consulting Group — Part-time Assistant</span><span class="only-zh" lang="zh-CN">波士顿咨询公司（BCG）— 兼职助理</span></h3>
+        <p class="entry-meta"><span class="only-en">Jun 2025 to Sep 2025, Shenzhen</span><span class="only-zh" lang="zh-CN">2025 年 6 月至 9 月，深圳</span></p>
+        <p class="only-en">Designed 1000+ ethical AI chatbot responses for a Hong Kong mobile network operator, covering non-factual information, sensitive topics and false-input detection. Researched smart restaurants and AI applications in the supply chain for a strategy case.</p>
+        <p class="only-zh" lang="zh-CN">为一家香港移动网络运营商设计 1000 余条 AI 聊天机器人的合规回复，覆盖非事实性信息、敏感话题与异常输入识别。为一项战略案例研究智慧餐厅与供应链中的 AI 应用。</p>
       </div>
       <div class="entry">
-        <h3>Shenzhen Research Institute of Big Data — Intern</h3>
-        <p class="entry-meta">Sep 2024 to Mar 2025</p>
-        <p>Web-crawled 700+ medical guidelines to build the database for a team project on multilingual alignment of medical terms and knowledge, intended for future AI applications in medical science and hospitals. Also assisted in designing an automatic medical checklist workflow (AI-Adapt) that checks whether a medical guideline is qualified for implementation.</p>
+        <h3><span class="only-en">Shenzhen Research Institute of Big Data — Intern</span><span class="only-zh" lang="zh-CN">深圳大数据研究院 — 实习生</span></h3>
+        <p class="entry-meta"><span class="only-en">Sep 2024 to Mar 2025</span><span class="only-zh" lang="zh-CN">2024 年 9 月至 2025 年 3 月</span></p>
+        <p class="only-en">Web-crawled 700+ medical guidelines to build the database for a team project on multilingual alignment of medical terms and knowledge, intended for future AI applications in medical science and hospitals. Also assisted in designing an automatic medical checklist workflow (AI-Adapt) that checks whether a medical guideline is qualified for implementation.</p>
+        <p class="only-zh" lang="zh-CN">爬取 700 余份医学指南，为一个医学名词与知识多语言对齐的团队项目构建数据库，用于未来医学与医院场景的 AI 应用。同时协助设计自动医学清单工作流（AI-Adapt），用于检查医学指南是否具备落地实施条件。</p>
       </div>
       <div class="entry">
-        <h3>Shenzhen Today Talent Information Technology Co., Ltd. — NLP Algorithm Intern</h3>
-        <p class="entry-meta">May 2024 to Aug 2024</p>
-        <p>Reproduced code for state-of-the-art algorithms including BERT and Transformer, working through the basics of machine learning and neural networks; did prompt engineering on agents for government-facing scenarios; tested retrieval-augmented generation in LangChain.</p>
+        <h3><span class="only-en">Shenzhen Today Talent Information Technology Co., Ltd. — NLP Algorithm Intern</span><span class="only-zh" lang="zh-CN">深圳市今日人才信息科技有限公司 — NLP 算法实习生</span></h3>
+        <p class="entry-meta"><span class="only-en">May 2024 to Aug 2024</span><span class="only-zh" lang="zh-CN">2024 年 5 月至 8 月</span></p>
+        <p class="only-en">Reproduced code for state-of-the-art algorithms including BERT and Transformer, working through the basics of machine learning and neural networks; did prompt engineering on agents for government-facing scenarios; tested retrieval-augmented generation in LangChain.</p>
+        <p class="only-zh" lang="zh-CN">复现 BERT、Transformer 等前沿算法代码，系统学习机器学习与神经网络基础；面向政务场景的智能体做提示词工程；在 LangChain 中测试检索增强生成（RAG）。</p>
       </div>
     </section>
 
     <section id="projects">
-      <h2>Projects</h2>
+      <h2><span class="only-en">Projects</span><span class="only-zh" lang="zh-CN">项目经历</span></h2>
       <div class="entry">
         <h3>HKEdgeApp</h3>
-        <p>A cross-border Hong Kong-Shenzhen medical data application for iOS and Android with 19 front-end screens, 14 API modules, 57 documented files and 64 GitHub commits, built by a team of four developers through a school-enterprise internship with Hong Kong Data Ltd. I led the technical side, wrote the team's Git collaboration rules (documented in BRANCH_STRATEGY.md so they could outlive any one member), and reported jointly to our company mentor and the director of the university's AI institute. After the internship, the project was handed over and is now carried forward by engineers at China Unicom. The code repository is private; the <a href="hkedgeapp.html">project page</a> contains an app demo, screenshots, the system architecture diagram, a feature map and the branch strategy documentation.</p>
+        <p class="only-en">A cross-border Hong Kong-Shenzhen medical data application for iOS and Android with 19 front-end screens, 14 API modules, 57 documented files and 64 GitHub commits, built by a team of four developers through a school-enterprise internship with Hong Kong Data Ltd. I led the technical side, wrote the team's Git collaboration rules (documented in BRANCH_STRATEGY.md so they could outlive any one member), and reported jointly to our company mentor and the director of the university's AI institute. After the internship, the project was handed over and is now carried forward by engineers at China Unicom. The code repository is private; the <a href="hkedgeapp.html">project page</a> contains an app demo, screenshots, the system architecture diagram, a feature map and the branch strategy documentation.</p>
+        <p class="only-zh" lang="zh-CN">一款面向 iOS 和 Android 的跨境港深医疗数据应用，包含 19 个前端页面、14 个 API 模块、57 份文档和 64 次 GitHub 提交，由四人开发团队在与 Hong Kong Data Ltd. 的校企实习中完成。我负责技术侧，编写团队的 Git 协作规范（记录于 BRANCH_STRATEGY.md，使其不依赖任何单一成员），并向企业导师与学院人工智能研究院院长双线汇报。实习结束后项目完成交接，目前由中国联通工程师继续推进。代码仓库为私有；<a href="hkedgeapp.html">项目详情页</a>包含应用演示、截图、系统架构图、功能地图与分支策略文档。</p>
       </div>
     </section>
 
     <section id="leadership">
-      <h2>Leadership and Community</h2>
-      <ul>
+      <h2><span class="only-en">Leadership and Community</span><span class="only-zh" lang="zh-CN">领导力与社区</span></h2>
+      <ul class="only-en">
         <li>Co-founder, Linguistic Science Association, CUHK-Shenzhen (200+ students), Sep 2025 to present</li>
         <li>Co-founder and Captain, Public Speaking Team, CUHK-Shenzhen (30+ members; hosted 3 campus events, including the 21st Century Cup and an impromptu contest; the team won 20+ medals), Nov 2024 to Sep 2025</li>
         <li>Group Leader, Oxford Prospect Program, STEM Track, Jul 2026 to Aug 2026; our group won Best Presentation (1 of 6 groups)</li>
         <li>Founder of a student group of 20+ students from several years interested in computational linguistics and translation technology</li>
       </ul>
+      <ul class="only-zh" lang="zh-CN">
+        <li>香港中文大学（深圳）语言学科学协会联合创始人（200 余名成员），2025 年 9 月至今</li>
+        <li>香港中文大学（深圳）演讲队联合创始人兼队长（30 余名成员；主办 3 场校园赛事，包括"21 世纪杯"与即兴演讲赛；队伍累计获奖牌 20 余枚），2024 年 11 月至 2025 年 9 月</li>
+        <li>Oxford Prospect Program STEM 方向小组组长，2026 年 7 月至 8 月；所在小组获最佳展示奖（6 组中 1 个）</li>
+        <li>发起一个由跨年级 20 余名学生组成、关注计算语言学与翻译技术的学生小组</li>
+      </ul>
     </section>
 
     <section id="education">
-      <h2>Education</h2>
+      <h2><span class="only-en">Education</span><span class="only-zh" lang="zh-CN">教育背景</span></h2>
       <div class="entry">
-        <h3>The Chinese University of Hong Kong, Shenzhen</h3>
-        <p class="entry-meta">Sep 2023 to Jul 2027 (expected)</p>
-        <p>B.A. in English Studies (for Professional Purposes), Language Technology stream; minor in Philosophy.</p>
-        <p>GPA 3.63/4.00 (major GPA 3.74/4.00). First Honor (expected). Four-Year Half Admission Scholarship. Dean's List 2023–24, 2024–25, 2025–26.</p>
-        <p>Selected coursework: Logic, Syntax, Semantics, Cognitive Linguistics, Phonetics and Phonology, Python, Data Structures and Algorithms, Calculus, Linear Algebra, Discrete Mathematics, Probability and Statistics, Modern Optimization, Fundamentals of Speech and Language Processing.</p>
+        <h3><span class="only-en">The Chinese University of Hong Kong, Shenzhen</span><span class="only-zh" lang="zh-CN">香港中文大学（深圳）</span></h3>
+        <p class="entry-meta"><span class="only-en">Sep 2023 to Jul 2027 (expected)</span><span class="only-zh" lang="zh-CN">2023 年 9 月至 2027 年 7 月（预计）</span></p>
+        <p><span class="only-en">B.A. in English Studies (for Professional Purposes), Language Technology stream; minor in Philosophy.</span><span class="only-zh" lang="zh-CN">英语（职业用途）专业语言科技方向文学学士；辅修哲学。</span></p>
+        <p><span class="only-en">GPA 3.63/4.00 (major GPA 3.74/4.00). First Honor (expected). Four-Year Half Admission Scholarship. Dean's List 2023–24, 2024–25, 2025–26.</span><span class="only-zh" lang="zh-CN">GPA 3.63/4.00（专业 GPA 3.74/4.00）。预计获一等荣誉毕业。四年半额入学奖学金。2023–24、2024–25、2025–26 学年院长名单（Dean's List）。</span></p>
+        <p><span class="only-en">Selected coursework: Logic, Syntax, Semantics, Cognitive Linguistics, Phonetics and Phonology, Python, Data Structures and Algorithms, Calculus, Linear Algebra, Discrete Mathematics, Probability and Statistics, Modern Optimization, Fundamentals of Speech and Language Processing.</span><span class="only-zh" lang="zh-CN">部分课程：逻辑学、句法学、语义学、认知语言学、语音学与音系学、Python、数据结构与算法、微积分、线性代数、离散数学、概率论与数理统计、现代最优化方法、语音与语言处理基础。</span></p>
       </div>
     </section>
 
     <section id="awards">
-      <h2>Awards</h2>
-      <ul>
+      <h2><span class="only-en">Awards</span><span class="only-zh" lang="zh-CN">获奖情况</span></h2>
+      <ul class="only-en">
         <li>FLTRP "Understanding Contemporary China" contest: 2023 Beijing final, National Gold (English writing), National Silver (reading), National Bronze (comprehensive communication); 2024 Zhuhai semi-final, Provincial Gold (public speaking), Provincial Silver (comprehensive)</li>
         <li>Oxford Prospect Program, STEM Track: Best Presentation Group (1 of 6), for the group's self-sustaining engineering solution for a Venus habitat</li>
         <li>Excellent Camper, CUHK-Shenzhen Leadership Camp, March 2024 (1 of 30 core students)</li>
       </ul>
+      <ul class="only-zh" lang="zh-CN">
+        <li>"外研社·国才杯""理解当代中国"全国大学生外语能力大赛：2023 年北京决赛，写作国赛金奖、阅读国赛银奖、国际传播力国赛铜奖；2024 年珠海省赛，演讲省级金奖、综合能力省级银奖</li>
+        <li>Oxford Prospect Program STEM 方向：最佳展示小组（6 组中 1 个），方案为金星栖息地的自维持工程方案</li>
+        <li>香港中文大学（深圳）领导力训练营优秀营员，2024 年 3 月（30 名核心营员中 1 名）</li>
+      </ul>
     </section>
 
     <section id="skills">
-      <h2>Skills</h2>
-      <p><strong>Technical:</strong> Python, Java, STATA, Git, Linux.</p>
-      <p><strong>Languages:</strong> Mandarin (native), English (IELTS 8.0), Cantonese (business proficiency), French and Russian (beginner).</p>
-      <p><strong>Interests:</strong> public speaking and debating, board games, philosophy, hiking, travelling.</p>
+      <h2><span class="only-en">Skills</span><span class="only-zh" lang="zh-CN">技能</span></h2>
+      <p><span class="only-en"><strong>Technical:</strong> Python, Java, STATA, Git, Linux.</span><span class="only-zh" lang="zh-CN"><strong>技术：</strong>Python、Java、STATA、Git、Linux。</span></p>
+      <p><span class="only-en"><strong>Languages:</strong> Mandarin (native), English (IELTS 8.0), Cantonese (business proficiency), French and Russian (beginner).</span><span class="only-zh" lang="zh-CN"><strong>语言：</strong>普通话（母语）、英语（雅思 8.0）、粤语（商务水平）、法语与俄语（初级）。</span></p>
+      <p><span class="only-en"><strong>Interests:</strong> public speaking and debating, board games, philosophy, hiking, travelling.</span><span class="only-zh" lang="zh-CN"><strong>兴趣：</strong>演讲与辩论、桌游、哲学、徒步、旅行。</span></p>
     </section>
 
     <section id="contact">
-      <h2>Contact</h2>
+      <h2><span class="only-en">Contact</span><span class="only-zh" lang="zh-CN">联系方式</span></h2>
       <ul>
-        <li>Email: <a href="mailto:jiazhixie@link.cuhk.edu.cn">jiazhixie@link.cuhk.edu.cn</a></li>
-        <li>GitHub: <a href="https://github.com/JasperZhi" rel="noopener">github.com/JasperZhi</a></li>
-        <li>CV: <a href="cv.pdf">cv.pdf</a></li>
+        <li><span class="only-en">Email:</span><span class="only-zh" lang="zh-CN">邮箱：</span> <a href="mailto:jiazhixie@link.cuhk.edu.cn">jiazhixie@link.cuhk.edu.cn</a></li>
+        <li><span class="only-en">GitHub:</span><span class="only-zh" lang="zh-CN">GitHub：</span> <a href="https://github.com/JasperZhi" rel="noopener">github.com/JasperZhi</a></li>
+        <li><span class="only-en">CV:</span><span class="only-zh" lang="zh-CN">简历：</span> <a href="cv.pdf">cv.pdf</a></li>
       </ul>
     </section>
 
   </main>
 
   <footer>
-    <p>© 2026 Jiazhi (Jasper) Xie. Last updated: November 2026.</p>
+    <p>© 2026 Jiazhi (Jasper) Xie. <span class="only-en">Last updated: November 2026.</span><span class="only-zh" lang="zh-CN">最后更新：2026 年 11 月。</span></p>
   </footer>
+
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('site-lang'); } catch (e) {}
+      var lang = stored === 'zh' ? 'zh' : 'en';
+      function apply(l) {
+        document.documentElement.setAttribute('data-lang', l);
+        document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+        var btns = document.querySelectorAll('.lang-btn');
+        for (var i = 0; i < btns.length; i++) {
+          var on = btns[i].getAttribute('data-lang-set') === l;
+          btns[i].classList.toggle('active', on);
+          btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        try { localStorage.setItem('site-lang', l); } catch (e) {}
+      }
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener('click', function () {
+          apply(this.getAttribute('data-lang-set'));
+        });
+      }
+      apply(lang);
+    })();
+  </script>
 
 </body>
 </html>

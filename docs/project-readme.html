@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Project README — HKEdgeApp | Jiazhi (Jasper) Xie</title>
-  <meta name="description" content="Project documentation, rendered from GITHUB_README.md for the HKEdgeApp project.">
+  <meta name="description" content="Project README for the HKEdgeApp project, available in English and Chinese.">
   <style>
     :root {
       --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
@@ -60,23 +60,211 @@
     th { background: var(--pre-bg); }
     hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
     footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    .lang-toggle {
+      display: inline-flex; gap: 0; border: 1px solid var(--rule);
+      border-radius: 999px; overflow: hidden; margin-top: 0.9rem;
+    }
+    .lang-btn {
+      appearance: none; border: none; background: transparent; cursor: pointer;
+      font: inherit; font-size: 0.9rem; padding: 0.25rem 0.9rem;
+      color: var(--muted); font-family: inherit;
+    }
+    .lang-btn.active { background: var(--pre-bg); color: var(--heading); font-weight: 600; }
+    .lang-note { color: var(--muted); font-size: 0.9rem; margin-top: 0.8rem; }
+    html[data-lang="en"] .only-zh { display: none; }
+    html[data-lang="zh"] .only-en { display: none; }
     @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
     @media print {
       body { background: #ffffff; color: #000000; font-size: 10pt; }
       h1, h2, h3, h4 { color: #000000; }
       a { color: #000000; text-decoration: none; }
       pre, code { background: #f4f4f4; }
+      .lang-toggle, .lang-note { display: none; }
     }
 </style>
 </head>
 <body>
   <header>
-    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <p class="back"><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a></p>
     <h1>Project README</h1>
-    <p class="subtitle">Project documentation, rendered from GITHUB_README.md · reproduced from the private project repository</p>
+    <p class="subtitle"><span class="only-en">Project documentation · reproduced from the private project repository</span><span class="only-zh" lang="zh-CN">项目文档 · 转载自私有项目仓库</span></p>
+    
+    <div class="lang-toggle" role="group" aria-label="Language / 语言">
+      <button type="button" class="lang-btn active" data-lang-set="en" aria-pressed="true">English</button>
+      <button type="button" class="lang-btn" data-lang-set="zh" aria-pressed="false">中文</button>
+    </div>
+
   </header>
   <main>
-    <p>一个基于 React Native 的健康险管理移动应用。</p>
+    <div class="only-en"><p class="lang-note only-en">English translation of the original Chinese document.</p>
+<p>A React Native mobile application for health insurance management.</p>
+<h2>About This Project</h2>
+<p>A health insurance management app providing policy lookup, activity management, and related features.</p>
+<h2>Requirements</h2>
+<ul>
+<li>Node.js &gt;= 22.11.0</li>
+<li>Xcode (iOS development)</li>
+<li>Cocoapods</li>
+<li>Android Studio (optional, for Android development)</li>
+</ul>
+<h2>Quick Start</h2>
+<h3>1. Clone the project</h3>
+<pre><code class="language-bash">git clone &lt;your-github-repo-url&gt;
+cd HKEdgeApp
+</code></pre>
+<h3>2. Install dependencies</h3>
+<pre><code class="language-bash">npm install
+</code></pre>
+<h3>3. Local configuration (important!)</h3>
+<h4>iOS configuration</h4>
+<p><strong>⚠️ Configuration files that require local changes:</strong></p>
+<ol>
+<li><strong><code>ios/.xcode.env.local</code></strong> (must be created on your machine)</li>
+</ol>
+<p>Create the file and fill in your Node.js path:<br />
+<code>export NODE_BINARY=&lt;YOUR_NODE_PATH&gt;</code></p>
+<p>How to find your Node.js path:<br />
+<code>bash
+   which node</code></p>
+<p>Example output:<br />
+<code>/opt/homebrew/bin/node</code></p>
+<ol start="2">
+<li><strong>Install Pods dependencies</strong><br />
+<code>bash
+   cd ios
+   pod install
+   cd ..</code></li>
+</ol>
+<h3>4. Run the app</h3>
+<h4>iOS simulator</h4>
+<p>Start the Metro server:</p>
+<pre><code class="language-bash">npm start
+</code></pre>
+<p>In a new terminal, run iOS:</p>
+<pre><code class="language-bash">npm run ios
+# or specify a simulator
+npx react-native run-ios --simulator=&quot;iPhone 15&quot;
+</code></pre>
+<h4>Android emulator</h4>
+<pre><code class="language-bash">npm run android
+</code></pre>
+<h2>Project Structure</h2>
+<pre><code>HKEdgeApp/
+├── App.tsx                    # App entry component
+├── api/                       # API calls
+├── assets/                    # Static assets
+├── components/                # Shared components
+├── constants/                 # Constants and configuration
+├── context/                   # React Context
+├── screen/                    # Screen components
+├── ios/                       # iOS native code
+│   ├── HKEdgeApp/
+│   ├── HKEdgeApp.xcodeproj/
+│   ├── HKEdgeApp.xcworkspace/
+│   ├── Podfile
+│   ├── .xcode.env             # Global configuration (committed)
+│   └── .xcode.env.local       # Local configuration (not committed, create it yourself)
+└── android/                   # Android native code
+</code></pre>
+<h2>Files Requiring Local Configuration</h2>
+<h3>Local files not committed to Git (placeholder explanations)</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Description</th>
+<th>Example value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ios/.xcode.env.local</code></td>
+<td>Node.js path configuration</td>
+<td><code>export NODE_BINARY=/opt/homebrew/bin/node</code></td>
+</tr>
+<tr>
+<td><code>ios/Pods/</code></td>
+<td>Cocoapods dependencies</td>
+<td>Generated automatically</td>
+</tr>
+<tr>
+<td><code>node_modules/</code></td>
+<td>npm dependencies</td>
+<td>Generated automatically</td>
+</tr>
+<tr>
+<td><code>android/local.properties</code></td>
+<td>Android SDK path</td>
+<td>Generated automatically</td>
+</tr>
+</tbody>
+</table>
+<h3>Global configuration files that are committed</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ios/.xcode.env</code></td>
+<td>Global Node.js configuration template</td>
+</tr>
+<tr>
+<td><code>ios/Podfile</code></td>
+<td>Cocoapods dependency definitions</td>
+</tr>
+<tr>
+<td><code>package.json</code></td>
+<td>npm dependency definitions</td>
+</tr>
+</tbody>
+</table>
+<h2>FAQ</h2>
+<h3>1. iOS build failure - wrong Node.js path</h3>
+<p><strong>Error message</strong>:</p>
+<pre><code>/Users/.../Script-...sh: line 9: /opt/homebrew/Cellar/node/.../bin/node: No such file or directory
+</code></pre>
+<p><strong>Solution</strong>:<br />
+Create the <code>ios/.xcode.env.local</code> file with the correct Node.js path:</p>
+<pre><code class="language-bash"># Find your Node.js path
+which node
+# Example output: /opt/homebrew/bin/node
+
+# Create the configuration file
+echo &quot;export NODE_BINARY=/opt/homebrew/bin/node&quot; &gt; ios/.xcode.env.local
+</code></pre>
+<h3>2. iOS build failure - xcscheme not found</h3>
+<p><strong>Error message</strong>:</p>
+<pre><code>error Could not load the shared scheme for HKEdgeApp
+</code></pre>
+<p><strong>Solution</strong>:<br />
+Make sure the file <code>ios/HKEdgeApp.xcodeproj/xcshareddata/xcschemes/HKEdgeApp.xcscheme</code> exists. If it is missing, use the default file included in the project.</p>
+<h3>3. pod install fails</h3>
+<p><strong>Solution</strong>:</p>
+<pre><code class="language-bash">cd ios
+pod deintegrate
+pod install --repo-update
+</code></pre>
+<h3>4. Metro cache issues</h3>
+<p><strong>Solution</strong>:</p>
+<pre><code class="language-bash">npm start -- --reset-cache
+</code></pre>
+<h2>Tech Stack</h2>
+<ul>
+<li>React Native 0.85.3</li>
+<li>React Navigation</li>
+<li>React Native Vector Icons</li>
+<li>React Native SVG</li>
+<li>Axios</li>
+</ul>
+<h2>License</h2>
+<p>This project is for learning purposes only.</p>
+<h2>Contributing</h2>
+<p>Issues and Pull Requests are welcome!</p></div>
+<div class="only-zh" lang="zh-CN"><p>一个基于 React Native 的健康险管理移动应用。</p>
 <h2>项目说明</h2>
 <p>这是一个健康险管理应用，提供保单查询、活动管理等功能。</p>
 <h2>环境要求</h2>
@@ -242,10 +430,35 @@ pod install --repo-update
 <h2>许可证</h2>
 <p>本项目仅供学习使用。</p>
 <h2>贡献</h2>
-<p>欢迎提交 Issue 和 Pull Request！</p>
+<p>欢迎提交 Issue 和 Pull Request！</p></div>
   </main>
   <footer>
-    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+    <p><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a> · © 2026 Jiazhi (Jasper) Xie</p>
   </footer>
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('site-lang'); } catch (e) {}
+      var lang = stored === 'zh' ? 'zh' : 'en';
+      function apply(l) {
+        document.documentElement.setAttribute('data-lang', l);
+        document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+        var btns = document.querySelectorAll('.lang-btn');
+        for (var i = 0; i < btns.length; i++) {
+          var on = btns[i].getAttribute('data-lang-set') === l;
+          btns[i].classList.toggle('active', on);
+          btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        try { localStorage.setItem('site-lang', l); } catch (e) {}
+      }
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener('click', function () {
+          apply(this.getAttribute('data-lang-set'));
+        });
+      }
+      apply(lang);
+    })();
+</script>
 </body>
 </html>

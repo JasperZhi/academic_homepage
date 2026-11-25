@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Team Git Collaboration Guide — HKEdgeApp | Jiazhi (Jasper) Xie</title>
-  <meta name="description" content="Project documentation, rendered from git_collaboration_guide.md for the HKEdgeApp project.">
+  <meta name="description" content="Team Git Collaboration Guide for the HKEdgeApp project, available in English and Chinese.">
   <style>
     :root {
       --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
@@ -60,23 +60,115 @@
     th { background: var(--pre-bg); }
     hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
     footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    .lang-toggle {
+      display: inline-flex; gap: 0; border: 1px solid var(--rule);
+      border-radius: 999px; overflow: hidden; margin-top: 0.9rem;
+    }
+    .lang-btn {
+      appearance: none; border: none; background: transparent; cursor: pointer;
+      font: inherit; font-size: 0.9rem; padding: 0.25rem 0.9rem;
+      color: var(--muted); font-family: inherit;
+    }
+    .lang-btn.active { background: var(--pre-bg); color: var(--heading); font-weight: 600; }
+    .lang-note { color: var(--muted); font-size: 0.9rem; margin-top: 0.8rem; }
+    html[data-lang="en"] .only-zh { display: none; }
+    html[data-lang="zh"] .only-en { display: none; }
     @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
     @media print {
       body { background: #ffffff; color: #000000; font-size: 10pt; }
       h1, h2, h3, h4 { color: #000000; }
       a { color: #000000; text-decoration: none; }
       pre, code { background: #f4f4f4; }
+      .lang-toggle, .lang-note { display: none; }
     }
 </style>
 </head>
 <body>
   <header>
-    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <p class="back"><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a></p>
     <h1>Team Git Collaboration Guide</h1>
-    <p class="subtitle">Project documentation, rendered from git_collaboration_guide.md · reproduced from the private project repository</p>
+    <p class="subtitle"><span class="only-en">Project documentation · reproduced from the private project repository</span><span class="only-zh" lang="zh-CN">项目文档 · 转载自私有项目仓库</span></p>
+    
+    <div class="lang-toggle" role="group" aria-label="Language / 语言">
+      <button type="button" class="lang-btn active" data-lang-set="en" aria-pressed="true">English</button>
+      <button type="button" class="lang-btn" data-lang-set="zh" aria-pressed="false">中文</button>
+    </div>
+
   </header>
   <main>
-    <p>本文件整理了关于项目代码管理、本地调试与 GitHub 云端同步的常见问题解答（Q&amp;A），并制定了初步的团队代码管理规范，旨在帮助团队成员安全、高效地进行多人协作开发。</p>
+    <div class="only-en"><p class="lang-note only-en">English translation of the original Chinese document.</p>
+<p>This document compiles frequently asked questions (Q&amp;A) about project code management, local debugging, and GitHub cloud synchronization, and establishes an initial set of team code management guidelines, aiming to help team members collaborate in multi-person development safely and efficiently.</p>
+<hr />
+<h2>📅 Part 1: Git Collaboration Q&amp;A (Addressing Concerns)</h2>
+<h3>Q1: The local directory clones all the code — will the files be huge and slow down local builds?</h3>
+<ul>
+<li><strong>No.</strong></li>
+<li>The [.gitignore] in the repository already filters out bulky third-party dependency packages (such as <code>node_modules</code>) and temporary cache directories produced by builds (such as Android/iOS build artifacts).</li>
+<li>The local Git directory is very small and lightweight. When debugging locally, the simulator reads these source files and hot-compiles them locally, without consuming extra cloud or Git storage.</li>
+</ul>
+<h3>Q2: A teammate updated the code in the cloud — how do I make sure pulling updates locally does not overwrite the code I am working on?</h3>
+<ul>
+<li><strong>Git has a safe conflict-blocking mechanism</strong>. If you have unsaved local changes and there is a risk of conflict when running <code>git pull</code> directly, Git will refuse the merge and issue a warning; it will never silently overwrite your work.</li>
+<li><strong>Best practice for safe syncing (the Stash method)</strong>:<br />
+  1. Run <code>git stash</code> to temporarily place your current changes into a "safe box";<br />
+  2. Run <code>git pull --rebase</code> to fetch the latest changes from the cloud;<br />
+  3. Run <code>git stash pop</code> to restore your changes on top of the latest code.</li>
+</ul>
+<h3>Q3: What should I do if a code conflict (Conflict) occurs?</h3>
+<ul>
+<li>When you and a teammate have modified the same line of the same file, running <code>git stash pop</code> or merging will report a <code>Conflict</code>.</li>
+<li>The conflicted file will then have special marker lines inserted (such as <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> and <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>), marking your code and your teammate's code respectively.</li>
+<li><strong>How to handle it</strong>:<br />
+  1. Carefully compare both sides' code logic, manually choose which side to keep, or combine the two.<br />
+  2. After confirming the result is correct, delete the marker lines and save the file again.<br />
+  3. In the chat, you can also send the conflicting code or the output of <code>git diff</code> directly to the AI assistant; the AI will automatically analyze the cause for you and provide the safest, most sensible merge plan.</li>
+</ul>
+<h3>Q4: What are the <code>main</code> branch and other branches for? How are they used when reporting results?</h3>
+<ul>
+<li><strong>The <code>main</code> branch</strong> represents the most stable, runnable online version; untested code must never be developed directly on it.</li>
+<li><strong><code>feature</code> branches</strong> are independent development sandboxes. Each developer should create a new branch when developing a feature (e.g. <code>feature/3.1-qr-gen</code>).</li>
+<li><strong>Advantage for milestone reporting</strong>:<br />
+  When reporting Phase 2 results, even if others are developing Phase 3 with unfinished code, you only need to run <code>git checkout feature/phase2-outcome</code> locally to switch to the Phase 2 branch, and the simulator will run only that phase's clean code, ensuring a flawless demo.</li>
+</ul>
+<hr />
+<h2>📝 Part 2: Team Code Management Guidelines (Initial)</h2>
+<p>To standardize team development, all team members should strictly follow the collaboration workflow below:</p>
+<h3>1. Branch naming conventions</h3>
+<p>All new features or bug fixes must branch off from the latest <code>main</code> branch; pushing directly to <code>main</code> is prohibited.<br />
+* <strong>New feature branches</strong>: <code>feature/&lt;task-number&gt;-&lt;short-feature-name&gt;</code> (e.g. <code>feature/2.1-preview</code>)<br />
+* <strong>Bug fix branches</strong>: <code>fix/&lt;task-number&gt;-&lt;short-defect-name&gt;</code> (e.g. <code>fix/1.3-stale-closure</code>)</p>
+<h3>2. Daily sync and development workflow</h3>
+<p>Developers are advised to run the following standard procedure at the start and end of each coding day:</p>
+<pre><code class="language-bash"># 1. Switch back to the main branch and get the latest updates
+git checkout main
+git pull
+
+# 2. Create or switch to your own feature branch
+git checkout -b feature/your-feature-name  # new feature
+# or
+git checkout feature/your-feature-name     # continue an existing feature
+
+# 3. Merge the latest updates from the main branch (to prevent excessive divergence)
+git merge main
+</code></pre>
+<h3>3. Commit and push</h3>
+<ul>
+<li><strong>Commit message format</strong>:</li>
+<li>New feature: <code>feat: brief description of the new feature (refs #task-id)</code></li>
+<li>Bug fix: <code>fix: brief description of the fixed problem (refs #task-id)</code></li>
+<li>Documentation update: <code>docs: which documents were changed</code></li>
+<li><strong>Push to the cloud</strong>:<br />
+<code>bash
+  git push origin feature/your-feature-name</code></li>
+</ul>
+<h3>4. Code review and merging (Pull Request)</h3>
+<ul>
+<li>Once a feature is complete and has passed test evaluation on the local simulator, open a <strong>Pull Request (PR)</strong> on GitHub targeting <code>main</code>.</li>
+<li>At least <strong>1 other team member</strong> must review the code and confirm testing before it can be merged (Merge) into the <code>main</code> branch.</li>
+</ul>
+<hr />
+<p>It is hoped that all team members will jointly follow the above guidelines and work together to maintain the code security and stability of the HKEdgeApp project!</p></div>
+<div class="only-zh" lang="zh-CN"><p>本文件整理了关于项目代码管理、本地调试与 GitHub 云端同步的常见问题解答（Q&amp;A），并制定了初步的团队代码管理规范，旨在帮助团队成员安全、高效地进行多人协作开发。</p>
 <hr />
 <h2>📅 第一部分：Git 协作 Q&amp;A (疑虑解答)</h2>
 <h3>Q1：本地目录克隆了所有代码，文件会不会很大，影响本地编译？</h3>
@@ -146,10 +238,35 @@ git merge main
 <li>团队中至少需要 <strong>1 位其他成员</strong> 审查代码并确认测试无误后，方可合并（Merge）至 <code>main</code> 主分支。</li>
 </ul>
 <hr />
-<p>希望团队成员能共同遵守以上规范，共同维护 HKEdgeApp 项目的代码安全与稳定性！</p>
+<p>希望团队成员能共同遵守以上规范，共同维护 HKEdgeApp 项目的代码安全与稳定性！</p></div>
   </main>
   <footer>
-    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+    <p><a href="../hkedgeapp.html"><span class="only-en">← Back to HKEdgeApp project page</span><span class="only-zh" lang="zh-CN">← 返回 HKEdgeApp 项目页</span></a> · © 2026 Jiazhi (Jasper) Xie</p>
   </footer>
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('site-lang'); } catch (e) {}
+      var lang = stored === 'zh' ? 'zh' : 'en';
+      function apply(l) {
+        document.documentElement.setAttribute('data-lang', l);
+        document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+        var btns = document.querySelectorAll('.lang-btn');
+        for (var i = 0; i < btns.length; i++) {
+          var on = btns[i].getAttribute('data-lang-set') === l;
+          btns[i].classList.toggle('active', on);
+          btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        try { localStorage.setItem('site-lang', l); } catch (e) {}
+      }
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener('click', function () {
+          apply(this.getAttribute('data-lang-set'));
+        });
+      }
+      apply(lang);
+    })();
+</script>
 </body>
 </html>

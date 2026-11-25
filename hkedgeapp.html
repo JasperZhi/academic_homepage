@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HKEdgeApp — Project Details | Jiazhi (Jasper) Xie</title>
-  <meta name="description" content="HKEdgeApp: a cross-border Hong Kong–Shenzhen medical data application. Project details, app demo, system architecture diagram, screenshots, feature map and Git branch strategy documentation.">
+  <meta name="description" content="HKEdgeApp: a cross-border Hong Kong–Shenzhen medical data application. Project details, app demo, system architecture diagram, screenshots, feature map and Git branch strategy documentation. Available in English and Chinese.">
   <style>
     :root {
       --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
@@ -51,6 +51,18 @@
     .shots figure { margin: 0; }
     .shots img { border: 1px solid var(--rule); border-radius: 6px; }
     footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    .lang-toggle {
+      display: inline-flex; gap: 0; border: 1px solid var(--rule);
+      border-radius: 999px; overflow: hidden; margin-top: 0.9rem;
+    }
+    .lang-btn {
+      appearance: none; border: none; background: transparent; cursor: pointer;
+      font: inherit; font-size: 0.9rem; padding: 0.25rem 0.9rem;
+      color: var(--muted); font-family: inherit;
+    }
+    .lang-btn.active { background: var(--accent-bg); color: var(--heading); font-weight: 600; }
+    html[data-lang="en"] .only-zh { display: none; }
+    html[data-lang="zh"] .only-en { display: none; }
     @media (max-width: 480px) {
       body { font-size: 1rem; padding: 0 1rem; }
       h1 { font-size: 1.5rem; }
@@ -61,79 +73,92 @@
       h1, h2, h3 { color: #000000; }
       a { color: #000000; text-decoration: none; }
       video { display: none; }
+      .lang-toggle { display: none; }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <p class="back"><a href="index.html">← Back to academic homepage</a></p>
-    <h1>HKEdgeApp — Project Details</h1>
+    <p class="back"><a href="index.html"><span class="only-en">← Back to academic homepage</span><span class="only-zh" lang="zh-CN">← 返回学术主页</span></a></p>
+    <h1><span class="only-en">HKEdgeApp — Project Details</span><span class="only-zh" lang="zh-CN">HKEdgeApp — 项目详情</span></h1>
     <p class="subtitle">Jiazhi (Jasper) Xie · Hong Kong Data Ltd. · Jun–Sep 2026</p>
+    <div class="lang-toggle" role="group" aria-label="Language / 语言">
+      <button type="button" class="lang-btn active" data-lang-set="en" aria-pressed="true">English</button>
+      <button type="button" class="lang-btn" data-lang-set="zh" aria-pressed="false">中文</button>
+    </div>
   </header>
 
   <main>
 
     <section id="overview">
-      <h2>Overview</h2>
-      <p>HKEdgeApp is a cross-border Hong Kong–Shenzhen medical data application for iOS and Android, built through a school-enterprise internship with Hong Kong Data Ltd. It supports the flow for Hong Kong residents seeking medical treatment in mainland China: identity verification and insurance binding, a cross-border medical QR code, claims submission and tracking, and hospital-side claim verification.</p>
-      <p>The application consists of 19 front-end screens, 14 API modules, 57 documented files and 64 GitHub commits. The client is a React Native 0.85.3 application with screens written in TypeScript and JavaScript, a Context-based state layer, a service layer for API calls, and a three-language interface; the back end is an Express server with static pages for the hospital and contract-signing demos.</p>
-      <p>I led the technical side of the four-developer team. I wrote and enforced the team's Git collaboration rules (documented in BRANCH_STRATEGY.md), and reported jointly to our company mentor and the director of the university's AI institute. After the internship, the project was handed over and is now carried forward by engineers at China Unicom.</p>
-      <p class="muted">The code repository is private. Demonstration materials, architecture documentation and selected project documents are reproduced on this page.</p>
+      <h2><span class="only-en">Overview</span><span class="only-zh" lang="zh-CN">项目概述</span></h2>
+      <p class="only-en">HKEdgeApp is a cross-border Hong Kong–Shenzhen medical data application for iOS and Android, built through a school-enterprise internship with Hong Kong Data Ltd. It supports the flow for Hong Kong residents seeking medical treatment in mainland China: identity verification and insurance binding, a cross-border medical QR code, claims submission and tracking, and hospital-side claim verification.</p>
+      <p class="only-zh" lang="zh-CN">HKEdgeApp 是一款面向 iOS 和 Android 的跨境港深医疗数据应用，通过与 Hong Kong Data Ltd. 的校企实习项目开发。它支持香港居民在内地就医的完整流程：身份核验与保险绑定、跨境就医二维码、理赔提交与进度跟踪，以及医院端理赔核验。</p>
+      <p class="only-en">The application consists of 19 front-end screens, 14 API modules, 57 documented files and 64 GitHub commits. The client is a React Native 0.85.3 application with screens written in TypeScript and JavaScript, a Context-based state layer, a service layer for API calls, and a three-language interface; the back end is an Express server with static pages for the hospital and contract-signing demos.</p>
+      <p class="only-zh" lang="zh-CN">应用包含 19 个前端页面、14 个 API 模块、57 份文档和 64 次 GitHub 提交。客户端基于 React Native 0.85.3，页面由 TypeScript 和 JavaScript 编写，采用基于 Context 的状态层、统一的 API 服务层和三语界面；后端为 Express 服务器，包含医院端与签约演示的静态页面。</p>
+      <p class="only-en">I led the technical side of the four-developer team. I wrote and enforced the team's Git collaboration rules (documented in BRANCH_STRATEGY.md), and reported jointly to our company mentor and the director of the university's AI institute. After the internship, the project was handed over and is now carried forward by engineers at China Unicom.</p>
+      <p class="only-zh" lang="zh-CN">我在四人开发团队中负责技术侧：编写并落实团队的 Git 协作规范（记录在 BRANCH_STRATEGY.md 中），并向企业导师与学院人工智能研究院院长双线汇报。实习结束后项目完成交接，目前由中国联通工程师继续推进。</p>
+      <p class="muted"><span class="only-en">The code repository is private. Demonstration materials, architecture documentation and selected project documents are reproduced on this page.</span><span class="only-zh" lang="zh-CN">代码仓库为私有。演示材料、架构文档和部分项目文档在本页面展示。</span></p>
     </section>
 
     <section id="demo">
-      <h2>App Demo</h2>
-      <h3>Screen recording</h3>
+      <h2><span class="only-en">App Demo</span><span class="only-zh" lang="zh-CN">应用演示</span></h2>
+      <h3><span class="only-en">Screen recording</span><span class="only-zh" lang="zh-CN">操作录屏</span></h3>
       <figure>
         <video controls preload="none" poster="hkedge-demo-poster.jpg" width="960" height="540">
           <source src="hkedge-demo.mp4" type="video/mp4">
           Your browser does not support embedded video. <a href="hkedge-demo.mp4">Download the demo video</a>.
         </video>
-        <figcaption>Screen recording of the app demo (about 1 minute, from the project files).</figcaption>
+        <figcaption><span class="only-en">Screen recording of the app demo (about 1 minute, from the project files).</span><span class="only-zh" lang="zh-CN">应用演示录屏（约 1 分钟，来自项目文件）。</span></figcaption>
       </figure>
-      <h3>Interactive demos</h3>
-      <ul>
+      <h3><span class="only-en">Interactive demos</span><span class="only-zh" lang="zh-CN">交互演示</span></h3>
+      <ul class="only-en">
         <li><a href="hkedge-feature-map.html" rel="noopener">Full feature map (auto tour)</a> — an interactive walkthrough of the 13 app modules; click "Auto Tour" to step through them. This page is self-contained and needs no server.</li>
         <li><a href="hkedge-flow-demo.html" rel="noopener">End-to-end flow demo</a> — the cross-border medical QR code and claims flow, from identity verification to hospital verification.</li>
+      </ul>
+      <ul class="only-zh" lang="zh-CN">
+        <li><a href="hkedge-feature-map.html" rel="noopener">完整功能地图（自动巡览）</a>——13 个应用模块的交互式讲解，点击 "Auto Tour" 可逐步浏览。该页面自包含，无需服务器。</li>
+        <li><a href="hkedge-flow-demo.html" rel="noopener">端到端流程演示</a>——跨境就医二维码与理赔流程，从身份核验到医院核验。</li>
       </ul>
     </section>
 
     <section id="screenshots">
-      <h2>Screenshots</h2>
-      <p class="muted">Screens from the current app interface (dark theme with orange accents), captured from the interactive feature-map demo.</p>
+      <h2><span class="only-en">Screenshots</span><span class="only-zh" lang="zh-CN">应用截图</span></h2>
+      <p class="muted"><span class="only-en">Screens from the current app interface (dark theme with orange accents), captured from the interactive feature-map demo.</span><span class="only-zh" lang="zh-CN">当前应用界面（深色主题配橙色点缀）截图，取自交互式功能地图演示。</span></p>
       <div class="shots">
         <figure>
           <img src="hkedge-shot1.jpg" alt="Identity verification screen with an orange one-tap auto-fill button" width="340" height="700">
-          <figcaption>Identity verification (KYC)</figcaption>
+          <figcaption><span class="only-en">Identity verification (KYC)</span><span class="only-zh" lang="zh-CN">身份核验（KYC）</span></figcaption>
         </figure>
         <figure>
           <img src="hkedge-shot2.jpg" alt="App home screen with an insurance coverage card and categories grid" width="340" height="700">
-          <figcaption>Home screen and insurance coverage card</figcaption>
+          <figcaption><span class="only-en">Home screen and insurance coverage card</span><span class="only-zh" lang="zh-CN">首页与保障卡片</span></figcaption>
         </figure>
         <figure>
           <img src="hkedge-shot3.jpg" alt="Recent claim activity showing a settled claim and a pending claim" width="340" height="700">
-          <figcaption>Claims and recent activity</figcaption>
+          <figcaption><span class="only-en">Claims and recent activity</span><span class="only-zh" lang="zh-CN">理赔与最近动态</span></figcaption>
         </figure>
         <figure>
           <img src="hkedge-shot4.jpg" alt="Elder Mode screen with large orange and blue one-tap buttons" width="340" height="700">
-          <figcaption>Elder Mode (large-type, one-tap actions)</figcaption>
+          <figcaption><span class="only-en">Elder Mode (large-type, one-tap actions)</span><span class="only-zh" lang="zh-CN">长者模式（大字体、一键操作）</span></figcaption>
         </figure>
       </div>
     </section>
 
     <section id="architecture">
-      <h2>System Architecture</h2>
+      <h2><span class="only-en">System Architecture</span><span class="only-zh" lang="zh-CN">系统架构</span></h2>
       <figure>
         <img src="hkedge-architecture.svg" alt="System architecture diagram of HKEdgeApp showing client, server and data components" width="1195" height="689">
-        <figcaption>System architecture diagram from the project documentation (<a href="hkedge-architecture.svg">open full size</a>). A detailed <a href="docs/architecture.html">architecture document</a> describes the React Native 0.85.3 client, the Context-based state layer, the screen and component layers, and the Express back end.</figcaption>
+        <figcaption><span class="only-en">System architecture diagram from the project documentation (<a href="hkedge-architecture.svg">open full size</a>). A detailed <a href="docs/architecture.html">architecture document</a> describes the React Native 0.85.3 client, the Context-based state layer, the screen and component layers, and the Express back end.</span><span class="only-zh" lang="zh-CN">项目文档中的系统架构图（<a href="hkedge-architecture.svg">打开全尺寸</a>）。详细的<a href="docs/architecture.html">架构文档</a>描述了 React Native 0.85.3 客户端、基于 Context 的状态层、页面与组件层以及 Express 后端。</span></figcaption>
       </figure>
     </section>
 
     <section id="features">
-      <h2>Feature Map</h2>
-      <p>The demo script in the project documentation lists 13 modules. In the order presented there:</p>
-      <ul>
+      <h2><span class="only-en">Feature Map</span><span class="only-zh" lang="zh-CN">功能地图</span></h2>
+      <p class="only-en">The demo script in the project documentation lists 13 modules. In the order presented there:</p>
+      <p class="only-zh" lang="zh-CN">项目文档中的演示脚本列出 13 个模块，按其中顺序：</p>
+      <ul class="only-en">
         <li>KYC — name, HKID, phone, or one-tap iAM Smart fill</li>
         <li>Global toggles — theme, three-language cycle, secure logout</li>
         <li>Insurance binding — pick insurer, auto-load policies, switch in one tap</li>
@@ -148,37 +173,80 @@
         <li>Hospital demo — verification screen for B2B presentations</li>
         <li>Elder Mode — fonts of 18px or larger, 110px buttons, three one-tap actions</li>
       </ul>
-      <p class="muted"><a href="docs/feature-map-script.html">Full feature-map demo script (rendered, English)</a></p>
+      <ul class="only-zh" lang="zh-CN">
+        <li>KYC —— 姓名、香港身份证、手机号，或一键 iAM Smart 带入</li>
+        <li>全局切换 —— 主题、三语轮换、安全登出</li>
+        <li>保险绑定 —— 选择保险公司、自动载入保单、一键切换</li>
+        <li>路由守卫 —— 保护受限入口</li>
+        <li>主框架 —— 三态主视觉、单行分类、实时进度</li>
+        <li>理赔列表 —— 跨保司聚合、四个筛选标签</li>
+        <li>已结案理赔的退款申请，附五步时间线</li>
+        <li>AI 智能体 —— 底部抽屉式对话，接入项目 LLM 接口</li>
+        <li>个人中心 —— 信息卡片与长者模式开关</li>
+        <li>活动 —— 历史动态</li>
+        <li>分类宫格 —— 两个已上线入口与四个路线图占位</li>
+        <li>医院端演示 —— 面向 B2B 汇报的核验页面</li>
+        <li>长者模式 —— 18px 及以上字体、110px 按钮、三个一键操作</li>
+      </ul>
+      <p class="muted"><a href="docs/feature-map-script.html"><span class="only-en">Full feature-map demo script (rendered, English)</span><span class="only-zh" lang="zh-CN">完整功能地图演示脚本（渲染版，英文）</span></a></p>
     </section>
 
     <section id="git">
-      <h2>Git Collaboration and Branch Strategy</h2>
-      <p>I wrote the team's Git collaboration rules in BRANCH_STRATEGY.md (last updated 18 June 2026). The strategy keeps only two permanent branches — <code>main</code> (production, merged into but never committed to directly) and <code>develop</code> (the integration line). All other branches are temporary and deleted after merging: <code>feature/*</code> and <code>fix/*</code> for shared JavaScript/TypeScript code, <code>ios/*</code> and <code>android/*</code> for platform-native changes, and <code>release/*</code> for releases. Work goes through a pull request targeting <code>develop</code>; <code>main</code> is updated only from <code>develop</code> at release time.</p>
-      <p>When the iOS and Android lines had diverged, I also wrote a branch merge analysis (8 July 2026) documenting four divergent branches, around 20 conflicting files — including mutually exclusive screen registrations in <code>App.tsx</code> and different API-layer designs — and a two-step merge plan: merge the smaller Android branch into <code>develop</code> first, then the larger iOS branch, keeping both screen sets and adopting the unified service layer and fuller i18n coverage.</p>
-      <p class="muted"><a href="docs/branch-strategy.html">Branch strategy (rendered document)</a> · <a href="docs/git-collaboration-guide.html">Team Git collaboration guide (rendered document)</a> · <a href="docs/branch-merge-analysis.html">Full branch merge analysis (rendered document)</a></p>
+      <h2><span class="only-en">Git Collaboration and Branch Strategy</span><span class="only-zh" lang="zh-CN">Git 协作与分支策略</span></h2>
+      <p class="only-en">I wrote the team's Git collaboration rules in BRANCH_STRATEGY.md (last updated 18 June 2026). The strategy keeps only two permanent branches — <code>main</code> (production, merged into but never committed to directly) and <code>develop</code> (the integration line). All other branches are temporary and deleted after merging: <code>feature/*</code> and <code>fix/*</code> for shared JavaScript/TypeScript code, <code>ios/*</code> and <code>android/*</code> for platform-native changes, and <code>release/*</code> for releases. Work goes through a pull request targeting <code>develop</code>; <code>main</code> is updated only from <code>develop</code> at release time.</p>
+      <p class="only-zh" lang="zh-CN">我在 BRANCH_STRATEGY.md 中编写了团队的 Git 协作规范（最后更新于 2026 年 6 月 18 日）。策略只保留两条永久分支——<code>main</code>（生产环境，只接受合并、不直接提交）和 <code>develop</code>（开发主线）。其余分支均为临时分支，合并后即删除：<code>feature/*</code> 与 <code>fix/*</code> 用于共享的 JavaScript/TypeScript 代码，<code>ios/*</code> 与 <code>android/*</code> 用于平台原生层改动，<code>release/*</code> 用于发布。开发通过指向 <code>develop</code> 的 Pull Request 进行；<code>main</code> 仅在发布时从 <code>develop</code> 更新。</p>
+      <p class="only-en">When the iOS and Android lines had diverged, I also wrote a branch merge analysis (8 July 2026) documenting four divergent branches, around 20 conflicting files — including mutually exclusive screen registrations in <code>App.tsx</code> and different API-layer designs — and a two-step merge plan: merge the smaller Android branch into <code>develop</code> first, then the larger iOS branch, keeping both screen sets and adopting the unified service layer and fuller i18n coverage.</p>
+      <p class="only-zh" lang="zh-CN">在 iOS 与 Android 两条开发线分叉后，我还撰写了分支合并分析（2026 年 7 月 8 日），记录四个分叉分支、约 20 个冲突文件（包括 <code>App.tsx</code> 中互斥的页面注册和不同的 API 层设计），以及两步合并方案：先将较小的 Android 分支合入 <code>develop</code>，再合入较大的 iOS 分支，保留两套页面并采用统一的服务层与更完整的 i18n 覆盖。</p>
+      <p class="muted"><a href="docs/branch-strategy.html"><span class="only-en">Branch strategy (rendered document)</span><span class="only-zh" lang="zh-CN">分支策略（渲染文档）</span></a> · <a href="docs/git-collaboration-guide.html"><span class="only-en">Team Git collaboration guide (rendered document)</span><span class="only-zh" lang="zh-CN">团队 Git 协作指南（渲染文档）</span></a> · <a href="docs/branch-merge-analysis.html"><span class="only-en">Full branch merge analysis (rendered document)</span><span class="only-zh" lang="zh-CN">分支合并分析全文（渲染文档）</span></a></p>
     </section>
 
     <section id="documents">
-      <h2>Project Documents</h2>
-      <p class="muted">The repository's Markdown documents, rendered here as styled pages so they can be read in the browser.</p>
+      <h2><span class="only-en">Project Documents</span><span class="only-zh" lang="zh-CN">项目文档</span></h2>
+      <p class="muted"><span class="only-en">The repository's Markdown documents, rendered here as styled pages so they can be read in the browser. Each document is available in English and in the original Chinese.</span><span class="only-zh" lang="zh-CN">仓库中的 Markdown 文档，已渲染为带样式的网页，可直接在浏览器中阅读。每份文档均提供英文版与中文原文版。</span></p>
       <ul>
-        <li><a href="docs/architecture.html">System architecture</a> — layers, state, navigation, screens and API</li>
-        <li><a href="docs/branch-strategy.html">Git branch strategy</a> — permanent and temporary branches, PR workflow</li>
-        <li><a href="docs/api-map.html">Frontend–backend API map</a> — screens, API modules and endpoints</li>
-        <li><a href="docs/git-collaboration-guide.html">Team Git collaboration guide</a> — Q&amp;A and team conventions</li>
-        <li><a href="docs/branch-merge-analysis.html">Branch merge analysis</a> — divergence and two-step merge plan</li>
-        <li><a href="docs/feature-map-script.html">App feature map and demo script (English)</a></li>
-        <li><a href="docs/project-readme.html">Project README</a></li>
-        <li><a href="hkedge-architecture.svg">System architecture diagram (SVG)</a> · <a href="hkedge-demo.mp4">App demo screen recording (MP4)</a></li>
+        <li><a href="docs/architecture.html"><span class="only-en">System architecture</span><span class="only-zh" lang="zh-CN">系统架构文档</span></a><span class="only-en"> — layers, state, navigation, screens and API</span><span class="only-zh" lang="zh-CN"> —— 分层、状态、导航、页面与 API</span></li>
+        <li><a href="docs/branch-strategy.html"><span class="only-en">Git branch strategy</span><span class="only-zh" lang="zh-CN">Git 分支策略</span></a><span class="only-en"> — permanent and temporary branches, PR workflow</span><span class="only-zh" lang="zh-CN"> —— 永久与临时分支、PR 工作流</span></li>
+        <li><a href="docs/api-map.html"><span class="only-en">Frontend–backend API map</span><span class="only-zh" lang="zh-CN">前后端 API 关系图</span></a><span class="only-en"> — screens, API modules and endpoints</span><span class="only-zh" lang="zh-CN"> —— 页面、API 模块与接口</span></li>
+        <li><a href="docs/git-collaboration-guide.html"><span class="only-en">Team Git collaboration guide</span><span class="only-zh" lang="zh-CN">团队 Git 协作指南</span></a><span class="only-en"> — Q&amp;A and team conventions</span><span class="only-zh" lang="zh-CN"> —— 常见问题与团队约定</span></li>
+        <li><a href="docs/branch-merge-analysis.html"><span class="only-en">Branch merge analysis</span><span class="only-zh" lang="zh-CN">分支合并分析</span></a><span class="only-en"> — divergence and two-step merge plan</span><span class="only-zh" lang="zh-CN"> —— 分叉情况与两步合并方案</span></li>
+        <li><a href="docs/feature-map-script.html"><span class="only-en">App feature map and demo script (English)</span><span class="only-zh" lang="zh-CN">应用功能地图与演示脚本（英文）</span></a></li>
+        <li><a href="docs/project-readme.html"><span class="only-en">Project README</span><span class="only-zh" lang="zh-CN">项目 README</span></a></li>
+        <li><span class="only-en"><a href="hkedge-architecture.svg">System architecture diagram (SVG)</a> · <a href="hkedge-demo.mp4">App demo screen recording (MP4)</a></span><span class="only-zh" lang="zh-CN"><a href="hkedge-architecture.svg">系统架构图（SVG）</a> · <a href="hkedge-demo.mp4">应用演示录屏（MP4）</a></span></li>
       </ul>
-      <p class="muted">Further source code and documentation are available on request; the repository itself is private.</p>
+      <p class="muted"><span class="only-en">Further source code and documentation are available on request; the repository itself is private.</span><span class="only-zh" lang="zh-CN">更多源代码与文档可按需提供；代码仓库为私有。</span></p>
     </section>
 
   </main>
 
   <footer>
-    <p><a href="index.html">← Back to academic homepage</a> · © 2026 Jiazhi (Jasper) Xie</p>
+    <p><a href="index.html"><span class="only-en">← Back to academic homepage</span><span class="only-zh" lang="zh-CN">← 返回学术主页</span></a> · © 2026 Jiazhi (Jasper) Xie</p>
   </footer>
+
+  <script>
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem('site-lang'); } catch (e) {}
+      var lang = stored === 'zh' ? 'zh' : 'en';
+      function apply(l) {
+        document.documentElement.setAttribute('data-lang', l);
+        document.documentElement.lang = (l === 'zh' ? 'zh-CN' : 'en');
+        var btns = document.querySelectorAll('.lang-btn');
+        for (var i = 0; i < btns.length; i++) {
+          var on = btns[i].getAttribute('data-lang-set') === l;
+          btns[i].classList.toggle('active', on);
+          btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+        }
+        try { localStorage.setItem('site-lang', l); } catch (e) {}
+      }
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener('click', function () {
+          apply(this.getAttribute('data-lang-set'));
+        });
+      }
+      apply(lang);
+    })();
+  </script>
 
 </body>
 </html>
