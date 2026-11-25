@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Frontend–Backend API Map — HKEdgeApp | Jiazhi (Jasper) Xie</title>
+  <meta name="description" content="Project documentation, rendered from API_MAP.md for the HKEdgeApp project.">
+  <style>
+    :root {
+      --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
+      --rule: #d8d8d8; --link: #0b5394; --pre-bg: #f4f4f4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181d; --text: #d6d6d6; --muted: #9a9a9a; --heading: #f2f2f2;
+        --rule: #3a3d44; --link: #7ab3e0; --pre-bg: #22252b;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; padding: 0 1.25rem;
+      background: var(--bg); color: var(--text);
+      font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      font-size: 1.0625rem; line-height: 1.65;
+    }
+    main, header, footer { max-width: 760px; margin: 0 auto; }
+    header { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--rule); }
+    .back { font-size: 0.95rem; margin: 0 0 1rem; }
+    h1 { font-size: 1.7rem; line-height: 1.3; margin: 0 0 0.4rem; color: var(--heading); }
+    .subtitle { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    main { padding: 2rem 0 3rem; }
+    h2 {
+      font-size: 1.25rem; color: var(--heading); margin: 2.2rem 0 0.8rem;
+      padding-bottom: 0.3rem; border-bottom: 1px solid var(--rule);
+    }
+    h3 { font-size: 1.08rem; color: var(--heading); margin: 1.6rem 0 0.5rem; }
+    h4 { font-size: 1rem; color: var(--heading); margin: 1.2rem 0 0.4rem; }
+    p, ul, ol, blockquote { margin: 0 0 0.9rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+    blockquote {
+      border-left: 3px solid var(--rule); padding-left: 1rem;
+      color: var(--muted); margin-left: 0;
+    }
+    pre {
+      background: var(--pre-bg); padding: 0.9rem 1rem; border-radius: 6px;
+      overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+      border: 1px solid var(--rule);
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em; background: var(--pre-bg); padding: 0.05em 0.35em;
+      border-radius: 3px;
+    }
+    pre code { padding: 0; background: none; font-size: 1em; }
+    table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 0 0 1.2rem; }
+    th, td { border: 1px solid var(--rule); padding: 0.45rem 0.65rem; text-align: left; font-size: 0.95rem; }
+    th { background: var(--pre-bg); }
+    hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
+    footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
+    @media print {
+      body { background: #ffffff; color: #000000; font-size: 10pt; }
+      h1, h2, h3, h4 { color: #000000; }
+      a { color: #000000; text-decoration: none; }
+      pre, code { background: #f4f4f4; }
+    }
+</style>
+</head>
+<body>
+  <header>
+    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <h1>Frontend–Backend API Map</h1>
+    <p class="subtitle">Project documentation, rendered from API_MAP.md · reproduced from the private project repository</p>
+  </header>
+  <main>
+    <blockquote>
+<p>Last updated: 2026-06-18</p>
+</blockquote>
+<hr />
+<h2>总览图</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────────┐
+│                          HKEdgeApp (React Native)                           │
+│                                                                             │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
+│  │HomeScreen│ │QRCodeScrn│ │ClaimsList│ │QrScanScrn│ │ProfileSrn│  ...10个 │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘   Screen │
+│       │             │            │            │            │               │
+│       └─────────────┴────────────┴────────────┴────────────┘               │
+│                               │                                             │
+│                      import * as api from '../../api'                       │
+│                               │                                             │
+│       ┌───────────────────────┼───────────────────────┐                     │
+│       │                  HKEdgeApp/api/                │                    │
+│       │                                               │                     │
+│       │  ┌──────────┐ ┌──────────┐ ┌──────────┐      │                     │
+│       │  │policyApi │ │claimApi  │ │ chatApi  │  ... │     7 个文件        │
+│       │  └────┬─────┘ └────┬─────┘ └────┬─────┘      │                     │
+│       └───────┼─────────────┼────────────┼────────────┘                     │
+│               │             │            │                                  │
+│               │    axios / apiClient (HTTP)                                 │
+│               │     baseURL = localhost:3000/api                            │
+└───────────────┼─────────────┼────────────┼──────────────────────────────────┘
+                │             │            │
+                │             │            │
+        ════════╪═════════════╪════════════╪══════  网络  ═══════════════════
+                │             │            │
+                ▼             ▼            ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                   hkedge-server (Express on :3000)                          │
+│                                                                             │
+│  ┌─────────────────────┐  ┌──────────────────┐  ┌────────────────────┐      │
+│  │  /api/app/*        │  │  /api/admin/*    │  │  其他              │      │
+│  │  (APP 移动端,免登)  │  │  (管理后台,需登)  │  │  /api/auth/*       │      │
+│  │                    │  │                  │  │  /api/pos/charge   │      │
+│  │  8 个端点          │  │  15 个端点        │  │  /api/chat         │      │
+│  └────────┬───────────┘  └────────┬─────────┘  └────────┬───────────┘      │
+│           │                       │                      │                  │
+│           └───────────────────────┴──────────────────────┘                  │
+│                                   │                                         │
+│                              SQLite                                         │
+│                          (hkedge.db)                                        │
+│              contracts / patients / claims / visits / ...                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2>前端 7 个函数 → 后端端点的映射</h2>
+<pre><code>前端 (api/*.js)                    后端 (server.js)                  状态
+───────────────────────────────────────────────────────────────────────────────
+
+① fetchPoliciesByCompany()  ────▶ GET /api/app/policies             ✅ 通
+     参数: hkid, company               └ 返回保单列表
+     用途: 选保司后拉保单
+
+② fetchHospitalsByPolicy()  ────▶ GET /api/app/policies/:id/hospitals  ✅ 通
+     参数: policyNo                    └ 返回 Completed 合约医院
+     用途: 看某保单覆盖哪些医院
+
+③ issueQrToken()            ────▶ POST /api/app/qr/issue            ✅ 通
+     参数: policy_id                  └ 返回 60s token
+     用途: 生成动态 QR 码
+
+④ refreshQrToken()          ────▶ 同上 (调 issueQrToken)            ✅ 通
+     用途: 60s 到期换新 token
+
+⑤ syncFromConsole()         ────▶ GET /api/app/sync                 ✅ 通
+     参数: hkid                       └ 返回保单 + 医院统计
+     用途: APP 前台轮询同步
+
+⑥ fetchClaims()             ────▶ GET /api/app/claims               ✅ 通
+     参数: hkid                       └ 返回理赔记录
+     用途: 查看历史报销
+
+
+⑦ verifyQrCode()            ────▶ POST /api/qr/verify               ❌ 断！
+     参数: qrData, hospitalId   后端没有这个路由！
+     用途: 医院扫码验证         仅 admin/qrcode/checkin 可用
+
+
+⑧ verifyPolicy()            ────▶ (无 HTTP 请求)                    ❌ 假！
+     用途: 患者 KYC 注册     纯前端 mock，setTimeout + 假 patient_id
+
+
+⑨ sendChatMessage()         ────▶ POST /api/chat                    ⚠️ 半通
+     参数: sessionId, query          └ 转发到 n8n :5678             n8n 没启动就 500
+     用途: AI 咨询
+</code></pre>
+<hr />
+<h2>逐接口数据流详图</h2>
+<h3>① 保单查询（通的 ✅）</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+ │ HomeScreen   │      │  policyApi   │      │  server.js   │
+ │              │      │              │      │              │
+ │ 用户选保司    │─────▶│ fetchPolici- │─────▶│ GET          │
+ │ &quot;AIA (友邦)&quot; │      │ esByCompany  │      │ /api/app/    │
+ │              │      │ (name, hkid) │      │ policies     │
+ │              │      │              │◀─────│ ?hkid=        │
+ │              │      │ 后端挂了?     │      │  &amp;company=   │
+ │              │      │ ↓ 自动降级   │      │              │
+ │              │      │ MOCK_POLICY  │      │              │
+ │              │      │ _DB[友邦]    │      │              │
+ │              │◀─────│              │      │              │
+ │ 展示保单列表  │      │              │      │              │
+ │ · AIA-001    │      │              │      │              │
+ │ · AIA-077    │      │              │      │              │
+ └─────────────┘      └─────────────┘      └─────────────┘
+</code></pre>
+<h3>② 医院查询（通的 ✅）</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌──────────┐
+ │ HomeScreen   │      │  policyApi   │      │  server.js   │      │ SQLite   │
+ │              │      │              │      │              │      │          │
+ │ 用户选了      │─────▶│ fetchHospit- │─────▶│ GET          │─────▶│ contracts│
+ │ AIA-001      │      │ alsByPolicy  │      │ /api/app/    │      │ JOIN     │
+ │ 想看覆盖      │      │ (AIA-001)    │      │ policies/    │      │ hospitals│
+ │ 哪些医院      │      │              │◀─────│ :id/hospitals│◀─────│ WHERE    │
+ │              │      │              │      │              │      │ status=  │
+ │              │◀─────│              │      │              │      │ Completed│
+ │ 南方医科大   │      │              │      │              │      │          │
+ │ 中山附一     │      │              │      │              │      │          │
+ │ 深圳和睦家   │      │              │      │              │      │          │
+ └─────────────┘      └─────────────┘      └─────────────┘      └──────────┘
+</code></pre>
+<h3>③ QR 签发 + 刷新（通的 ✅）</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
+ │ QRCodeScreen │      │  policyApi   │      │  server.js   │
+ │              │      │              │      │              │
+ │ 展示医保码    │─────▶│ issueQrToken │─────▶│ POST         │
+ │              │      │ (AIA-001)    │      │ /api/app/    │
+ │              │      │              │      │ qr/issue     │
+ │              │      │              │◀─────│              │
+ │              │      │              │      │ token=base64 │
+ │              │      │              │      │ exp=now+60s  │
+ │              │◀─────│              │      │              │
+ │              │      │              │      │              │
+ │ 60秒倒计时...│      │              │      │              │
+ │  还剩 3 秒!  │─────▶│ refreshQr    │─────▶│ POST         │
+ │              │      │ Token        │      │ /api/app/    │
+ │              │      │ (同 issue 逻辑)│     │ qr/issue     │
+ │              │◀─────│              │◀─────│ 新 token     │
+ │ 重置倒计时   │      │              │      │              │
+ └─────────────┘      └─────────────┘      └─────────────┘
+</code></pre>
+<h3>④ 同步快照（通的 ✅）</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌──────────┐
+ │ HomeScreen   │      │  policyApi   │      │  server.js   │      │ SQLite   │
+ │              │      │              │      │              │      │          │
+ │ APP 前台      │─────▶│ syncFrom     │─────▶│ GET          │─────▶│ patients │
+ │ 定时轮询      │      │ Console      │      │ /api/app/    │      │ JOIN     │
+ │ (30s 一次)    │      │ (hkid)       │      │ sync         │      │ contracts│
+ │              │◀─────│              │◀─────│ ?hkid=        │◀─────│          │
+ │              │      │              │      │              │      │          │
+ │ 返回快照:     │      │              │      │              │      │          │
+ │ {            │      │              │      │              │      │          │
+ │   policies:   │      │              │      │              │      │          │
+ │     [AIA-001, │      │              │      │              │      │          │
+ │      AIA-077, │      │              │      │              │      │          │
+ │      CL-A12,  │      │              │      │              │      │          │
+ │      CL-B08], │      │              │      │              │      │          │
+ │   hospitals:  │      │              │      │              │      │          │
+ │     {AIA: 6,  │      │              │      │              │      │          │
+ │      CL: 5}   │      │              │      │              │      │          │
+ │ }            │      │              │      │              │      │          │
+ └─────────────┘      └─────────────┘      └─────────────┘      └──────────┘
+</code></pre>
+<h3>⑤ 理赔查询（通的 ✅）</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌──────────┐
+ │ ClaimsList   │      │  claimApi    │      │  server.js   │      │ SQLite   │
+ │ Screen       │      │              │      │              │      │          │
+ │              │─────▶│ fetchClaims  │─────▶│ GET          │─────▶│ claims   │
+ │              │      │ (A1234567)   │      │ /api/app/    │      │ LEFT JOIN│
+ │              │      │              │      │ claims       │      │ patients │
+ │              │      │              │◀─────│ ?hkid=        │◀─────│          │
+ │              │◀─────│              │      │              │      │          │
+ │              │      │              │      │              │      │          │
+ │ 理赔列表:     │      │              │      │              │      │          │
+ │ · 急诊 6800  │      │              │      │              │      │          │
+ │   已结算     │      │              │      │              │      │          │
+ │ · 门诊 450   │      │              │      │              │      │          │
+ │   已结算     │      │              │      │              │      │          │
+ └─────────────┘      └─────────────┘      └─────────────┘      └──────────┘
+</code></pre>
+<h3>⑥ QR 扫码验证（断的 ❌）</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────────────┐
+ │ QrScanScreen │      │   qrApi      │      │     server.js       │
+ │              │      │              │      │                     │
+ │ 医院扫了      │─────▶│ verifyQrCode │─────▶│ POST /api/qr/verify │
+ │ 患者的 QR    │      │ (qrData,     │      │                     │
+ │              │      │  'HOSP-001') │      │ ❌ 404 NOT FOUND    │
+ │              │      │              │      │    这个路由不存在！   │
+ │              │      │              │      │                     │
+ │              │◀─────│  error       │◀─────│                     │
+ │              │      │              │      │                     │
+ │ ❌ 验证失败   │      │              │      │                     │
+ └─────────────┘      └─────────────┘      └─────────────────────┘
+
+对比后端已有的类似端点：
+  POST /api/admin/qrcode/generate   ← 生成签到码（B端管理后台用）
+  POST /api/admin/qrcode/checkin    ← 患者签到（B端管理后台用）
+  GET  /api/admin/qrcode/history    ← 签到了历史（B端管理后台用）
+
+差距：缺少给 APP 端的 /api/app/qr/verify（无需登录，医院扫码用）
+</code></pre>
+<h3>⑦ 患者注册（假 ❌）</h3>
+<pre><code> ┌─────────────┐      ┌──────────────────┐      ┌─────────────┐
+ │ Registration │      │    policyApi      │      │  server.js   │
+ │ Screen       │      │                  │      │              │
+ │              │─────▶│ verifyPolicy()    │      │              │
+ │ 填表:        │      │                  │      │              │
+ │ 姓名: 陈大文 │      │ ╔══════════════╗  │      │              │
+ │ HKID: A1234 │      │ ║  纯前端 mock  ║  │      │              │
+ │ 电话: 98765 │      │ ║  setTimeout   ║  │      │  ???  没有任何 │
+ │              │      │ ║  1500ms 假装   ║  │      │      后端处理  │
+ │              │◀─────│ ║  请求          ║  │      │              │
+ │              │      │ ╚══════════════╝  │      │              │
+ │ ✅ 注册成功   │      │                  │      │              │
+ │ patient_id = │      │ 返回:             │      │              │
+ │ PT-2024-MOCK │      │ { patient_id:     │      │              │
+ │ (假的!!!)     │      │   'PT-2024-MOCK'} │      │              │
+ └─────────────┘      └──────────────────┘      └─────────────┘
+
+根本问题：
+  前端自己演戏，后端根本没参与。患者数据没有写入数据库。
+  这个 patient_id 是写死在代码里的，每次注册返回同一个。
+</code></pre>
+<h3>⑧ AI 对话（半通 ⚠️）</h3>
+<pre><code> ┌─────────────┐      ┌─────────────┐      ┌─────────────┐      ┌──────────┐
+ │ HomeScreen   │      │  chatApi     │      │  server.js   │      │   n8n    │
+ │              │      │              │      │              │      │ :5678    │
+ │ AI 对话框     │─────▶│ sendChat     │─────▶│ POST /api/   │─────▶│ webhook  │
+ │ &quot;门诊报销     │      │ Message      │      │ chat         │      │ ai-chat  │
+ │  比例?&quot;      │      │ (session,    │      │              │      │          │
+ │              │      │  query)      │      │ 转发的         │      │          │
+ │              │      │              │      │              │      │          │
+ │ 情况 A:       │      │              │      │  n8n 在线 ───│◀─────│ ✅ 返回   │
+ │ &quot;门诊报销     │◀─────│              │◀─────│              │─────▶│ AI 回复  │
+ │  90%&quot;        │      │              │      │              │      │          │
+ │              │      │              │      │              │      │          │
+ │ 情况 B:       │      │              │      │  n8n 挂了 ───│◀─────│ ❌ 超时   │
+ │ 白屏 / 500   │◀─────│ error        │◀─────│ 直接抛 500    │      │          │
+ └─────────────┘      └─────────────┘      └─────────────┘      └──────────┘
+</code></pre>
+<hr />
+<h2>前端内置 Mock 清单</h2>
+<pre><code>┌────────────────────────────────────────────────────────────────┐
+│  前端 api/ 层内置的 mock 数据                                    │
+│                                                                │
+│  policyApi.js:                                                 │
+│  ┌────────────────────────────────────────────────────────┐    │
+│  │ MOCK_POLICY_DB = {                                      │    │
+│  │   'AIA Hong Kong (友邦)': [2 张假保单],                  │    │
+│  │   'China Life (中国人寿)': [3 张假保单],                 │    │
+│  │   'Prudential (保诚)':     [2 张假保单],                 │    │
+│  │   'Manulife (宏利)':       [1 张假保单],                 │    │
+│  │   'AXA (安盛)':            [1 张假保单],                 │    │
+│  │   'FWD (富卫)':            [1 张假保单],                 │    │
+│  │   'Bupa (保柏)':           [1 张假保单],                 │    │
+│  │   'Cigna (信诺)':          [1 张假保单],                 │    │
+│  │   'Bowtie (保泰)':         [1 张假保单],                 │    │
+│  │   + 繁/简体中文保司名映射                               │    │
+│  │ }                                                       │    │
+│  └────────────────────────────────────────────────────────┘    │
+│                                                                │
+│  verifyPolicy() — 完全 mock，不发起 HTTP 请求                    │
+│  issueQrToken() — 后端挂了时本地生成 base64 token               │
+│  fetchPoliciesByCompany() — 后端挂了时 fallback 到 MOCK_DB     │
+│                                                                │
+│  ⚠️ 风险：后端接口出 bug，前端静默接管，你根本不会发现              │
+└────────────────────────────────────────────────────────────────┘
+</code></pre>
+<hr />
+<h2>后端路由全景</h2>
+<pre><code>                              localhost:3000
+                                    │
+        ┌───────────────┬───────────┴───────────┬────────────────┐
+        │               │                       │                │
+   /api/app/*       /api/admin/*            /api/auth/*      其他
+   (APP 免登)       (管理后台 需登)          (认证)
+        │               │                       │                │
+ ┌──────┴──────┐ ┌──────┴────────┐      ┌──────┴──────┐  ┌──────┴──────┐
+ │GET  policies│ │GET  dashboard │      │POST login   │  │POST chat    │
+ │GET  policies│ │GET  hospitals │      │GET  user    │  │POST pos/    │
+ │     /:id/   │ │POST hospitals │      │POST logout  │  │     charge  │
+ │     hospitals│ │PUT  hospitals │      └─────────────┘  │GET  health  │
+ │POST qr/issue│ │GET  users     │                       │GET  history │
+ │GET  sync    │ │POST users     │                       │GET  claims  │
+ │GET  claims  │ │GET  data-     │                       │GET  /hospital│
+ │POST policies│ │     spaces    │                       │     /outbound│
+ │DEL  policies│ │POST data-     │                       │GET  /insuranc│
+ │POST contracts││     spaces    │                       │     e/inbound│
+ │DEL  contracts│ │GET  data-    │                       └─────────────┘
+ │POST demo/   │ │     flows    │
+ │     reset   │ │POST data-    │
+ │GET  contracts││     flows    │
+ │GET  hospitals│ │PUT  data-    │
+ └─────────────┘ │     flows    │
+     8 个        │GET  audit-   │
+                 │     logs     │
+                 │GET  contracts│
+                 │POST contracts│
+                 │GET  contracts│
+                 │     /:id     │
+                 │POST contracts│
+                 │     /:id/sign│
+                 │GET  patients │
+                 │POST patients │
+                 │GET  visits   │
+                 │POST qrcode/  │
+                 │     generate │
+                 │POST qrcode/  │
+                 │     checkin  │
+                 │GET  qrcode/  │
+                 │     history  │
+                 │GET  claims   │
+                 │GET  contracts│
+                 │     /:id/    │
+                 │     audit-   │
+                 │     trail    │
+                 │GET  data-    │
+                 │     space-   │
+                 │     stats    │
+                 └──────────────┘
+                     15 个
+</code></pre>
+<hr />
+<h2>问题总表</h2>
+<pre><code> ┌──────┬──────────────────────────────────────┬──────────┐
+ │ 状态 │ 问题                                  │ 影响      │
+ ├──────┼──────────────────────────────────────┼──────────┤
+ │  ✅  │ 7 个接口前后端对应                    │ 正常运行  │
+ │  ❌  │ POST /api/qr/verify 后端不存在        │ 扫码验证死│
+ │  ❌  │ verifyPolicy 纯前端 mock              │ 注册是假的│
+ │  ⚠️  │ AI 对话依赖 n8n，没启动就 500         │ AI 不可用 │
+ │  ⚠️  │ 前端 mock fallback 掩盖后端失败       │ 隐藏 bug  │
+ │  ⚠️  │ src_0511/api/ 旧版代码残留            │ 混淆风险  │
+ └──────┴──────────────────────────────────────┴──────────┘
+</code></pre>
+<hr />
+<blockquote>
+<p>📁 Related docs:<br />
+- <code>TODO.md</code> — 统一任务看板<br />
+- <code>API_CODE_REVIEW.md</code> — 后端 API 代码审查<br />
+- <code>BRANCH_STRATEGY.md</code> — 分支策略</p>
+</blockquote>
+  </main>
+  <footer>
+    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+  </footer>
+</body>
+</html>

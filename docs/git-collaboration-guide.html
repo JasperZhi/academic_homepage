@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team Git Collaboration Guide — HKEdgeApp | Jiazhi (Jasper) Xie</title>
+  <meta name="description" content="Project documentation, rendered from git_collaboration_guide.md for the HKEdgeApp project.">
+  <style>
+    :root {
+      --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
+      --rule: #d8d8d8; --link: #0b5394; --pre-bg: #f4f4f4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181d; --text: #d6d6d6; --muted: #9a9a9a; --heading: #f2f2f2;
+        --rule: #3a3d44; --link: #7ab3e0; --pre-bg: #22252b;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; padding: 0 1.25rem;
+      background: var(--bg); color: var(--text);
+      font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      font-size: 1.0625rem; line-height: 1.65;
+    }
+    main, header, footer { max-width: 760px; margin: 0 auto; }
+    header { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--rule); }
+    .back { font-size: 0.95rem; margin: 0 0 1rem; }
+    h1 { font-size: 1.7rem; line-height: 1.3; margin: 0 0 0.4rem; color: var(--heading); }
+    .subtitle { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    main { padding: 2rem 0 3rem; }
+    h2 {
+      font-size: 1.25rem; color: var(--heading); margin: 2.2rem 0 0.8rem;
+      padding-bottom: 0.3rem; border-bottom: 1px solid var(--rule);
+    }
+    h3 { font-size: 1.08rem; color: var(--heading); margin: 1.6rem 0 0.5rem; }
+    h4 { font-size: 1rem; color: var(--heading); margin: 1.2rem 0 0.4rem; }
+    p, ul, ol, blockquote { margin: 0 0 0.9rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+    blockquote {
+      border-left: 3px solid var(--rule); padding-left: 1rem;
+      color: var(--muted); margin-left: 0;
+    }
+    pre {
+      background: var(--pre-bg); padding: 0.9rem 1rem; border-radius: 6px;
+      overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+      border: 1px solid var(--rule);
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em; background: var(--pre-bg); padding: 0.05em 0.35em;
+      border-radius: 3px;
+    }
+    pre code { padding: 0; background: none; font-size: 1em; }
+    table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 0 0 1.2rem; }
+    th, td { border: 1px solid var(--rule); padding: 0.45rem 0.65rem; text-align: left; font-size: 0.95rem; }
+    th { background: var(--pre-bg); }
+    hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
+    footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
+    @media print {
+      body { background: #ffffff; color: #000000; font-size: 10pt; }
+      h1, h2, h3, h4 { color: #000000; }
+      a { color: #000000; text-decoration: none; }
+      pre, code { background: #f4f4f4; }
+    }
+</style>
+</head>
+<body>
+  <header>
+    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <h1>Team Git Collaboration Guide</h1>
+    <p class="subtitle">Project documentation, rendered from git_collaboration_guide.md · reproduced from the private project repository</p>
+  </header>
+  <main>
+    <p>本文件整理了关于项目代码管理、本地调试与 GitHub 云端同步的常见问题解答（Q&amp;A），并制定了初步的团队代码管理规范，旨在帮助团队成员安全、高效地进行多人协作开发。</p>
+<hr />
+<h2>📅 第一部分：Git 协作 Q&amp;A (疑虑解答)</h2>
+<h3>Q1：本地目录克隆了所有代码，文件会不会很大，影响本地编译？</h3>
+<ul>
+<li><strong>不会。</strong></li>
+<li>仓库中的 [.gitignore] 已经过滤掉了庞大的第三方依赖包（如 <code>node_modules</code>）和编译产生的临时缓存目录（如 Android/iOS 构建产物）。</li>
+<li>本地 Git 目录非常小且轻量。本地调试时，模拟器会读取这些源文件并在本地进行热编译，不占用额外的云端或 Git 空间。</li>
+</ul>
+<h3>Q2：同事更新了云端代码，我怎么保证本地更新时不覆盖我正在写的代码？</h3>
+<ul>
+<li><strong>Git 拥有安全的冲突阻断机制</strong>。如果您本地有未保存的修改，直接执行 <code>git pull</code> 时如果存在冲突风险，Git 会拒绝合并并发出警告，绝对不会静默覆盖您的工作。</li>
+<li><strong>安全同步的最佳实践（Stash 暂存法）</strong>：<br />
+  1. 运行 <code>git stash</code> 将您当前修改临时存入“保险箱”；<br />
+  2. 运行 <code>git pull --rebase</code> 拉取云端最新的修改；<br />
+  3. 运行 <code>git stash pop</code> 把您的修改恢复到最新代码之上。</li>
+</ul>
+<h3>Q3：如果发生了代码冲突（Conflict）该怎么做？</h3>
+<ul>
+<li>当您与同事修改了同一个文件的同一行代码时，在执行 <code>git stash pop</code> 或合并时会提示 <code>Conflict</code>。</li>
+<li>此时冲突文件会被插入特殊的标记线（如 <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> 和 <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>），分别标记您和同事的代码。</li>
+<li><strong>处理方案</strong>：<br />
+  1. 仔细对比双方代码逻辑，手动选择保留哪一方，或将两者逻辑结合。<br />
+  2. 确认无误后删除标记线，重新保存文件。<br />
+  3. 在对话中，您也可以直接向 AI 助手发送冲突代码或运行 <code>git diff</code>，AI 会自动为您分析成因并提供最安全、最合理的合并方案。</li>
+</ul>
+<h3>Q4：Main 分支和 Branch 有什么用？在成果汇报时怎么用？</h3>
+<ul>
+<li><strong><code>main</code> 分支</strong>代表线上最稳定的可运行版本，绝不允许直接在上面开发未测试的代码。</li>
+<li><strong><code>feature</code> 分支</strong>则是独立的开发沙盒。每个开发者开发一个功能时，需要新建一个分支（如 <code>feature/3.1-qr-gen</code>）。</li>
+<li><strong>阶段性汇报优势</strong>：<br />
+  在汇报 Phase 2 成果时，即使其他人在开发 Phase 3 且代码尚未写完，您也只需在本地运行 <code>git checkout feature/phase2-outcome</code> 切换到 Phase 2 专有分支，模拟器将只运行该阶段的干净代码，确保演示完美无瑕。</li>
+</ul>
+<hr />
+<h2>📝 第二部分：团队代码管理规范 (初步)</h2>
+<p>为规范团队开发，所有团队成员应严格遵守以下协作流程：</p>
+<h3>1. 分支命名规范</h3>
+<p>所有新功能或 Bug 修复，必须从最新的 <code>main</code> 分支拉出独立分支，禁止直接推送到 <code>main</code> 分支。<br />
+* <strong>新功能分支</strong>：<code>feature/任务序号-功能简写</code>（例如 <code>feature/2.1-preview</code>）<br />
+* <strong>Bug 修复分支</strong>：<code>fix/任务序号-缺陷简写</code>（例如 <code>fix/1.3-stale-closure</code>）</p>
+<h3>2. 每日同步与开发流程</h3>
+<p>建议开发者每天开始写代码前和结束时，执行以下标准流程：</p>
+<pre><code class="language-bash"># 1. 切换回主分支并获取最新更新
+git checkout main
+git pull
+
+# 2. 创建或切换到自己的功能分支
+git checkout -b feature/your-feature-name  # 新功能
+# 或者
+git checkout feature/your-feature-name     # 续写旧功能
+
+# 3. 合并主分支的最新更新（防止分叉过大）
+git merge main
+</code></pre>
+<h3>3. 代码提交（Commit）与推送（Push）</h3>
+<ul>
+<li><strong>提交信息格式</strong>：</li>
+<li>新增功能：<code>feat: 简要描述新增功能 (关联 #任务ID)</code></li>
+<li>修复缺陷：<code>fix: 简要描述修复的问题 (关联 #任务ID)</code></li>
+<li>文档更新：<code>docs: 修改了哪些文档</code></li>
+<li><strong>推送至云端</strong>：<br />
+<code>bash
+  git push origin feature/your-feature-name</code></li>
+</ul>
+<h3>4. 代码评审与合并（Pull Request）</h3>
+<ul>
+<li>当功能开发完毕并在本地模拟器通过测试评估后，在 GitHub 上发起指向 <code>main</code> 的 <strong>Pull Request (PR)</strong>。</li>
+<li>团队中至少需要 <strong>1 位其他成员</strong> 审查代码并确认测试无误后，方可合并（Merge）至 <code>main</code> 主分支。</li>
+</ul>
+<hr />
+<p>希望团队成员能共同遵守以上规范，共同维护 HKEdgeApp 项目的代码安全与稳定性！</p>
+  </main>
+  <footer>
+    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+  </footer>
+</body>
+</html>

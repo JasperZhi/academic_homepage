@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Branch Merge Analysis — HKEdgeApp | Jiazhi (Jasper) Xie</title>
+  <meta name="description" content="Project documentation, rendered from BRANCH_MERGE_ANALYSIS.md for the HKEdgeApp project.">
+  <style>
+    :root {
+      --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
+      --rule: #d8d8d8; --link: #0b5394; --pre-bg: #f4f4f4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181d; --text: #d6d6d6; --muted: #9a9a9a; --heading: #f2f2f2;
+        --rule: #3a3d44; --link: #7ab3e0; --pre-bg: #22252b;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; padding: 0 1.25rem;
+      background: var(--bg); color: var(--text);
+      font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      font-size: 1.0625rem; line-height: 1.65;
+    }
+    main, header, footer { max-width: 760px; margin: 0 auto; }
+    header { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--rule); }
+    .back { font-size: 0.95rem; margin: 0 0 1rem; }
+    h1 { font-size: 1.7rem; line-height: 1.3; margin: 0 0 0.4rem; color: var(--heading); }
+    .subtitle { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    main { padding: 2rem 0 3rem; }
+    h2 {
+      font-size: 1.25rem; color: var(--heading); margin: 2.2rem 0 0.8rem;
+      padding-bottom: 0.3rem; border-bottom: 1px solid var(--rule);
+    }
+    h3 { font-size: 1.08rem; color: var(--heading); margin: 1.6rem 0 0.5rem; }
+    h4 { font-size: 1rem; color: var(--heading); margin: 1.2rem 0 0.4rem; }
+    p, ul, ol, blockquote { margin: 0 0 0.9rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+    blockquote {
+      border-left: 3px solid var(--rule); padding-left: 1rem;
+      color: var(--muted); margin-left: 0;
+    }
+    pre {
+      background: var(--pre-bg); padding: 0.9rem 1rem; border-radius: 6px;
+      overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+      border: 1px solid var(--rule);
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em; background: var(--pre-bg); padding: 0.05em 0.35em;
+      border-radius: 3px;
+    }
+    pre code { padding: 0; background: none; font-size: 1em; }
+    table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 0 0 1.2rem; }
+    th, td { border: 1px solid var(--rule); padding: 0.45rem 0.65rem; text-align: left; font-size: 0.95rem; }
+    th { background: var(--pre-bg); }
+    hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
+    footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
+    @media print {
+      body { background: #ffffff; color: #000000; font-size: 10pt; }
+      h1, h2, h3, h4 { color: #000000; }
+      a { color: #000000; text-decoration: none; }
+      pre, code { background: #f4f4f4; }
+    }
+</style>
+</head>
+<body>
+  <header>
+    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <h1>Branch Merge Analysis</h1>
+    <p class="subtitle">Project documentation, rendered from BRANCH_MERGE_ANALYSIS.md · reproduced from the private project repository</p>
+  </header>
+  <main>
+    <blockquote>
+<p>生成时间：2026-07-08<br />
+分析范围：<code>Sandbox_0702</code> vs <code>android_merged</code> vs <code>develop</code></p>
+</blockquote>
+<hr />
+<h2>1. 分支概览</h2>
+<table>
+<thead>
+<tr>
+<th>分支</th>
+<th>HEAD Commit</th>
+<th>领先 base 的 commit 数</th>
+<th>方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main</code></td>
+<td><code>ce3daf9</code></td>
+<td>—</td>
+<td>主分支</td>
+</tr>
+<tr>
+<td><code>Sandbox_0702</code></td>
+<td><code>36998c3</code></td>
+<td><strong>20 commits</strong></td>
+<td>iOS + React Native 全量功能开发</td>
+</tr>
+<tr>
+<td><code>android_merged</code></td>
+<td><code>7d2bba9</code></td>
+<td><strong>4 commits</strong></td>
+<td>Android 通知/结算 + 文档</td>
+</tr>
+<tr>
+<td><code>develop</code></td>
+<td><code>d10be6a</code></td>
+<td><strong>1 commit</strong></td>
+<td>"Merge iOS and Android versions"</td>
+</tr>
+</tbody>
+</table>
+<p><strong>公共 merge base</strong>: <code>6a9bb6e</code>（"Rename Copy of phase2.drawio.png to workflow_diagram.png"）</p>
+<p>三个分支从同一个 commit 分叉，之后各自独立发展。</p>
+<hr />
+<h2>2. Sandbox_0702 vs android_merged 核心区别</h2>
+<h3>2.1 技术架构差异</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Sandbox_0702</th>
+<th>android_merged</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>状态管理</strong></td>
+<td>✅ 移除了 <code>isHydrated</code> hydration 等待逻辑，简化启动</td>
+<td>❌ 保留 <code>isHydrated</code>、<code>createTransition</code> 等复杂状态机</td>
+</tr>
+<tr>
+<td><strong>API 层</strong></td>
+<td>✅ 全面重构 <code>api/index.js</code>，统一服务层（禁止 screen 直接 fetch）</td>
+<td>❌ 删除了 <code>bookingApi</code>、<code>vaultApi</code> 导出</td>
+</tr>
+<tr>
+<td><strong>导航路由</strong></td>
+<td>✅ 保留 Booking / HealthVault / BookingList 三个核心页面</td>
+<td>❌ 删除了 Booking / HealthVault / BookingList，新增 HospitalClaimFlow / HealthCloudDrive / DoctorAppointment / Notifications</td>
+</tr>
+<tr>
+<td><strong>i18n 翻译</strong></td>
+<td>✅ 1800+ 行增量，全面覆盖 3 种语言</td>
+<td>❌ 仅 1 行新增</td>
+</tr>
+<tr>
+<td><strong>Server 端</strong></td>
+<td>✅ 新增 bookings/vault_files 建表 + 扫码验证/预约取号/云盘 API</td>
+<td>✅ 基础 server 代码（与 develop 一致）</td>
+</tr>
+</tbody>
+</table>
+<h3>2.2 功能模块差异</h3>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th style="text-align: center;">Sandbox_0702</th>
+<th style="text-align: center;">android_merged</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🏠 首页（HomeScreen）</td>
+<td style="text-align: center;">✅ 大幅重写：新增预约挂号卡片、排队叫号通知、取号 modal、二维码 ticket</td>
+<td style="text-align: center;">⚠️ 小幅改动</td>
+</tr>
+<tr>
+<td>📅 在线预约（BookingScreen/List）</td>
+<td style="text-align: center;">✅ 保留并更新</td>
+<td style="text-align: center;">❌ <strong>完全删除</strong></td>
+</tr>
+<tr>
+<td>🏥 医院理赔流程（HospitalClaimFlow）</td>
+<td style="text-align: center;">❌ <strong>完全删除</strong></td>
+<td style="text-align: center;">✅ 新增完整流程</td>
+</tr>
+<tr>
+<td>☁️ 健康云盘（HealthVaultScreen）</td>
+<td style="text-align: center;">✅ 保留（小幅调整：SafeAreaView 改用内置）</td>
+<td style="text-align: center;">❌ <strong>完全删除</strong></td>
+</tr>
+<tr>
+<td>📁 云端硬盘（HealthCloudDrive）</td>
+<td style="text-align: center;">❌ <strong>完全删除</strong></td>
+<td style="text-align: center;">✅ 新增</td>
+</tr>
+<tr>
+<td>👨‍⚕️ 医生预约（DoctorAppointment）</td>
+<td style="text-align: center;">❌ <strong>完全删除</strong></td>
+<td style="text-align: center;">✅ 新增</td>
+</tr>
+<tr>
+<td>🔔 通知中心（Notifications）</td>
+<td style="text-align: center;">❌ <strong>完全删除</strong></td>
+<td style="text-align: center;">✅ 新增</td>
+</tr>
+<tr>
+<td>📋 理赔详情/列表</td>
+<td style="text-align: center;">✅ 大幅重写（450-550 行 diff）</td>
+<td style="text-align: center;">✅ 等量重写</td>
+</tr>
+<tr>
+<td>🎫 注册流程（RegistrationScreen）</td>
+<td style="text-align: center;">✅ 大幅重写（540 行 diff）</td>
+<td style="text-align: center;">✅ 等量重写</td>
+</tr>
+<tr>
+<td>👤 个人中心（ProfileScreen）</td>
+<td style="text-align: center;">✅ 90 行改动</td>
+<td style="text-align: center;">⚠️ 无改动</td>
+</tr>
+<tr>
+<td>📱 QR 码页面（QRCodeScreen）</td>
+<td style="text-align: center;">✅ 200 行改动（重构刷新逻辑、预约取号 QR）</td>
+<td style="text-align: center;">⚠️ 15 行微调</td>
+</tr>
+<tr>
+<td>👴 长者模式（ElderHomeScreen）</td>
+<td style="text-align: center;">✅ 110 行改动（语言切换增强）</td>
+<td style="text-align: center;">⚠️ 15 行微调</td>
+</tr>
+<tr>
+<td>🏷️ 分类/活动页</td>
+<td style="text-align: center;">✅ 大幅重写</td>
+<td style="text-align: center;">✅ 等量重写</td>
+</tr>
+</tbody>
+</table>
+<h3>2.3 独有文件</h3>
+<p><strong>Sandbox_0702 独有</strong>（不在 develop 中）：<br />
+- <code>.agents/</code> — 完整的 AI 开发技能库（dev/test/writing/obsidian 等 ~80 个文件）<br />
+- <code>HKEdgeApp_Appetize.zip</code> — Appetize 模拟器打包产物<br />
+- <code>HKEdgeApp_Source.zip</code> — 完整源码打包产物</p>
+<p><strong>android_merged 独有</strong>（不在 develop 中）：<br />
+- <code>.idea/</code> — Android Studio 项目配置<br />
+- <code>README_HKEdgeAPP_AMYUpdate.md</code> — AMY 更新说明文档<br />
+- <code>README_merged.md</code> — 合并说明文档</p>
+<p><strong>develop 独有</strong>（不在 Sandbox_0702 中）：<br />
+- <code>android/app/src/main/java/com/hkedgeapp/ShareModule.kt</code> — Android 原生分享模块<br />
+- <code>android/app/src/main/java/com/hkedgeapp/SharePackage.kt</code> — Android 原生分享注册<br />
+- <code>android/app/src/main/res/xml/file_paths.xml</code> — Android FileProvider 配置<br />
+- <code>api/appointmentApi.js</code> — 预约 API 模块<br />
+- <code>api/cloudDriveApi.js</code> — 云盘 API 模块<br />
+- <code>api/hospitalClaimFlowApi.js</code> — 医院理赔 API 模块<br />
+- <code>api/notificationApi.js</code> — 通知 API 模块<br />
+- <code>declarations.d.ts</code> — TypeScript 类型声明<br />
+- <code>jest.setup.js</code> — 测试初始化<br />
+- <code>MERGE_NOTES.md</code> — 合并备注<br />
+- <code>screen/DoctorAppointmentScreen.js</code> — 医生预约页面<br />
+- <code>screen/HealthCloudDriveScreen.js</code> — 健康云盘页面<br />
+- <code>screen/HospitalClaimFlowScreen.js</code> — 医院理赔流程页面<br />
+- <code>screen/NotificationsScreen.js</code> — 通知中心页面</p>
+<hr />
+<h2>3. 20 个冲突文件详细分析</h2>
+<p>两个分支都修改了以下文件（相对于 develop），合并时 <strong>必定冲突</strong>：</p>
+<h3>3.1 🔴 严重冲突（逻辑互斥）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文件</th>
+<th>Sandbox 行为</th>
+<th>android_merged 行为</th>
+<th>冲突本质</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>App.tsx</strong></td>
+<td>保留 Booking/HealthVault/BookingList；删除 HospitalClaimFlow/HealthCloudDrive/DoctorAppointment/Notifications</td>
+<td>删除 Booking/BookingList/HealthVault；保留 HospitalClaimFlow/HealthCloudDrive/DoctorAppointment/Notifications</td>
+<td><strong>路由注册互斥</strong> — 两个分支删除了不同的页面</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>api/index.js</strong></td>
+<td>完全重写为统一服务层架构（含所有模块）</td>
+<td>删除 bookingApi/vaultApi 的 re-export</td>
+<td><strong>API 架构不同</strong> — Sandbox 重写了整个文件</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>context/UserContext.js</strong></td>
+<td>移除 <code>isHydrated</code>/<code>createTransition</code>/<code>setPreviewPolicies</code>/<code>cancelPreview</code></td>
+<td>移除 <code>setPreviewPolicies</code>/<code>cancelPreview</code></td>
+<td><strong>状态管理逻辑不同</strong> — 都删了东西，但删的不一样</td>
+</tr>
+</tbody>
+</table>
+<h3>3.2 🟡 中度冲突（功能改动方向不同）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文件</th>
+<th style="text-align: center;">Sandbox 改动量</th>
+<th style="text-align: center;">android 改动量</th>
+<th>冲突描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td><strong>screen/HomeScreen.js</strong></td>
+<td style="text-align: center;">563 行</td>
+<td style="text-align: center;">90 行</td>
+<td>Sandbox 新增预约挂号卡片、排队叫号、取号 modal、QR ticket；android 小幅修改</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>screen/QRCodeScreen.tsx</strong></td>
+<td style="text-align: center;">199 行</td>
+<td style="text-align: center;">15 行</td>
+<td>Sandbox 重构了 QR 刷新逻辑、新增预约取号 QR；android 微调</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>screen/ElderHomeScreen.js</strong></td>
+<td style="text-align: center;">110 行</td>
+<td style="text-align: center;">15 行</td>
+<td>Sandbox 增强语言切换能力；android 微调</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>screen/ProfileScreen.js</strong></td>
+<td style="text-align: center;">90 行</td>
+<td style="text-align: center;">0 行</td>
+<td>仅 Sandbox 改动；android 未触碰到</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>screen/HealthVaultScreen.tsx</strong></td>
+<td style="text-align: center;">15 行（保留）</td>
+<td style="text-align: center;">742 行（<strong>删除整个文件</strong>）</td>
+<td>⚠️ <strong>android 删除了这个文件！</strong> Sandbox 保留并小幅修改</td>
+</tr>
+</tbody>
+</table>
+<h3>3.3 🟢 低度冲突（改动量相近，可能内容也相近）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文件</th>
+<th style="text-align: center;">Sandbox 改动量</th>
+<th style="text-align: center;">android 改动量</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>9</td>
+<td><strong>screen/ActivitiesScreen.js</strong></td>
+<td style="text-align: center;">146 行</td>
+<td style="text-align: center;">146 行</td>
+<td>改动量完全一致，可能内容相同</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>screen/CategoriesScreen.js</strong></td>
+<td style="text-align: center;">138 行</td>
+<td style="text-align: center;">138 行</td>
+<td>改动量完全一致，可能内容相同</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>screen/ClaimDetailsScreen.js</strong></td>
+<td style="text-align: center;">461 行</td>
+<td style="text-align: center;">458 行</td>
+<td>改动量非常接近</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>screen/ClaimsListScreen.js</strong></td>
+<td style="text-align: center;">547 行</td>
+<td style="text-align: center;">534 行</td>
+<td>改动量非常接近</td>
+</tr>
+<tr>
+<td>13</td>
+<td><strong>screen/RegistrationScreen.tsx</strong></td>
+<td style="text-align: center;">542 行</td>
+<td style="text-align: center;">542 行</td>
+<td>改动量完全一致</td>
+</tr>
+<tr>
+<td>14</td>
+<td><strong>constants/translations.js</strong></td>
+<td style="text-align: center;">+1081/-1418</td>
+<td style="text-align: center;">+1/-117</td>
+<td>Sandbox 大规模重写 i18n；android 几乎不改</td>
+</tr>
+<tr>
+<td>15</td>
+<td><strong>MERGE_NOTES.md</strong></td>
+<td style="text-align: center;">新增</td>
+<td style="text-align: center;">删除</td>
+<td>Sandbox 新增文件 vs android 删除（android 没有此文件）</td>
+</tr>
+</tbody>
+</table>
+<h3>3.4 文件存在性冲突</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>文件</th>
+<th style="text-align: center;">Sandbox</th>
+<th style="text-align: center;">android_merged</th>
+<th style="text-align: center;">develop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>16</td>
+<td><strong>screen/BookingScreen.tsx</strong></td>
+<td style="text-align: center;">✅ 保留</td>
+<td style="text-align: center;">❌ 删除</td>
+<td style="text-align: center;">✅ 存在</td>
+</tr>
+<tr>
+<td>17</td>
+<td><strong>screen/BookingListScreen.tsx</strong></td>
+<td style="text-align: center;">✅ 保留</td>
+<td style="text-align: center;">❌ 删除</td>
+<td style="text-align: center;">✅ 存在</td>
+</tr>
+<tr>
+<td>18</td>
+<td><strong>screen/DoctorAppointmentScreen.js</strong></td>
+<td style="text-align: center;">❌ 删除</td>
+<td style="text-align: center;">✅ 保留</td>
+<td style="text-align: center;">✅ 存在</td>
+</tr>
+<tr>
+<td>19</td>
+<td><strong>screen/HealthCloudDriveScreen.js</strong></td>
+<td style="text-align: center;">❌ 删除</td>
+<td style="text-align: center;">✅ 保留</td>
+<td style="text-align: center;">✅ 存在</td>
+</tr>
+<tr>
+<td>20</td>
+<td><strong>screen/HospitalClaimFlowScreen.js</strong></td>
+<td style="text-align: center;">❌ 删除</td>
+<td style="text-align: center;">✅ 保留</td>
+<td style="text-align: center;">✅ 存在</td>
+</tr>
+<tr>
+<td>21</td>
+<td><strong>screen/NotificationsScreen.js</strong></td>
+<td style="text-align: center;">❌ 删除</td>
+<td style="text-align: center;">✅ 保留</td>
+<td style="text-align: center;">✅ 存在</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>4. 功能直观对比</h2>
+<h3>Sandbox_0702 侧重 → iOS 完整体验</h3>
+<pre><code>🏠 首页（丰富版）
+├── 预约挂号卡片 → BookingScreen → BookingListScreen
+├── 排队叫号通知（模拟） → QR 取号 modal
+├── 理赔概览
+├── 个人健康云盘入口 → HealthVaultScreen
+└── 底部 Tab 栏（重新设计）
+</code></pre>
+<p><strong>关键词</strong>: i18n 全覆盖、深浅色主题、长者模式、Appetize 打包、代码注释（中文）</p>
+<h3>android_merged 侧重 → 医院业务闭环</h3>
+<pre><code>🏠 首页（精简版）
+├── 医院理赔流程 → HospitalClaimFlowScreen
+├── 医生预约 → DoctorAppointmentScreen
+├── 健康云盘 → HealthCloudDriveScreen
+├── 通知中心 → NotificationsScreen
+└── 实时结算
+</code></pre>
+<p><strong>关键词</strong>: 通知推送、实时结算、医院 HIT 对接、证据文档、Android 专项</p>
+<h3>合并后理想状态（两者互补）</h3>
+<pre><code>🏠 首页（完整版）
+├── 预约挂号卡片 → BookingScreen → BookingListScreen  ← Sandbox
+├── 排队叫号通知 → QR 取号 modal                     ← Sandbox
+├── 医院理赔流程 → HospitalClaimFlowScreen             ← android
+├── 医生预约 → DoctorAppointmentScreen                ← android
+├── 健康云盘 → HealthVaultScreen                        ← Sandbox
+├── 健康云盘 → HealthCloudDriveScreen                   ← android
+├── 通知中心 → NotificationsScreen                      ← android
+├── 理赔概览
+└── 底部 Tab 栏（重新设计）                            ← Sandbox
+</code></pre>
+<hr />
+<h2>5. 合并策略建议</h2>
+<h3>推荐方案：分两步合并</h3>
+<pre><code>Step 1: android_merged → develop  （先合并改动小的）
+Step 2: Sandbox_0702 → develop    （再合并改动大的）
+</code></pre>
+<h3>Step 1: <code>android_merged</code> → <code>develop</code></h3>
+<p><strong>风险等级</strong>: 🟢 低<br />
+<strong>冲突文件</strong>: 0（develop 领先 android 仅 1 个 commit，且无重叠改动）</p>
+<pre><code>合并内容:
+  ✅ README_merged.md / README_HKEdgeAPP_AMYUpdate.md
+  ✅ .idea/ 项目配置
+  ✅ server/server.js 基础版
+  ✅ 所有 android_merged 的 screen 改动
+</code></pre>
+<h3>Step 2: <code>Sandbox_0702</code> → <code>develop</code></h3>
+<p><strong>风险等级</strong>: 🔴 高<br />
+<strong>预计冲突</strong>: 15-20 个文件</p>
+<p><strong>关键冲突及解决方案</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>冲突文件</th>
+<th>推荐解决策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>App.tsx</code></td>
+<td><strong>两边都保留</strong> — 注册所有 7 个 screen（Booking + HealthVault + BookingList + HospitalClaimFlow + HealthCloudDrive + DoctorAppointment + Notifications）</td>
+</tr>
+<tr>
+<td><code>api/index.js</code></td>
+<td><strong>采用 Sandbox 版本</strong> — 统一服务层架构更完善，再补上 android 的 API 模块导出</td>
+</tr>
+<tr>
+<td><code>context/UserContext.js</code></td>
+<td><strong>采用 Sandbox 版本</strong> — 简化了 hydration 逻辑，移除冗余状态机</td>
+</tr>
+<tr>
+<td><code>screen/HealthVaultScreen.tsx</code></td>
+<td><strong>保留不删除</strong> — 采用 Sandbox 版本（小幅改动的版本）</td>
+</tr>
+<tr>
+<td><code>screen/HomeScreen.js</code></td>
+<td><strong>采用 Sandbox 版本</strong> — 功能更完整（预约卡片+叫号通知），再 port android 的改动</td>
+</tr>
+<tr>
+<td><code>screen/QRCodeScreen.tsx</code></td>
+<td><strong>采用 Sandbox 版本</strong> — 重构更彻底</td>
+</tr>
+<tr>
+<td><code>screen/ElderHomeScreen.js</code></td>
+<td><strong>采用 Sandbox 版本</strong></td>
+</tr>
+<tr>
+<td><code>screen/ProfileScreen.js</code></td>
+<td><strong>采用 Sandbox 版本</strong></td>
+</tr>
+<tr>
+<td><code>constants/translations.js</code></td>
+<td><strong>采用 Sandbox 版本</strong> — 1800+ 行 i18n 完善</td>
+</tr>
+<tr>
+<td><code>screen/ActivitiesScreen.js</code> 等</td>
+<td>逐文件对比，可能两边改动内容一致，选 Sandbox 为主</td>
+</tr>
+<tr>
+<td>BookingScreen/List（文件存在性）</td>
+<td><strong>保留</strong>（Sandbox 版本）</td>
+</tr>
+<tr>
+<td>DoctorAppointment/HealthCloudDrive/HospitalClaimFlow/Notifications</td>
+<td><strong>保留</strong>（android/develop 版本）</td>
+</tr>
+<tr>
+<td><code>MERGE_NOTES.md</code></td>
+<td><strong>保留 develop 版本</strong></td>
+</tr>
+<tr>
+<td><code>.agents/</code></td>
+<td><strong>纳入</strong>（Sandbox 独有，AI 开发技能库）</td>
+</tr>
+<tr>
+<td>Android 原生文件</td>
+<td><strong>保留</strong>（develop 独有，Sandbox 缺失的 ShareModule 等）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>6. 风险评估</h2>
+<table>
+<thead>
+<tr>
+<th>风险项</th>
+<th style="text-align: center;">等级</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App.tsx 路由注册合并</td>
+<td style="text-align: center;">🔴 高</td>
+<td>两个分支删了不同的页面，需手工合并 import + Stack.Screen</td>
+</tr>
+<tr>
+<td>api/index.js 架构冲突</td>
+<td style="text-align: center;">🔴 高</td>
+<td>Sandbox 重写了 API 层，android 改了导出</td>
+</tr>
+<tr>
+<td>UserContext.js 状态机</td>
+<td style="text-align: center;">🟡 中</td>
+<td>Sandbox 删了 isHydrated，需确认不影响 android 功能</td>
+</tr>
+<tr>
+<td>HealthVaultScreen 删除</td>
+<td style="text-align: center;">🔴 高</td>
+<td>android 删了整文件，需决策保留还是删除</td>
+</tr>
+<tr>
+<td>i18n 翻译覆盖</td>
+<td style="text-align: center;">🟡 中</td>
+<td>Sandbox 改了 2500+ 行，android 几乎不改，合并量大</td>
+</tr>
+<tr>
+<td>运行时兼容性</td>
+<td style="text-align: center;">🟡 中</td>
+<td>合并后需验证 Booking + HospitalClaimFlow 等功能共存</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>7. 结论</h2>
+<p><strong>可以合并</strong>，两个分支内容互补：<br />
+- <code>Sandbox_0702</code> 提供：完整的 iOS 端 UI/UX 改进、i18n 多语言、预约挂号、QR 扫码、代码质量改进<br />
+- <code>android_merged</code> 提供：医院理赔流程、医生预约、通知中心、实时结算、Android 专项文档</p>
+<p>建议按 <strong>先 android → 再 sandbox</strong> 的顺序合并，预计需要手动解决 <strong>15-20 个冲突文件</strong>，其中最复杂的是 <code>App.tsx</code>（路由注册）和 <code>api/index.js</code>（API 架构）。</p>
+<p>合并后需要：<br />
+1. 检查所有 7 个页面路由是否正常注册<br />
+2. 验证 <code>UserContext</code> 状态机在各页面间流转是否正确<br />
+3. 全量回归测试 i18n 翻译<br />
+4. 确认 Android 原生模块（ShareModule 等）未被误删</p>
+  </main>
+  <footer>
+    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+  </footer>
+</body>
+</html>

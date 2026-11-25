@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git Branch Strategy — HKEdgeApp | Jiazhi (Jasper) Xie</title>
+  <meta name="description" content="Project documentation, rendered from BRANCH_STRATEGY.md for the HKEdgeApp project.">
+  <style>
+    :root {
+      --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
+      --rule: #d8d8d8; --link: #0b5394; --pre-bg: #f4f4f4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181d; --text: #d6d6d6; --muted: #9a9a9a; --heading: #f2f2f2;
+        --rule: #3a3d44; --link: #7ab3e0; --pre-bg: #22252b;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; padding: 0 1.25rem;
+      background: var(--bg); color: var(--text);
+      font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      font-size: 1.0625rem; line-height: 1.65;
+    }
+    main, header, footer { max-width: 760px; margin: 0 auto; }
+    header { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--rule); }
+    .back { font-size: 0.95rem; margin: 0 0 1rem; }
+    h1 { font-size: 1.7rem; line-height: 1.3; margin: 0 0 0.4rem; color: var(--heading); }
+    .subtitle { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    main { padding: 2rem 0 3rem; }
+    h2 {
+      font-size: 1.25rem; color: var(--heading); margin: 2.2rem 0 0.8rem;
+      padding-bottom: 0.3rem; border-bottom: 1px solid var(--rule);
+    }
+    h3 { font-size: 1.08rem; color: var(--heading); margin: 1.6rem 0 0.5rem; }
+    h4 { font-size: 1rem; color: var(--heading); margin: 1.2rem 0 0.4rem; }
+    p, ul, ol, blockquote { margin: 0 0 0.9rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+    blockquote {
+      border-left: 3px solid var(--rule); padding-left: 1rem;
+      color: var(--muted); margin-left: 0;
+    }
+    pre {
+      background: var(--pre-bg); padding: 0.9rem 1rem; border-radius: 6px;
+      overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+      border: 1px solid var(--rule);
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em; background: var(--pre-bg); padding: 0.05em 0.35em;
+      border-radius: 3px;
+    }
+    pre code { padding: 0; background: none; font-size: 1em; }
+    table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 0 0 1.2rem; }
+    th, td { border: 1px solid var(--rule); padding: 0.45rem 0.65rem; text-align: left; font-size: 0.95rem; }
+    th { background: var(--pre-bg); }
+    hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
+    footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
+    @media print {
+      body { background: #ffffff; color: #000000; font-size: 10pt; }
+      h1, h2, h3, h4 { color: #000000; }
+      a { color: #000000; text-decoration: none; }
+      pre, code { background: #f4f4f4; }
+    }
+</style>
+</head>
+<body>
+  <header>
+    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <h1>Git Branch Strategy</h1>
+    <p class="subtitle">Project documentation, rendered from BRANCH_STRATEGY.md · reproduced from the private project repository</p>
+  </header>
+  <main>
+    <blockquote>
+<p>Last updated: 2026-06-18<br />
+Applies to: <code>github.com/cuhkszdev/Cross-Boarder-Data-Cloud-CUHKSZ-</code></p>
+</blockquote>
+<hr />
+<h2>1. Branch Architecture · 分支架构</h2>
+<pre><code>main ────────────────────────────────────────  生产环境（只合并，不直接改）
+  │
+  ├── develop ───────────────────────────────  开发主线（所有 feature 汇总）
+  │     │
+  │     ├── feature/&lt;name&gt; ──────────────────  共享代码功能开发
+  │     ├── fix/&lt;name&gt; ──────────────────────  共享代码 Bug 修复
+  │     │
+  │     ├── ios/&lt;name&gt; ──────────────────────  iOS 原生层改动
+  │     └── android/&lt;name&gt; ──────────────────  Android 原生层改动
+  │
+  └── release/x.x.x ─────────────────────────  发布分支（临时，发布后删除）
+</code></pre>
+<hr />
+<h2>2. ⚠️ Key Concept: Only 2 Permanent Branches · 核心概念：只有2条永久分支</h2>
+<p><strong>这是整个策略最重要的点，先理解清楚：</strong></p>
+<pre><code>GitHub 上永远只保留：          feature/ ios/ android/ 是临时工：
+
+main     ← 1 条（永久）        有人开始干活 → 临时创建
+develop  ← 1 条（永久）        写完合进 develop → 立刻删除
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>分支</th>
+<th>生命周期</th>
+<th>何时出现</th>
+<th>何时消失</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main</code></td>
+<td>永久</td>
+<td>项目创建时</td>
+<td>永不删除</td>
+</tr>
+<tr>
+<td><code>develop</code></td>
+<td>永久</td>
+<td>项目创建时</td>
+<td>永不删除</td>
+</tr>
+<tr>
+<td><code>feature/*</code></td>
+<td>临时</td>
+<td>开发新功能时 <code>git checkout -b feature/xxx</code></td>
+<td>合进 develop 后删除</td>
+</tr>
+<tr>
+<td><code>ios/*</code></td>
+<td>临时</td>
+<td>改 iOS 原生层时 <code>git checkout -b ios/xxx</code></td>
+<td>合进 develop 后删除</td>
+</tr>
+<tr>
+<td><code>android/*</code></td>
+<td>临时</td>
+<td>改 Android 原生层时 <code>git checkout -b android/xxx</code></td>
+<td>合进 develop 后删除</td>
+</tr>
+<tr>
+<td><code>release/*</code></td>
+<td>临时</td>
+<td>准备发布时</td>
+<td>发布后删除</td>
+</tr>
+</tbody>
+</table>
+<h3>实际演化过程</h3>
+<pre><code>起点（现在）：
+──────────────────────────────────────────
+main    ──●
+develop ──●
+         （两条，同一个位置，干净的起点）
+
+
+张三开始写离线 QR 功能（共享代码）：
+──────────────────────────────────────────
+develop ──●────────────────────────────────
+           │
+           └── feature/offline-qr ──●──●──●  ← 临时冒出
+                                        │
+                                  合进 develop → 分支消失
+
+
+李四改 iOS 推送（iOS 原生）：
+──────────────────────────────────────────
+develop ──●────────────●──────────────────
+                       │ ← offline-qr 已合入
+                       │
+                       └── ios/push ──●──●  ← 又一条临时分支
+                                          │
+                                    合进 develop → 消失
+
+
+一周后，该发布了：
+──────────────────────────────────────────
+main    ──●─────────────────────────────●── v1.0.0
+                                          │ ← 从 develop 合并
+develop ──●──●──●──●──●──●──●──●──●──●──●
+           │  │  │  │  │  │
+           └──┴──┴──┴──┴──┴──┘ ← 所有临时分支都已删除
+</code></pre>
+<h3>不要把「分支」和「目录」搞混</h3>
+<p><strong>分支负责隔离不同人的工作</strong>——让你和张三同时改代码不冲突。</p>
+<p><strong>目录负责物理分层</strong>——代码本身就是按平台分好的：</p>
+<pre><code>HKEdgeApp/                  ← 一个仓库，一套分支策略
+├── ios/          🍎        ← 只放 iOS 原生文件，物理隔离
+├── android/      🤖        ← 只放 Android 原生文件，物理隔离
+├── api/          🔷        ← 共享代码，跨平台
+├── components/   🔷
+├── screen/       🔷
+├── context/      🔷
+└── constants/    🔷
+</code></pre>
+<blockquote>
+<p>分支前缀 <code>ios/</code> <code>android/</code> 的作用是<strong>告诉团队这个分支改的是哪个目录</strong>，跟目录结构保持一致，方便一眼看出改动范围。</p>
+</blockquote>
+<hr />
+<h2>3. Branch Types · 四种分支</h2>
+<h3>2.1 共享代码分支 <code>feature/*</code> <code>fix/*</code></h3>
+<p><strong>改什么</strong>：<code>api/</code> <code>components/</code> <code>screen/</code> <code>context/</code> <code>constants/</code> <code>assets/</code> <code>docs/</code></p>
+<p>这些都是跨平台的 JavaScript/TypeScript 代码，不涉及任何原生层。</p>
+<pre><code class="language-bash"># 开始新功能
+git checkout develop
+git checkout -b feature/qr-offline-support
+
+# 开发 → 提交 → 推送
+git add -A
+git commit -m &quot;feat: offline QR code support&quot;
+git push origin feature/qr-offline-support
+
+# 在 GitHub 上创建 PR → target: develop
+</code></pre>
+<p><strong>命名规范</strong>：<br />
+- <code>feature/qr-offline</code> — 离线 QR 码<br />
+- <code>feature/claim-pagination</code> — 理赔列表分页<br />
+- <code>fix/stale-closure-bug</code> — 闭包 Bug 修复<br />
+- <code>fix/platform-font-crash</code> — 字体崩溃修复</p>
+<h3>2.2 iOS 原生分支 <code>ios/*</code></h3>
+<p><strong>改什么</strong>：只改 <code>ios/</code> 目录下的文件</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>常见改动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Info.plist</code></td>
+<td>权限声明（相机、推送、位置）</td>
+</tr>
+<tr>
+<td><code>Podfile</code></td>
+<td>添加/删除原生依赖</td>
+</tr>
+<tr>
+<td><code>AppDelegate.swift</code></td>
+<td>生命周期、推送注册</td>
+</tr>
+<tr>
+<td><code>project.pbxproj</code></td>
+<td>构建配置、签名</td>
+</tr>
+<tr>
+<td><code>LaunchScreen.storyboard</code></td>
+<td>启动画面</td>
+</tr>
+<tr>
+<td><code>*.entitlements</code></td>
+<td>Capabilities 配置</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">git checkout develop
+git checkout -b ios/add-camera-permission
+
+# 只动 ios/Info.plist
+git add ios/
+git commit -m &quot;ios: add camera permission for QR scanning&quot;
+git push origin ios/add-camera-permission
+</code></pre>
+<h3>2.3 Android 原生分支 <code>android/*</code></h3>
+<p><strong>改什么</strong>：只改 <code>android/</code> 目录下的文件</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>常见改动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AndroidManifest.xml</code></td>
+<td>权限声明、Activity 配置</td>
+</tr>
+<tr>
+<td><code>app/build.gradle</code></td>
+<td>依赖、版本号、签名配置</td>
+</tr>
+<tr>
+<td><code>MainActivity.kt</code></td>
+<td>生命周期、Intent 处理</td>
+</tr>
+<tr>
+<td><code>build.gradle</code></td>
+<td>全局构建配置</td>
+</tr>
+<tr>
+<td><code>proguard-rules.pro</code></td>
+<td>混淆规则</td>
+</tr>
+<tr>
+<td><code>mipmap-*</code></td>
+<td>App 图标</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-bash">git checkout develop
+git checkout -b android/fix-keystore
+
+# 只动 android/app/build.gradle
+git add android/
+git commit -m &quot;android: fix release keystore config&quot;
+git push origin android/fix-keystore
+</code></pre>
+<h3>2.4 发布分支 <code>release/*</code></h3>
+<pre><code class="language-bash"># 从 develop 拉发布分支
+git checkout develop
+git checkout -b release/1.0.0
+
+# 修最后一轮 bug → 合并到 main + develop
+git checkout main &amp;&amp; git merge release/1.0.0
+git checkout develop &amp;&amp; git merge release/1.0.0
+
+# 打 tag
+git tag -a v1.0.0 -m &quot;First release&quot;
+git push origin main develop v1.0.0
+
+# 删除发布分支
+git branch -d release/1.0.0
+git push origin --delete release/1.0.0
+</code></pre>
+<hr />
+<h2>4. Platform File Map · 文件归属速查表</h2>
+<h3>🍎 iOS only（14 files）</h3>
+<pre><code>ios/
+├── .xcode.env
+├── .xcode.env.local
+├── Podfile / Podfile.lock
+├── HKEdgeApp.xcodeproj/
+├── HKEdgeApp.xcworkspace/
+├── HKEdgeApp/
+│   ├── AppDelegate.swift
+│   ├── Info.plist
+│   ├── LaunchScreen.storyboard
+│   ├── PrivacyInfo.xcprivacy
+│   ├── Images.xcassets/
+│   └── Fonts/ (19 .ttf)
+</code></pre>
+<p><strong>Branch prefix</strong>: <code>ios/</code></p>
+<h3>🤖 Android only（24 files）</h3>
+<pre><code>android/
+├── build.gradle
+├── settings.gradle
+├── gradle.properties
+├── gradlew / gradlew.bat
+├── gradle/wrapper/
+├── app/
+│   ├── build.gradle
+│   ├── debug.keystore
+│   ├── proguard-rules.pro
+│   └── src/main/
+│       ├── AndroidManifest.xml
+│       ├── java/com/hkedgeapp/
+│       │   ├── MainActivity.kt
+│       │   └── MainApplication.kt
+│       └── res/
+│           ├── drawable/
+│           ├── mipmap-*/ (12 icons, 6 densities)
+│           └── values/
+</code></pre>
+<p><strong>Branch prefix</strong>: <code>android/</code></p>
+<h3>🔷 Shared / Cross-Platform（~40 files）</h3>
+<pre><code>api/          7 files    ← HTTP 请求层（注意 client.js 含 Platform.OS）
+components/   9 files    ← 可复用 UI
+screen/      10 files    ← 业务页面（13 处 Platform.OS 判断）
+context/      3 files    ← 全局状态
+constants/    2 files    ← 主题 + 翻译
+assets/       1 file     ← logo.jpg
+docs/         8 files    ← 文档
+scripts/      2 files    ← 辅助脚本
+App.tsx                  ← 入口
+index.js                 ← 注册
+package.json             ← 依赖
+*.config.js              ← 构建配置
+</code></pre>
+<p><strong>Branch prefix</strong>: <code>feature/</code> or <code>fix/</code></p>
+<h3>⚠️ 注意：共享代码内的 13 个 Platform.OS 判断点</h3>
+<p>这些文件在共享目录，但代码里有少量平台差异：</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>数量</th>
+<th>差异</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api/client.js:5</code></td>
+<td>1</td>
+<td>Android 模拟器 <code>10.0.2.2</code> ↔ iOS <code>localhost</code></td>
+</tr>
+<tr>
+<td><code>screen/HomeScreen.js</code></td>
+<td>2</td>
+<td>键盘避让 + 字体</td>
+</tr>
+<tr>
+<td><code>screen/ClaimDetailsScreen.js</code></td>
+<td>2</td>
+<td>padding + 字体</td>
+</tr>
+<tr>
+<td><code>screen/ClaimsListScreen.js</code></td>
+<td>3</td>
+<td>字体 + padding</td>
+</tr>
+<tr>
+<td><code>screen/ProfileScreen.js</code></td>
+<td>2</td>
+<td><code>Platform.select</code></td>
+</tr>
+<tr>
+<td><code>screen/RegistrationScreen.tsx</code></td>
+<td>2</td>
+<td>键盘 + 字体</td>
+</tr>
+<tr>
+<td><code>screen/ElderHomeScreen.js</code></td>
+<td>1</td>
+<td>padding</td>
+</tr>
+<tr>
+<td><code>screen/QRCodeScreen.tsx</code></td>
+<td>1</td>
+<td>padding</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>这些都是 React Native 框架级别的正常差异（字体、安全区域），不影响分支策略。</p>
+</blockquote>
+<hr />
+<h2>5. Workflow · 日常协作流程</h2>
+<h3>场景 A：开发一个新功能（改共享代码）</h3>
+<pre><code class="language-bash"># 1. 从 develop 拉分支
+git checkout develop
+git pull origin develop
+git checkout -b feature/offline-qr
+
+# 2. 开发，只改 api/ screen/ components/ 等
+# ...
+
+# 3. 提交
+git add api/cache.js screen/QRCodeScreen.tsx
+git commit -m &quot;feat: cache QR token for offline display&quot;
+git push origin feature/offline-qr
+
+# 4. 去 GitHub 创建 PR
+#    base: develop  ← compare: feature/offline-qr
+
+# 5. Code review → merge → delete branch
+</code></pre>
+<h3>场景 B：改 iOS 原生配置</h3>
+<pre><code class="language-bash">git checkout develop
+git checkout -b ios/push-notification
+# 改 ios/Info.plist、ios/HKEdgeApp/AppDelegate.swift
+git add ios/
+git commit -m &quot;ios: add push notification capability&quot;
+git push origin ios/push-notification
+# PR: base: develop ← compare: ios/push-notification
+</code></pre>
+<h3>场景 C：同时改平台 + 共享代码</h3>
+<pre><code class="language-bash"># 拉一个 feature 分支，同时包含平台改动
+git checkout -b feature/qr-with-camera
+
+# 改 shared code
+vim screen/QrScanScreen.js
+vim api/qrApi.js
+
+# 改 iOS
+vim ios/HKEdgeApp/Info.plist
+
+# 改 Android
+vim android/app/src/main/AndroidManifest.xml
+
+# 提交时分别说明
+git add screen/ api/ &amp;&amp; git commit -m &quot;feat: add camera QR scanning UI + API&quot;
+git add ios/          &amp;&amp; git commit -m &quot;ios: add camera permission for QR scan&quot;
+git add android/      &amp;&amp; git commit -m &quot;android: add camera permission for QR scan&quot;
+</code></pre>
+<hr />
+<h2>6. Commit Message Convention · 提交信息规范</h2>
+<pre><code>&lt;type&gt;: &lt;description&gt;
+
+[optional body]
+
+Co-Authored-By: Claude Opus 4.8 &lt;noreply@anthropic.com&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>用途</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>feat</code></td>
+<td>新功能</td>
+<td><code>feat: offline QR code support</code></td>
+</tr>
+<tr>
+<td><code>fix</code></td>
+<td>Bug 修复</td>
+<td><code>fix: stale closure in userContext</code></td>
+</tr>
+<tr>
+<td><code>docs</code></td>
+<td>文档</td>
+<td><code>docs: add branch strategy guide</code></td>
+</tr>
+<tr>
+<td><code>style</code></td>
+<td>格式</td>
+<td><code>style: format with prettier</code></td>
+</tr>
+<tr>
+<td><code>refactor</code></td>
+<td>重构</td>
+<td><code>refactor: extract pagination middleware</code></td>
+</tr>
+<tr>
+<td><code>perf</code></td>
+<td>性能</td>
+<td><code>perf: parallelize dashboard queries</code></td>
+</tr>
+<tr>
+<td><code>test</code></td>
+<td>测试</td>
+<td><code>test: add state machine unit tests</code></td>
+</tr>
+<tr>
+<td><code>chore</code></td>
+<td>杂务</td>
+<td><code>chore: update dependencies</code></td>
+</tr>
+<tr>
+<td><code>ios</code></td>
+<td>iOS 原生</td>
+<td><code>ios: add push notification</code></td>
+</tr>
+<tr>
+<td><code>android</code></td>
+<td>Android 原生</td>
+<td><code>android: fix release keystore</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>7. Branch Protection Rules · 分支保护规则建议</h2>
+<p>在 GitHub → Settings → Branches 设置：</p>
+<table>
+<thead>
+<tr>
+<th>分支</th>
+<th>规则</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main</code></td>
+<td>✅ Require PR before merging<br>✅ Require 1 approval<br>✅ Require status checks to pass<br>❌ No direct push</td>
+</tr>
+<tr>
+<td><code>develop</code></td>
+<td>✅ Require PR before merging<br>❌ No direct push<br>（approval 可选，小团队可以松一点）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>8. Current Branches · 当前分支状态</h2>
+<table>
+<thead>
+<tr>
+<th>分支</th>
+<th>用途</th>
+<th>最后活动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>main</code></td>
+<td>生产 / 稳定版</td>
+<td>2026-06-18</td>
+</tr>
+<tr>
+<td><code>develop</code></td>
+<td>开发集成</td>
+<td>2026-06-18 (created)</td>
+</tr>
+</tbody>
+</table>
+<pre><code>   main          develop
+    ●               ●
+   (5a524f1)      (5a524f1)    ← 当前同位置，develop 从 main 拉出
+</code></pre>
+<hr />
+<h2>9. Quick Reference · 一行命令速查</h2>
+<pre><code class="language-bash"># 开始工作
+git checkout develop &amp;&amp; git pull &amp;&amp; git checkout -b feature/xxx
+
+# 改共享代码
+git add api/ components/ screen/ context/ constants/ &amp;&amp; git commit -m &quot;feat: ...&quot;
+
+# 改 iOS
+git add ios/ &amp;&amp; git commit -m &quot;ios: ...&quot;
+
+# 改 Android
+git add android/ &amp;&amp; git commit -m &quot;android: ...&quot;
+
+# 推送 + 创建 PR
+git push origin feature/xxx
+# → 打开 https://github.com/cuhkszdev/Cross-Boarder-Data-Cloud-CUHKSZ-/pull/new/feature/xxx
+
+# 完成后切回 develop
+git checkout develop &amp;&amp; git pull
+</code></pre>
+<hr />
+<h2>10. How to Avoid Merge Conflicts · 如何避免合并冲突</h2>
+<h3>Git 按「行」追踪，不是按「文件」</h3>
+<pre><code>两个人改不同的文件          → 永不冲突 ✅
+两个人改同一个文件的不同行    → Git 自动合并 ✅
+两个人改同一个文件的同一行    → 人造冲突 ⚠️
+</code></pre>
+<h3>实际场景演示</h3>
+<pre><code>场景：张三改前端 QR，李四改后端加 JWT
+
+起点：
+develop ──●
+
+张三：                         李四：
+git checkout -b                git checkout -b
+feature/qr-offline             feature/backend-jwt
+      │                              │
+      ▼                              ▼
+  改 screen/QRCodeScreen.tsx      改 ../hkedge-server/server.js
+  改 api/cache.js                 改 api/auth middleware
+      │                              │
+      ▼                              ▼
+  git push                       git push
+
+张三改的文件：                   李四改的文件：
+├── screen/QRCodeScreen.tsx     ├── ../hkedge-server/server.js
+└── api/cache.js                └── ../hkedge-server/middleware/auth.js
+
+               没有任何文件交集 ✅
+
+
+李四先合：
+develop ──●────────────●
+                       │ ← backend-jwt 合入
+
+张三后合：
+develop ──●────────────●──────────●
+                                    │ ← qr-offline 合入
+                                    │
+                    因为改的文件完全不同，Git 自动合并，零冲突 ✅
+</code></pre>
+<h3>什么情况下会冲突？</h3>
+<pre><code>张三改 QRCodeScreen.tsx 第 50 行：
+  const [token, setToken] = useState(null)
+
+李四也改 QRCodeScreen.tsx 第 50 行：
+  const [token, setToken] = useState('')
+                                    ↑
+                              同一行，不同值
+</code></pre>
+<p>Git 会在文件中标记：</p>
+<pre><code class="language-typescript">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD           ← 李四先合进去的版本
+const [token, setToken] = useState('')
+=======
+const [token, setToken] = useState(null)   ← 张三的版本
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/qr-offline
+</code></pre>
+<p>张三手动选择保留哪个，保存，<code>git add</code> → <code>git commit</code>，冲突解决。</p>
+<h3>三招防冲突</h3>
+<p><strong>1. 分支要小、要短命</strong></p>
+<pre><code>❌ feature/all-backend        ← 改 30 个文件，活 3 周
+✅ feature/add-jwt-auth       ← 改 3 个文件，2 天合掉
+✅ feature/fix-pagination      ← 改 1 个文件，半天合掉
+</code></pre>
+<p><strong>2. 合之前先把 develop 拉进自己的分支</strong></p>
+<pre><code class="language-bash"># 不要在 develop 上直接 merge 自己的分支
+# 而是先把自己的分支接到最新的 develop 上
+
+git checkout develop &amp;&amp; git pull          # 拉最新的 develop
+git checkout my-branch                    # 切回自己的分支
+git merge develop                         # 把 develop 融进来
+
+# → 如果有冲突，现在在自己的分支上解决
+# → 解决完 push 上去，PR 就是干净的，审查者不会看到冲突
+</code></pre>
+<p><strong>3. 前后端天然隔离</strong></p>
+<pre><code>本项目的前端和后端不在同一个文件夹：
+
+前端人 → 只改 HKEdgeApp/api/ screen/ components/ context/
+后端人 → 只改 hkedge-server/server.js hkedge-server/public/
+        → 几乎不可能撞到同一行代码
+</code></pre>
+<h3>冲突了怎么办？</h3>
+<pre><code>1. 不要慌，冲突是正常的，它只是 Git 在问你&quot;用哪个版本？&quot;
+2. 打开冲突文件，找到 &lt;&lt;&lt;&lt;&lt;&lt;&lt; ======= &gt;&gt;&gt;&gt;&gt;&gt;&gt; 标记
+3. 决定保留哪个版本（或合并两个版本）
+4. 删除标记，保存文件
+5. git add &lt;文件&gt; → git commit → git push
+6. PR 自动变为绿色
+
+如果搞不定，找写另一边的同事一起看，一人选一半就行。
+</code></pre>
+<hr />
+<blockquote>
+<p>📁 Related docs:<br />
+- <code>TODO.md</code> — 统一任务看板<br />
+- <code>API_CODE_REVIEW.md</code> — 后端 API 审查<br />
+- <code>ARCHITECTURE.md</code> — 架构说明</p>
+</blockquote>
+  </main>
+  <footer>
+    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+  </footer>
+</body>
+</html>

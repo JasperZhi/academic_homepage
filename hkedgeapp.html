@@ -77,7 +77,7 @@
     <section id="overview">
       <h2>Overview</h2>
       <p>HKEdgeApp is a cross-border Hong Kong–Shenzhen medical data application for iOS and Android, built through a school-enterprise internship with Hong Kong Data Ltd. It supports the flow for Hong Kong residents seeking medical treatment in mainland China: identity verification and insurance binding, a cross-border medical QR code, claims submission and tracking, and hospital-side claim verification.</p>
-      <p>The application consists of 19 front-end screens, 14 API modules, 57 documented files and 64 GitHub commits. The client is a React Native application with screens written in TypeScript and JavaScript, a Context-based state layer, a service layer for API calls, and a three-language interface; the back end is an Express server with static pages for the hospital and contract-signing demos.</p>
+      <p>The application consists of 19 front-end screens, 14 API modules, 57 documented files and 64 GitHub commits. The client is a React Native 0.85.3 application with screens written in TypeScript and JavaScript, a Context-based state layer, a service layer for API calls, and a three-language interface; the back end is an Express server with static pages for the hospital and contract-signing demos.</p>
       <p>I led the technical side of the four-developer team. I wrote and enforced the team's Git collaboration rules (documented in BRANCH_STRATEGY.md), and reported jointly to our company mentor and the director of the university's AI institute. After the internship, the project was handed over and is now carried forward by engineers at China Unicom.</p>
       <p class="muted">The code repository is private. Demonstration materials, architecture documentation and selected project documents are reproduced on this page.</p>
     </section>
@@ -101,22 +101,23 @@
 
     <section id="screenshots">
       <h2>Screenshots</h2>
+      <p class="muted">Screens from the current app interface (dark theme with orange accents), captured from the interactive feature-map demo.</p>
       <div class="shots">
         <figure>
-          <img src="hkedge-shot1.jpg" alt="Cross-border medical QR code screen showing a validity period and a link to claims" width="520" height="910">
-          <figcaption>Cross-border medical QR code</figcaption>
+          <img src="hkedge-shot1.jpg" alt="Identity verification screen with an orange one-tap auto-fill button" width="340" height="700">
+          <figcaption>Identity verification (KYC)</figcaption>
         </figure>
         <figure>
-          <img src="hkedge-shot2.jpg" alt="Claims list screen showing two hospital claims with status labels" width="520" height="993">
-          <figcaption>Claims list (cross-insurer aggregation)</figcaption>
+          <img src="hkedge-shot2.jpg" alt="App home screen with an insurance coverage card and categories grid" width="340" height="700">
+          <figcaption>Home screen and insurance coverage card</figcaption>
         </figure>
         <figure>
-          <img src="hkedge-shot3.jpg" alt="Insurer switching panel listing several insurance providers" width="520" height="983">
-          <figcaption>Insurer binding and switching</figcaption>
+          <img src="hkedge-shot3.jpg" alt="Recent claim activity showing a settled claim and a pending claim" width="340" height="700">
+          <figcaption>Claims and recent activity</figcaption>
         </figure>
         <figure>
-          <img src="hkedge-shot4.jpg" alt="Dark-theme claims overview with total reimbursed amount and recent activity" width="520" height="990">
-          <figcaption>Claims overview, dark theme</figcaption>
+          <img src="hkedge-shot4.jpg" alt="Elder Mode screen with large orange and blue one-tap buttons" width="340" height="700">
+          <figcaption>Elder Mode (large-type, one-tap actions)</figcaption>
         </figure>
       </div>
     </section>
@@ -125,7 +126,7 @@
       <h2>System Architecture</h2>
       <figure>
         <img src="hkedge-architecture.svg" alt="System architecture diagram of HKEdgeApp showing client, server and data components" width="1195" height="689">
-        <figcaption>System architecture diagram from the project documentation (<a href="hkedge-architecture.svg">open full size</a>).</figcaption>
+        <figcaption>System architecture diagram from the project documentation (<a href="hkedge-architecture.svg">open full size</a>). A detailed <a href="docs/architecture.html">architecture document</a> describes the React Native 0.85.3 client, the Context-based state layer, the screen and component layers, and the Express back end.</figcaption>
       </figure>
     </section>
 
@@ -147,23 +148,28 @@
         <li>Hospital demo — verification screen for B2B presentations</li>
         <li>Elder Mode — fonts of 18px or larger, 110px buttons, three one-tap actions</li>
       </ul>
-      <p class="muted"><a href="docs/hkedge-app-features-map-EN.md">Full feature-map demo script (Markdown, English)</a></p>
+      <p class="muted"><a href="docs/feature-map-script.html">Full feature-map demo script (rendered, English)</a></p>
     </section>
 
     <section id="git">
       <h2>Git Collaboration and Branch Strategy</h2>
-      <p>The team developed iOS and Android features on separate branches. A branch analysis in the project documentation (dated 8 July 2026) records four branches — <code>main</code>, <code>Sandbox_0702</code> (iOS and React Native feature development, 20 commits ahead of the merge base), <code>android_merged</code> (Android notifications and settlement, 4 commits), and <code>develop</code> (1 commit) — all forked from a common merge base.</p>
-      <p>The analysis compares the two development branches across state management, API layer, navigation and i18n; identifies around 20 conflicting files, including mutually exclusive route registrations in <code>App.tsx</code> and different API-layer architectures; and recommends a two-step merge — first the smaller <code>android_merged</code> branch into <code>develop</code>, then the larger <code>Sandbox_0702</code> branch — keeping both sets of screens and adopting the unified service layer and fuller i18n coverage from the iOS branch.</p>
-      <p class="muted"><a href="docs/hkedge-branch-merge-analysis.md">Full branch merge analysis (Markdown, Chinese)</a></p>
+      <p>I wrote the team's Git collaboration rules in BRANCH_STRATEGY.md (last updated 18 June 2026). The strategy keeps only two permanent branches — <code>main</code> (production, merged into but never committed to directly) and <code>develop</code> (the integration line). All other branches are temporary and deleted after merging: <code>feature/*</code> and <code>fix/*</code> for shared JavaScript/TypeScript code, <code>ios/*</code> and <code>android/*</code> for platform-native changes, and <code>release/*</code> for releases. Work goes through a pull request targeting <code>develop</code>; <code>main</code> is updated only from <code>develop</code> at release time.</p>
+      <p>When the iOS and Android lines had diverged, I also wrote a branch merge analysis (8 July 2026) documenting four divergent branches, around 20 conflicting files — including mutually exclusive screen registrations in <code>App.tsx</code> and different API-layer designs — and a two-step merge plan: merge the smaller Android branch into <code>develop</code> first, then the larger iOS branch, keeping both screen sets and adopting the unified service layer and fuller i18n coverage.</p>
+      <p class="muted"><a href="docs/branch-strategy.html">Branch strategy (rendered document)</a> · <a href="docs/git-collaboration-guide.html">Team Git collaboration guide (rendered document)</a> · <a href="docs/branch-merge-analysis.html">Full branch merge analysis (rendered document)</a></p>
     </section>
 
     <section id="documents">
       <h2>Project Documents</h2>
+      <p class="muted">The repository's Markdown documents, rendered here as styled pages so they can be read in the browser.</p>
       <ul>
-        <li><a href="docs/hkedge-app-features-map-EN.md">App feature map and demo script (English)</a></li>
-        <li><a href="docs/hkedge-branch-merge-analysis.md">Branch merge analysis and merge strategy (Chinese)</a></li>
-        <li><a href="hkedge-architecture.svg">System architecture diagram (SVG)</a></li>
-        <li><a href="hkedge-demo.mp4">App demo screen recording (MP4)</a></li>
+        <li><a href="docs/architecture.html">System architecture</a> — layers, state, navigation, screens and API</li>
+        <li><a href="docs/branch-strategy.html">Git branch strategy</a> — permanent and temporary branches, PR workflow</li>
+        <li><a href="docs/api-map.html">Frontend–backend API map</a> — screens, API modules and endpoints</li>
+        <li><a href="docs/git-collaboration-guide.html">Team Git collaboration guide</a> — Q&amp;A and team conventions</li>
+        <li><a href="docs/branch-merge-analysis.html">Branch merge analysis</a> — divergence and two-step merge plan</li>
+        <li><a href="docs/feature-map-script.html">App feature map and demo script (English)</a></li>
+        <li><a href="docs/project-readme.html">Project README</a></li>
+        <li><a href="hkedge-architecture.svg">System architecture diagram (SVG)</a> · <a href="hkedge-demo.mp4">App demo screen recording (MP4)</a></li>
       </ul>
       <p class="muted">Further source code and documentation are available on request; the repository itself is private.</p>
     </section>

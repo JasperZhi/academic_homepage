@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Architecture — HKEdgeApp | Jiazhi (Jasper) Xie</title>
+  <meta name="description" content="Project documentation, rendered from ARCHITECTURE.md for the HKEdgeApp project.">
+  <style>
+    :root {
+      --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
+      --rule: #d8d8d8; --link: #0b5394; --pre-bg: #f4f4f4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181d; --text: #d6d6d6; --muted: #9a9a9a; --heading: #f2f2f2;
+        --rule: #3a3d44; --link: #7ab3e0; --pre-bg: #22252b;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; padding: 0 1.25rem;
+      background: var(--bg); color: var(--text);
+      font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      font-size: 1.0625rem; line-height: 1.65;
+    }
+    main, header, footer { max-width: 760px; margin: 0 auto; }
+    header { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--rule); }
+    .back { font-size: 0.95rem; margin: 0 0 1rem; }
+    h1 { font-size: 1.7rem; line-height: 1.3; margin: 0 0 0.4rem; color: var(--heading); }
+    .subtitle { margin: 0; color: var(--muted); font-size: 0.95rem; }
+    main { padding: 2rem 0 3rem; }
+    h2 {
+      font-size: 1.25rem; color: var(--heading); margin: 2.2rem 0 0.8rem;
+      padding-bottom: 0.3rem; border-bottom: 1px solid var(--rule);
+    }
+    h3 { font-size: 1.08rem; color: var(--heading); margin: 1.6rem 0 0.5rem; }
+    h4 { font-size: 1rem; color: var(--heading); margin: 1.2rem 0 0.4rem; }
+    p, ul, ol, blockquote { margin: 0 0 0.9rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+    blockquote {
+      border-left: 3px solid var(--rule); padding-left: 1rem;
+      color: var(--muted); margin-left: 0;
+    }
+    pre {
+      background: var(--pre-bg); padding: 0.9rem 1rem; border-radius: 6px;
+      overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+      border: 1px solid var(--rule);
+    }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em; background: var(--pre-bg); padding: 0.05em 0.35em;
+      border-radius: 3px;
+    }
+    pre code { padding: 0; background: none; font-size: 1em; }
+    table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; margin: 0 0 1.2rem; }
+    th, td { border: 1px solid var(--rule); padding: 0.45rem 0.65rem; text-align: left; font-size: 0.95rem; }
+    th { background: var(--pre-bg); }
+    hr { border: none; border-top: 1px solid var(--rule); margin: 1.8rem 0; }
+    footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 480px) { body { font-size: 1rem; padding: 0 1rem; } h1 { font-size: 1.45rem; } }
+    @media print {
+      body { background: #ffffff; color: #000000; font-size: 10pt; }
+      h1, h2, h3, h4 { color: #000000; }
+      a { color: #000000; text-decoration: none; }
+      pre, code { background: #f4f4f4; }
+    }
+</style>
+</head>
+<body>
+  <header>
+    <p class="back"><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a></p>
+    <h1>System Architecture</h1>
+    <p class="subtitle">Project documentation, rendered from ARCHITECTURE.md · reproduced from the private project repository</p>
+  </header>
+  <main>
+    <blockquote>
+<p>港人就医商保码 · 跨境医疗保险移动端<br />
+React Native 0.85.3 · 更新于 2026-06-16</p>
+</blockquote>
+<hr />
+<h2>1. 项目定位</h2>
+<p>HKEdgeApp 是「港人就医商保码」的 C 端移动应用，服务香港居民在大湾区（如中山陈星海医院）使用跨境医疗保险进行<strong>直接结算</strong>。用户完成身份验证 → 绑定香港保险公司保单 → 出示动态 QR 码给医院扫码 → 追踪理赔进度 → 申请退款。</p>
+<p>后端对接 <strong>前海数据平台医院端中台</strong>（<code>HKEdge_Management console</code>）。</p>
+<hr />
+<h2>2. 技术栈</h2>
+<table>
+<thead>
+<tr>
+<th>层</th>
+<th>技术</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>框架</td>
+<td>React Native 0.85.3 (CLI)</td>
+</tr>
+<tr>
+<td>语言</td>
+<td>TypeScript + JavaScript 混编</td>
+</tr>
+<tr>
+<td>导航</td>
+<td><code>@react-navigation/native</code> v7 + Native Stack</td>
+</tr>
+<tr>
+<td>HTTP</td>
+<td>Axios v1.16</td>
+</tr>
+<tr>
+<td>QR 码</td>
+<td><code>react-native-qrcode-svg</code></td>
+</tr>
+<tr>
+<td>图标</td>
+<td><code>react-native-vector-icons</code> (Ionicons + MaterialCommunityIcons)</td>
+</tr>
+<tr>
+<td>后端</td>
+<td>前海中台 <code>localhost:3000</code> + n8n AI 对话</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>3. 分层架构总览</h2>
+<pre><code class="language-mermaid">graph TB
+    subgraph &quot;平台层 Platform&quot;
+        IOS[iOS&lt;br/&gt;CocoaPods + Xcode]
+        ANDROID[Android&lt;br/&gt;Gradle + SDK 35]
+    end
+
+    subgraph &quot;入口 Entry&quot;
+        INDEX[index.js&lt;br/&gt;AppRegistry]
+        APP[App.tsx&lt;br/&gt;Provider 组装]
+    end
+
+    subgraph &quot;状态层 State (Context)&quot;
+        THEME[ThemeContext&lt;br/&gt;深色/浅色/长者模式]
+        USER[UserContext&lt;br/&gt;用户/保单/登入登出]
+        LANG[LanguageContext&lt;br/&gt;三语: EN/简/繁]
+    end
+
+    subgraph &quot;导航 Navigation&quot;
+        NAV[React Navigation&lt;br/&gt;Native Stack]
+    end
+
+    subgraph &quot;页面层 Screens&quot;
+        HOME[HomeScreen]
+        ELDER[ElderHomeScreen]
+        REG[RegistrationScreen]
+        QR[QRCodeScreen]
+        CLAIMS[ClaimsListScreen]
+        DETAIL[ClaimDetailsScreen]
+        PROFILE[ProfileScreen]
+        CAT[CategoriesScreen]
+        ACT[ActivitiesScreen]
+        SCAN[QrScanScreen]
+    end
+
+    subgraph &quot;业务层 API&quot;
+        POLICY[policyApi.js&lt;br/&gt;中台优先 → Mock 降级]
+    end
+
+    subgraph &quot;组件层 Components&quot;
+        BUTTON[Button]
+        INPUT[Input/PasswordInput]
+        DROPDOWN[Dropdown/MultiSelect]
+        FORM[FormControls&lt;br/&gt;Checkbox/Radio/Switch]
+        CARD[Card/CardHeader/CardRow]
+        BADGE[StatusBadge]
+        MODAL[Modal]
+        PICKER[PolicyPickerModal]
+    end
+
+    subgraph &quot;常量 Constants&quot;
+        THEME_C[theme.js&lt;br/&gt;浅色/深色配色]
+        TRANS[translations.js&lt;br/&gt;432行三语字典]
+    end
+
+    INDEX --&gt; APP
+    APP --&gt; THEME --&gt; USER --&gt; LANG --&gt; NAV
+    NAV --&gt; HOME &amp; ELDER &amp; REG &amp; QR &amp; CLAIMS &amp; DETAIL &amp; PROFILE &amp; CAT &amp; ACT &amp; SCAN
+    HOME --&gt; POLICY
+    QR --&gt; POLICY
+    HOME --&gt; PICKER
+    ALL[所有页面] --&gt; BUTTON &amp; INPUT &amp; DROPDOWN &amp; FORM &amp; CARD &amp; BADGE &amp; MODAL
+    ALL --&gt; THEME_C &amp; TRANS
+    IOS --&gt; INDEX
+    ANDROID --&gt; INDEX
+</code></pre>
+<hr />
+<h2>4. 启动流程</h2>
+<pre><code class="language-mermaid">sequenceDiagram
+    participant OS as 操作系统
+    participant RN as React Native
+    participant Index as index.js
+    participant App as App.tsx
+    participant Theme as ThemeContext
+    participant User as UserContext
+    participant Lang as LanguageContext
+    participant Nav as Stack.Navigator
+
+    OS-&gt;&gt;RN: 启动 App
+    RN-&gt;&gt;Index: AppRegistry.registerComponent()
+    Index-&gt;&gt;App: 渲染 &lt;App/&gt;
+    App-&gt;&gt;Theme: ThemeProvider 挂载
+    Theme-&gt;&gt;User: UserProvider 挂载
+    User-&gt;&gt;Lang: LanguageProvider 挂载
+    Lang-&gt;&gt;Nav: RootNavigator 渲染
+    Nav-&gt;&gt;Nav: 判断 isElderMode
+    alt isElderMode = true
+        Nav-&gt;&gt;Nav: initialRoute = 'ElderHome'
+    else isElderMode = false
+        Nav-&gt;&gt;Nav: initialRoute = 'Home'
+    end
+</code></pre>
+<hr />
+<h2>5. 状态管理 — 三层 Context</h2>
+<pre><code class="language-mermaid">graph TD
+    subgraph &quot;ThemeContext (最外层)&quot;
+        T1[isDarkMode: bool&lt;br/&gt;默认 true 深色]
+        T2[isElderMode: bool&lt;br/&gt;默认 false]
+        T3[colors: object&lt;br/&gt;深浅色动态切换]
+        T4[toggleTheme()]
+        T5[toggleElderMode()]
+    end
+
+    subgraph &quot;UserContext (中间层)&quot;
+        U1[user: object | null]
+        U2[policies: array]
+        U3[activePolicy: object]
+        U4[isLoggedIn: bool]
+        U5[login / logout]
+        U6[setPolicies / setActivePolicy]
+    end
+
+    subgraph &quot;LanguageContext (最内层)&quot;
+        L1[language: 'en' | 'zh_CN' | 'zh_HK']
+        L2[toggleLanguage()&lt;br/&gt;三语循环]
+        L3[t(key) 翻译函数]
+    end
+
+    ThemeContext --&gt; UserContext --&gt; LanguageContext
+</code></pre>
+<p><strong>三语循环逻辑：</strong> <code>EN → 简体中文 → 繁體中文 → EN</code></p>
+<hr />
+<h2>6. 导航路由全景</h2>
+<pre><code class="language-mermaid">graph LR
+    NAV[NavigationContainer&lt;br/&gt;Native Stack]
+
+    NAV --&gt; HOME[🏠 HomeScreen]
+    NAV --&gt; ELDER[👴 ElderHomeScreen]
+    NAV --&gt; REG[🪪 RegistrationScreen]
+    NAV --&gt; QR[📱 QRCodeScreen]
+    NAV --&gt; CLAIMS[📋 ClaimsListScreen]
+    NAV --&gt; DETAIL[📝 ClaimDetailsScreen]
+    NAV --&gt; PROFILE[👤 ProfileScreen]
+    NAV --&gt; CAT[🔲 CategoriesScreen]
+    NAV --&gt; ACT[📊 ActivitiesScreen]
+    NAV --&gt; SCAN[🏥 QrScanScreen]
+
+    HOME -- &quot;未登录&quot; --&gt; REG
+    HOME -- &quot;已登录&quot; --&gt; QR
+    HOME -- &quot;已登录&quot; --&gt; CLAIMS
+    HOME -- &quot;已登录&quot; --&gt; PROFILE
+    HOME -- &quot;已登录&quot; --&gt; CAT
+    HOME -- &quot;已登录&quot; --&gt; ACT
+    PROFILE -- &quot;长者模式ON&quot; --&gt; ELDER
+    ELDER -- &quot;长者模式OFF&quot; --&gt; HOME
+    CLAIMS -- &quot;点击理赔&quot; --&gt; DETAIL
+    QR -- &quot;切换保单&quot; --&gt; HOME
+    PROFILE -- &quot;退出登录&quot; --&gt; HOME
+</code></pre>
+<h3>路由守卫逻辑</h3>
+<pre><code>用户点击某个功能
+  ├─ 未登录 → Alert 提示 + 引导去 Registration
+  ├─ 已登录但未绑定保司 + 要进 ClaimsList → Alert 要求先绑定
+  ├─ 已登录已绑定 → 正常跳转
+</code></pre>
+<hr />
+<h2>7. 核心业务流程</h2>
+<h3>7.1 身份激活 → 绑定保司 → 出示医保码</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor User as 香港居民
+    participant App as HKEdgeApp
+    participant Console as 中台 :3000
+    participant Hospital as 医院 HIS
+
+    Note over User,App: Step 1: 身份验证
+    User-&gt;&gt;App: 打开 App, 点击&quot;去激活&quot;
+    App-&gt;&gt;User: RegistrationScreen
+    User-&gt;&gt;App: 输入姓名 + HKID + 手机号
+    App-&gt;&gt;App: 表单校验 (正则 HKID/手机)
+    App-&gt;&gt;User: login() → 跳转 Home
+
+    Note over User,Console: Step 2: 绑定保险公司
+    User-&gt;&gt;App: 点击 Hero Card 选保司
+    App-&gt;&gt;User: 弹窗展示 9 家保司
+    User-&gt;&gt;App: 选择 AIA / ChinaLife / ...
+    App-&gt;&gt;Console: GET /api/app/policies?company=&amp;hkid=
+    Console--&gt;&gt;App: 返回保单列表
+    App-&gt;&gt;App: setPolicies() + 激活首张保单
+    App-&gt;&gt;User: Hero Card 变绿, 显示保司徽章 + 保单名
+
+    Note over User,Hospital: Step 3: 出示医保码
+    User-&gt;&gt;App: 点击 &quot;出示跨境医保码&quot;
+    App-&gt;&gt;Console: POST /api/app/qr/issue
+    Console--&gt;&gt;App: { token, exp: 60s }
+    App-&gt;&gt;User: QR 码 + 60s 倒计时
+    App-&gt;&gt;App: 每秒刷新倒计时, 到期自动换 token
+
+    Note over Hospital,App: Step 4: 医院扫码结算
+    Hospital-&gt;&gt;Console: POST /api/hospital/scan {token, hospital_id}
+    Console--&gt;&gt;Hospital: 患者 + 保单信息
+    Hospital-&gt;&gt;Hospital: 直接结算 (Direct Billing)
+</code></pre>
+<h3>7.2 理赔追踪 → 退款</h3>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor User as 用户
+    participant App as HKEdgeApp
+    participant Console as 中台
+
+    User-&gt;&gt;App: 打开 ClaimsList
+    App-&gt;&gt;Console: GET /api/app/claims?hkid=
+    Console--&gt;&gt;App: 理赔列表
+    App-&gt;&gt;User: 理赔卡片 (医院/金额/状态/公式)
+
+    alt 状态 = Settled (已结算)
+        User-&gt;&gt;App: 点击进入 ClaimDetails
+        App-&gt;&gt;User: 时间轴 + 费用明细
+        User-&gt;&gt;App: 点击 &quot;申请退款&quot;
+        App-&gt;&gt;App: 本地改状态 isRefunded=true
+        App-&gt;&gt;User: 退款已提交 → 1-3工作日到账
+    else 状态 = Pending (处理中)
+        App-&gt;&gt;User: 显示审核进度
+    else 状态 = Refunded (已退款)
+        App-&gt;&gt;User: 显示退款完成
+    end
+</code></pre>
+<h3>7.3 QR Token 生命周期</h3>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; 请求Token: 进入 QRCodeScreen
+    请求Token --&gt; 签发成功: POST /api/app/qr/issue
+    请求Token --&gt; 本地降级: 中台不可用
+    签发成功 --&gt; 激活中: token + 60s TTL
+    本地降级 --&gt; 激活中: base64 本地生成
+    激活中 --&gt; 倒计时: 每秒 timeLeft--
+    倒计时 --&gt; 激活中: timeLeft &gt; 0
+    倒计时 --&gt; 自动刷新: timeLeft = 0
+    自动刷新 --&gt; 请求Token: refreshQrToken()
+    激活中 --&gt; 手动刷新: 用户点击刷新
+    手动刷新 --&gt; 请求Token
+    激活中 --&gt; 切保单: 用户换保单
+    切保单 --&gt; 请求Token
+</code></pre>
+<hr />
+<h2>8. API 层设计</h2>
+<h3>8.1 请求拦截器</h3>
+<p>每个请求自动注入以下 Header：</p>
+<pre><code>X-API-Version: 2.6
+X-Request-ID:  &lt;UUID&gt;
+X-Timestamp:   &lt;Unix秒&gt;
+X-Nonce:       &lt;随机串&gt;
+X-WeChat-AppId: wx1234567890abcdef
+</code></pre>
+<h3>8.2 接口清单</h3>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>方法</th>
+<th>端点</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fetchPoliciesByCompany</code></td>
+<td>GET</td>
+<td><code>/api/app/policies?hkid=&amp;company=</code></td>
+<td>按保司查保单</td>
+</tr>
+<tr>
+<td><code>fetchHospitalsByPolicy</code></td>
+<td>GET</td>
+<td><code>/api/app/policies/:policyNo/hospitals</code></td>
+<td>保单覆盖医院</td>
+</tr>
+<tr>
+<td><code>issueQrToken</code></td>
+<td>POST</td>
+<td><code>/api/app/qr/issue</code></td>
+<td>签发 60s QR token</td>
+</tr>
+<tr>
+<td><code>refreshQrToken</code></td>
+<td>—</td>
+<td>同 issueQrToken</td>
+<td>Token 过期换新</td>
+</tr>
+<tr>
+<td><code>syncFromConsole</code></td>
+<td>GET</td>
+<td><code>/api/app/sync</code></td>
+<td>拉取同步快照</td>
+</tr>
+</tbody>
+</table>
+<h3>8.3 降级策略</h3>
+<pre><code>中台调用  →  成功? → 返回 console 数据
+              ↓ 失败/超时
+           Mock 数据库 (9 家保司 × 1-3 假保单)
+              ↓
+           返回 mock 数据，App 不崩溃
+</code></pre>
+<h3>8.4 额外端点（由页面直接 fetch）</h3>
+<table>
+<thead>
+<tr>
+<th>页面</th>
+<th>端点</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HomeScreen</td>
+<td><code>GET /api/app/claims?hkid=</code></td>
+<td>理赔进度概览 (pending/settled/saved)</td>
+</tr>
+<tr>
+<td>HomeScreen</td>
+<td><code>POST /api/chat</code></td>
+<td>AI 对话 (n8n)</td>
+</tr>
+<tr>
+<td>ClaimsListScreen</td>
+<td><code>GET /api/app/claims?hkid=</code></td>
+<td>理赔列表</td>
+</tr>
+<tr>
+<td>QrScanScreen</td>
+<td><code>POST /api/qr/verify</code></td>
+<td>医院端验码</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>9. 页面功能矩阵</h2>
+<h3>HomeScreen（首页）</h3>
+<pre><code>┌─────────────────────────────────────┐
+│  Header: 头像 + 用户名 + 主题/语言切换 │
+├─────────────────────────────────────┤
+│  Hero Card (三态切换)                 │
+│  ┌─ 未登录:    引导激活 ─────────┐   │
+│  ┌─ 已登录未绑定: 引导绑定保司 ───┐   │
+│  ┌─ 已绑定:    显示保司+保单 → QR码│   │
+├─────────────────────────────────────┤
+│  Categories (横向滑动)               │
+│  [医保码] [理赔] [AI助手] [医院地图]  │
+├─────────────────────────────────────┤
+│  Your Progress (理赔概览)            │
+│  [待处理N] [已结算N] [已省HKD]        │
+├─────────────────────────────────────┤
+│  Dock: [首页] [扫码] [理赔] [我的]    │
+└─────────────────────────────────────┘
+</code></pre>
+<h3>QRCodeScreen（跨境医保码）</h3>
+<ul>
+<li>动态 QR 码（60 秒 TTL，自动刷新）</li>
+<li>显示用户名 + 当前保单号</li>
+<li>多保单时展示切换入口</li>
+<li>空态：无保单时引导返回绑定</li>
+</ul>
+<h3>ClaimsListScreen（理赔记录）</h3>
+<ul>
+<li>FlatList 渲染理赔卡片</li>
+<li>筛选 Chips：全部 / 当前保单 / AIA / CL</li>
+<li>下拉刷新（RefreshControl）</li>
+<li>每张卡片底部：<code>Total - Covered = You Pay</code> 公式</li>
+<li>三态徽章：Pending(红) / Settled(绿) / Refunded(蓝)</li>
+</ul>
+<h3>ClaimDetailsScreen（理赔详情）</h3>
+<ul>
+<li>时间轴状态追踪（4-5 步）</li>
+<li>费用明细：总账单 - 免赔额 = 保险支付 + 自付</li>
+<li>退款入口（仅已结算且未退款时可见）</li>
+<li>退款确认 → 状态变更 → 提示</li>
+</ul>
+<h3>RegistrationScreen（身份验证）</h3>
+<ul>
+<li>三字段：姓名 + HKID（正则校验） + 手机号</li>
+<li>iAM Smart 一键填充演示</li>
+<li>验证通过 → login() → 跳转 Home</li>
+</ul>
+<h3>ProfileScreen（个人中心）</h3>
+<ul>
+<li>用户信息卡片（头像/姓名/保司）</li>
+<li>个人信息展示（HKID/手机/保单号）</li>
+<li>长者模式 Switch</li>
+<li>联系客服 / 版本号</li>
+<li>退出登录</li>
+</ul>
+<h3>ElderHomeScreen（长者模式）</h3>
+<ul>
+<li>大字号 + 大按钮 + 极简界面</li>
+<li>三大入口：出示医保码 / 我的理赔 / 联系客服</li>
+<li>退出长者模式入口</li>
+</ul>
+<hr />
+<h2>10. 组件树</h2>
+<pre><code>components/
+├── Button.js             通用按钮
+├── Input.js              输入框 / 密码框
+├── Dropdown.js           下拉单选 / 多选
+├── FormControls.js       复选框 / 单选框 / 开关
+├── Card.js               卡片套件 (Card + CardHeader + CardRow + CardDivider)
+├── StatusBadge.js        状态标签
+├── Modal.js              通用弹窗
+└── PolicyPickerModal.js  保单选择底部弹窗
+</code></pre>
+<hr />
+<h2>11. 主题与国际化</h2>
+<h3>配色方案（双模式）</h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>深色</th>
+<th>浅色</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>background</code></td>
+<td><code>#121212</code></td>
+<td><code>#F4F6F8</code></td>
+<td>全局背景</td>
+</tr>
+<tr>
+<td><code>card</code></td>
+<td><code>#222325</code></td>
+<td><code>#FFFFFF</code></td>
+<td>卡片背景</td>
+</tr>
+<tr>
+<td><code>heroCard</code></td>
+<td><code>#556B50</code></td>
+<td><code>#556B50</code></td>
+<td>品牌橄榄绿（双模式不变）</td>
+</tr>
+<tr>
+<td><code>activeTab</code></td>
+<td><code>#E57B65</code></td>
+<td><code>#E57B65</code></td>
+<td>品牌珊瑚红（双模式不变）</td>
+</tr>
+<tr>
+<td><code>textPrimary</code></td>
+<td><code>#FFFFFF</code></td>
+<td><code>#111827</code></td>
+<td>主文字</td>
+</tr>
+<tr>
+<td><code>textSecondary</code></td>
+<td><code>#A0A0A0</code></td>
+<td><code>#6B7280</code></td>
+<td>副文字</td>
+</tr>
+<tr>
+<td><code>textDark</code></td>
+<td><code>#121212</code></td>
+<td><code>#FFFFFF</code></td>
+<td>反色文字</td>
+</tr>
+<tr>
+<td><code>border</code></td>
+<td><code>#333333</code></td>
+<td><code>#E5E7EB</code></td>
+<td>边框</td>
+</tr>
+</tbody>
+</table>
+<h3>国际化（三语）</h3>
+<p><code>translations.js</code> 包含 432 行三语字典，覆盖约 90 个 key：</p>
+<pre><code>translations: {
+  en:    { ... },    // 英文（默认）
+  zh_CN: { ... },    // 简体中文
+  zh_HK: { ... },    // 繁體中文
+}
+</code></pre>
+<hr />
+<h2>12. 目录结构（整理后）</h2>
+<pre><code>HKEdgeApp/
+├── index.js                    # RN 入口
+├── App.tsx                     # Provider 组装 + Stack 导航
+├── app.json                    # RN 配置
+├── package.json                # 依赖声明
+├── tsconfig.json               # TypeScript 配置
+├── babel.config.js             # Babel 配置
+├── metro.config.js             # Metro 打包配置
+├── jest.config.js              # 测试配置
+├── .eslintrc.js                # ESLint 配置
+├── .prettierrc.js              # Prettier 配置
+├── Gemfile                     # iOS CocoaPods 依赖
+│
+├── api/
+│   └── policyApi.js            # 业务 API (中台优先 + Mock降级)
+│
+├── context/
+│   ├── ThemeContext.js          # 主题状态 (深色/浅色/长者模式)
+│   ├── UserContext.js           # 用户/保单/登入登出
+│   └── LanguageContext.js       # 三语国际化
+│
+├── screen/
+│   ├── HomeScreen.js           # 首页 (三态Hero + 保司选择 + AI对话)
+│   ├── ElderHomeScreen.js      # 长者模式首页
+│   ├── RegistrationScreen.tsx  # 身份验证 (KYC)
+│   ├── QRCodeScreen.tsx        # 跨境医保码 (QR + 倒计时)
+│   ├── ClaimsListScreen.js     # 理赔记录列表
+│   ├── ClaimDetailsScreen.js   # 理赔详情 (时间轴 + 退款)
+│   ├── ProfileScreen.js        # 个人中心
+│   ├── CategoriesScreen.js     # 服务分类
+│   ├── ActivitiesScreen.js     # 活动动态
+│   └── QrScanScreen.js         # 医院端扫码验证
+│
+├── components/
+│   ├── index.js                # 组件导出
+│   ├── Button.js
+│   ├── Input.js
+│   ├── Dropdown.js
+│   ├── FormControls.js
+│   ├── Card.js
+│   ├── StatusBadge.js
+│   ├── Modal.js
+│   └── PolicyPickerModal.js
+│
+├── constants/
+│   ├── theme.js                # 深浅色配色
+│   └── translations.js         # 432行三语字典
+│
+├── assets/
+│   └── logo.jpg
+│
+├── docs/                       # 📁 文档归档
+│   ├── ARCHITECTURE.md         # 本文档
+│   ├── CHANGES.md              # 修改记录
+│   ├── SETUP.md                # 环境配置指南
+│   ├── GIT_UPLOAD.md           # Git 上传指南
+│   └── GITHUB_README.md        # GitHub仓库说明
+│
+├── scripts/                    # 📁 脚本
+│   ├── setup.sh                # 一键配置脚本
+│   └── link-fonts.js           # 字体链接
+│
+├── __tests__/
+│   └── App.test.tsx
+│
+├── android/                    # Android 原生代码
+│   ├── app/
+│   ├── build.gradle
+│   └── settings.gradle
+│
+├── ios/                        # iOS 原生代码
+│   ├── HKEdgeApp/
+│   ├── HKEdgeApp.xcodeproj/
+│   ├── HKEdgeApp.xcworkspace/
+│   ├── Podfile
+│   └── Pods/
+│
+└── node_modules/               # npm 依赖
+</code></pre>
+<hr />
+<h2>13. Mock 数据覆盖</h2>
+<p>内置 9 家香港保险公司 Mock 数据：</p>
+<table>
+<thead>
+<tr>
+<th>保司</th>
+<th>保单数</th>
+<th>示例保额</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AIA Hong Kong (友邦)</td>
+<td>2</td>
+<td>HKD 5,000,000 / 1,000,000</td>
+</tr>
+<tr>
+<td>China Life (中国人寿)</td>
+<td>3</td>
+<td>HKD 3,000,000 / 500,000 / 2,000,000</td>
+</tr>
+<tr>
+<td>Prudential (保诚)</td>
+<td>2</td>
+<td>HKD 4,000,000 / 800,000</td>
+</tr>
+<tr>
+<td>Manulife (宏利)</td>
+<td>1</td>
+<td>HKD 3,500,000</td>
+</tr>
+<tr>
+<td>AXA (安盛)</td>
+<td>1</td>
+<td>HKD 2,500,000</td>
+</tr>
+<tr>
+<td>FWD (富卫)</td>
+<td>1</td>
+<td>HKD 2,000,000</td>
+</tr>
+<tr>
+<td>Bupa (保柏)</td>
+<td>1</td>
+<td>HKD 6,000,000</td>
+</tr>
+<tr>
+<td>Cigna (信诺)</td>
+<td>1</td>
+<td>HKD 3,000,000</td>
+</tr>
+<tr>
+<td>Bowtie (保泰)</td>
+<td>1</td>
+<td>HKD 1,500,000</td>
+</tr>
+</tbody>
+</table>
+<p>每个保司名同时存储英文/简体/繁体 key 以支持三语匹配。</p>
+<hr />
+<h2>14. 安全设计</h2>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>实现</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QR Token TTL</td>
+<td>60 秒自动过期</td>
+</tr>
+<tr>
+<td>Token 刷新</td>
+<td>到期自动换新，旧 token 立即失效</td>
+</tr>
+<tr>
+<td>路由守卫</td>
+<td><code>handleProtectedAction()</code> 检查登录和保司绑定状态</td>
+</tr>
+<tr>
+<td>Header 签名</td>
+<td>每请求注入 UUID + Timestamp + Nonce</td>
+</tr>
+<tr>
+<td>本地降级</td>
+<td>中台不可用时 base64 本地生成 token，保证 Demo 可用</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>15. 架构评审与改进方案</h2>
+<blockquote>
+<p>2026-06-16 Code Review · 9 条反馈逐条分析</p>
+</blockquote>
+<h3>15.1 统一服务层 — 解决后端系统暴露过多</h3>
+<p><strong>现状问题：</strong></p>
+<p><code>CONSOLE_BASE_URL</code> 硬编码在 4 个文件中，3 个 Screen 直接用裸 <code>fetch()</code> 绕过了 <code>policyApi.js</code> 的拦截器（无 Header 注入）：</p>
+<pre><code>screen/HomeScreen.js:17     ❌ const CONSOLE_BASE_URL = ...
+screen/ClaimsListScreen.js:14 ❌ const CONSOLE_BASE_URL = ...
+screen/QrScanScreen.js:18   ❌ const CONSOLE_BASE_URL = ...
+api/policyApi.js:5          ✅ (唯一正确的位置)
+</code></pre>
+<p><strong>改进方案：</strong> 将所有 HTTP 调用收敛到 <code>api/</code> 目录，通过统一的 <code>apiClient</code> (Axios instance) 发起，禁止 Screen 直接 fetch。</p>
+<pre><code class="language-mermaid">graph LR
+    subgraph &quot;改造前 ❌&quot;
+        S1[HomeScreen] -- fetch --&gt; B1[localhost:3000]
+        S2[ClaimsListScreen] -- fetch --&gt; B2[localhost:3000]
+        S3[QrScanScreen] -- axios --&gt; B3[localhost:3000]
+        S4[policyApi.js] -- axios --&gt; B4[localhost:3000]
+    end
+
+    subgraph &quot;改造后 ✅&quot;
+        S5[所有 Screen] --&gt; SVC[api/index.js&lt;br/&gt;统一 Service 层]
+        SVC --&gt; CLIENT[apiClient&lt;br/&gt;拦截器/缓存/降级]
+        CLIENT --&gt; BACKEND[localhost:3000]
+    end
+</code></pre>
+<p><strong>具体改动：</strong><br />
+- 新建 <code>api/index.js</code> — 导出所有 API 函数<br />
+- 移走 <code>HomeScreen</code>、<code>ClaimsListScreen</code>、<code>QrScanScreen</code> 中的 fetch 调用<br />
+- <code>CONSOLE_BASE_URL</code> 只在 <code>api/</code> 内定义一次</p>
+<hr />
+<h3>15.2 保障预览前置 — 激活前先展示覆盖信息</h3>
+<p><strong>现状问题：</strong></p>
+<pre><code>当前流程: 注册KYC → 选保司 → 拉保单 → 选保单 → 才知道能不能用
+                     ↑ 用户在这里绑定了，才发现不适用
+</code></pre>
+<p><strong>改进方案：</strong> 在选择保司的同时，立即展示保障预览卡片，让用户在绑定前就能看到关键信息。</p>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor User as 用户
+    participant App as App
+    participant API as 中台
+
+    User-&gt;&gt;App: 点击某保司（如 AIA）
+    App-&gt;&gt;API: 即时查询保障预览
+
+    alt 可覆盖
+        API--&gt;&gt;App: { status: eligible, hospitals: [陈星海,港大深圳], coverage: 500万, validUntil: 2027-01 }
+        App-&gt;&gt;User: 展示预览卡片 ✅&lt;br/&gt;&quot;覆盖2家网络医院 · 保额500万HKD · 有效期至2027-01&quot;
+        User-&gt;&gt;App: 确认绑定 → 再执行激活流程
+    else 不覆盖
+        API--&gt;&gt;App: { status: not_covered, reason: 该保司未接入跨境直赔网络 }
+        App-&gt;&gt;User: ⚠️ 不适用提示&lt;br/&gt;&quot;该保司暂不支持大湾区直赔，请尝试其他保司&quot;
+        Note over User,App: 用户无需走注册流程，直接尝试下一个保司
+    else 保单过期
+        API--&gt;&gt;App: { status: expired, expiredAt: 2026-01 }
+        App-&gt;&gt;User: ⚠️ &quot;保单已过期，请联系保险公司续保&quot;
+    end
+</code></pre>
+<p><strong>具体改动：</strong><br />
+- 新增 <code>GET /api/app/coverage/preview?hkid=&amp;company=</code> 或 Mock 模拟<br />
+- <code>HomeScreen</code> 保司选择弹窗改为预览卡片 + 确认按钮两步交互<br />
+- 新增 <code>CoveragePreviewCard</code> 组件</p>
+<hr />
+<h3>15.3 会话缓存 — 减少重复 API 调用</h3>
+<p><strong>现状问题：</strong> 每次切保司、进 QR 页面都重新请求，无任何缓存机制。</p>
+<p><strong>改进方案：</strong></p>
+<pre><code class="language-mermaid">sequenceDiagram
+    actor User
+    participant Cache as Session Cache
+    participant API as 中台
+
+    User-&gt;&gt;Cache: 首次查保单 (company=AIA)
+    Cache-&gt;&gt;API: GET /api/app/policies?company=AIA
+    API--&gt;&gt;Cache: 保单列表 { ttl: 300s }
+    Cache--&gt;&gt;User: 返回 + 缓存 5 分钟
+
+    User-&gt;&gt;Cache: 再次查保单 (company=AIA)
+    Cache--&gt;&gt;User: 直接返回缓存 ✅ (不调 API)
+
+    User-&gt;&gt;Cache: 切换保司 (company=ChinaLife)
+    Cache-&gt;&gt;API: 新保司，无缓存 → 调 API
+    API--&gt;&gt;Cache: 返回 + 缓存
+    Cache--&gt;&gt;User: 返回
+
+    User-&gt;&gt;Cache: 5 分钟后再次查
+    Cache-&gt;&gt;Cache: TTL 过期，标记 stale
+    Cache-&gt;&gt;API: 重新请求
+    API--&gt;&gt;Cache: 更新缓存
+</code></pre>
+<p><strong>具体改动：</strong><br />
+- <code>api/</code> 层新增 <code>CacheManager</code> — 基于 key + TTL 的内存缓存<br />
+- 缓存 key：<code>policies:${companyName}:${hkid}</code>，TTL: 300s<br />
+- 缓存 key：<code>qr:${policyNo}</code>，TTL: 55s（略短于 token 实际 60s 有效期）<br />
+- 用户登出 → 清空全部缓存</p>
+<hr />
+<h3>15.4 QR 码鲁棒性 — 预生成 + 离线 + 保存</h3>
+<p><strong>现状问题：</strong><br />
+- 进 QR 页面才请求 → 医院排队时网络慢了就干等<br />
+- 网络失败只有 console.warn → 用户看到空白 QR<br />
+- 无预生成、无离线、无保存</p>
+<p><strong>改进方案：</strong></p>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; 保单激活
+    保单激活 --&gt; 预生成QR: 立即后台生成 (不等用户打开)
+
+    state 预生成QR {
+        [*] --&gt; 在线生成: POST /api/app/qr/issue
+        在线生成 --&gt; 缓存QR: 成功
+        在线生成 --&gt; 本地降级: 网络失败
+        本地降级 --&gt; 缓存QR: base64(token+hkid+ts)
+        缓存QR --&gt; 保存到本地: AsyncStorage
+    }
+
+    缓存QR --&gt; QR就绪
+    QR就绪 --&gt; 打开QR页面: 用户点击 (瞬间渲染)
+    打开QR页面 --&gt; 展示QR: &lt; 100ms 无 loading
+    展示QR --&gt; 到期刷新: 后台静默刷新
+    到期刷新 --&gt; 展示QR
+
+    展示QR --&gt; 保存相册: 用户长按/按钮
+    展示QR --&gt; 分享: 系统分享Sheet
+    展示QR --&gt; 截图提醒: 检测截图 → 提示&quot;仅限当场使用&quot;
+</code></pre>
+<p><strong>具体改动：</strong><br />
+- <code>UserContext</code> 新增 <code>qrToken: { token, exp, policyNo }</code> 状态<br />
+- 保单激活后立即异步调用 <code>issueQrToken()</code> 预生成<br />
+- QR Token 写入 <code>AsyncStorage</code>，离线时读取本地缓存<br />
+- QR 页面新增保存按钮 → <code>react-native-share</code> / 写入相册<br />
+- 加载态改为骨架屏，而非空白</p>
+<hr />
+<h3>15.5 身份验证自动化 — 医院扫码自验证</h3>
+<p><strong>现状问题：</strong> RegistrationScreen 是纯客户端正则校验，<code>verifyPolicy()</code> 永远是 Mock。缺少后台身份交叉验证。</p>
+<p><strong>改进方案（需后端配合）：</strong></p>
+<pre><code>医院 HIS 扫码 QR → 提取 { token, hkid_hash, timestamp }
+  → POST /api/hospital/verify
+    → 校验 token 有效期
+    → 校验 hkid_hash 与保单绑定的 HKID 一致
+    → 校验 timestamp 在合理窗口内 (±5min 防重放)
+    → 返回 { patient_name, policy_status, coverage }
+</code></pre>
+<p>App 端改动较小，主要是 <code>QrScanScreen</code> 的 payload 结构升级，增加 HKID hash 字段。</p>
+<hr />
+<h3>15.6 补充错误路径</h3>
+<p><strong>现状问题：</strong> 架构文档和代码只有 Happy Path。实际场景：</p>
+<table>
+<thead>
+<tr>
+<th>错误场景</th>
+<th>当前处理</th>
+<th>应有处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>保单过期</td>
+<td>无检查</td>
+<td>UI 标记 expired + 拒绝生成 QR</td>
+</tr>
+<tr>
+<td>保司未覆盖</td>
+<td>无提示</td>
+<td>预览阶段即拦截</td>
+</tr>
+<tr>
+<td>网络超时</td>
+<td>console.warn</td>
+<td>Toast + 重试按钮</td>
+</tr>
+<tr>
+<td>身份不匹配</td>
+<td>无检查</td>
+<td>后端校验 + 前端阻断</td>
+</tr>
+<tr>
+<td>Token 被盗用</td>
+<td>无感知</td>
+<td>异常登录检测 + 刷新</td>
+</tr>
+</tbody>
+</table>
+<p><strong>改进后的状态机包含所有错误分支：</strong></p>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; UNVERIFIED
+    UNVERIFIED --&gt; VERIFIED: KYC 成功
+    UNVERIFIED --&gt; UNVERIFIED: KYC 失败 / 格式错误
+
+    VERIFIED --&gt; INSURANCE_PREVIEW: 查保司覆盖
+    INSURANCE_PREVIEW --&gt; POLICY_ACTIVE: 覆盖 ✅ 用户确认绑定
+    INSURANCE_PREVIEW --&gt; INSURANCE_PREVIEW: 不覆盖 ⚠️ 换保司
+    INSURANCE_PREVIEW --&gt; VERIFIED: 保单过期 ❌
+
+    POLICY_ACTIVE --&gt; QR_READY: 预生成 QR
+    QR_READY --&gt; TOKEN_EXPIRED: 60s 到期
+    TOKEN_EXPIRED --&gt; QR_READY: 刷新成功
+    TOKEN_EXPIRED --&gt; QR_ERROR: 刷新失败 (网络)
+    QR_ERROR --&gt; QR_READY: 重试成功
+
+    POLICY_ACTIVE --&gt; POLICY_EXPIRED: 保司推送过期通知
+    POLICY_EXPIRED --&gt; INSURANCE_PREVIEW: 重新选择保司
+</code></pre>
+<hr />
+<h3>15.7 结算流程优化 — 直赔优先</h3>
+<p><strong>现状问题：</strong> ClaimsListScreen 展示的公式 <code>Total - Covered = You Pay</code> 看起来像报销模式。</p>
+<p><strong>改进方案：</strong> QR 码直赔场景下，结算流变为：</p>
+<pre><code>治疗完成 → 医院提交结算请求 → 中台实时计算覆盖金额 → 用户只付差额
+</code></pre>
+<p>App 端改动：<br />
+- 新增 <code>SettlementScreen</code> — 展示即时结算结果（直赔金额 + 自付金额）<br />
+- ClaimsListScreen 区分「直赔」和「传统理赔」两类卡片<br />
+- 直赔卡片展示：<code>Total - DirectBilling = YouPay</code>（减少焦虑感）</p>
+<hr />
+<h3>15.8 用户通知</h3>
+<p><strong>现状问题：</strong> 零推送能力，状态变更只能靠手动下拉刷新。</p>
+<p><strong>改进方案（需后端配合）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>通知节点</th>
+<th>触发条件</th>
+<th>渠道</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>理赔审核通过</td>
+<td>中台状态变更</td>
+<td>Push + App内Toast</td>
+</tr>
+<tr>
+<td>退款到账</td>
+<td>医院确认退款</td>
+<td>Push</td>
+</tr>
+<tr>
+<td>QR 即将过期</td>
+<td>Token 剩余 10s</td>
+<td>App内震动提醒</td>
+</tr>
+<tr>
+<td>保单即将到期</td>
+<td>距到期日 30 天</td>
+<td>Push</td>
+</tr>
+</tbody>
+</table>
+<p><strong>App 端改动：</strong><br />
+- 接入 <code>@react-native-firebase/messaging</code> 或 <code>react-native-push-notification</code><br />
+- HomeScreen 右上角新增通知铃铛 + 未读红点<br />
+- 新建 <code>NotificationContext</code> 管理通知状态</p>
+<hr />
+<h3>15.9 事件驱动 → 状态驱动</h3>
+<p><strong>现状问题：</strong> 业务逻辑靠零散 boolean 拼凑，状态转移隐式散布在各 Screen 中。</p>
+<pre><code class="language-javascript">// 现状：靠多个独立变量拼凑
+isLoggedIn        // true/false
+user.company      // null | string
+policies.length   // 0 | N
+activePolicy      // null | object
+// 无法一眼看出用户在哪个业务阶段
+</code></pre>
+<p><strong>改进方案：</strong> 引入显式状态机，所有状态转移集中管理。</p>
+<pre><code class="language-mermaid">stateDiagram-v2
+    [*] --&gt; GUEST: App 启动
+    GUEST --&gt; VERIFIED: KYC 完成
+    GUEST --&gt; GUEST: 浏览首页 (受限)
+
+    VERIFIED --&gt; PREVIEWING: 查看保司覆盖
+    PREVIEWING --&gt; ACTIVATED: 确认绑定保司+保单
+    PREVIEWING --&gt; VERIFIED: 不适用,换保司
+    PREVIEWING --&gt; VERIFIED: 保单过期
+
+    ACTIVATED --&gt; QR_READY: 预生成 QR 成功
+    QR_READY --&gt; TOKEN_EXPIRING: 倒计时中
+    TOKEN_EXPIRING --&gt; QR_READY: 自动刷新
+    TOKEN_EXPIRING --&gt; ACTIVATED: 网络失败需重试
+
+    ACTIVATED --&gt; ACTIVATED: 切换保单
+    ACTIVATED --&gt; VERIFIED: 解绑保司
+    ACTIVATED --&gt; POLICY_EXPIRED: 保单过期
+
+    VERIFIED --&gt; GUEST: 登出
+    ACTIVATED --&gt; GUEST: 登出
+</code></pre>
+<p><strong>UserContext 改造示例：</strong></p>
+<pre><code class="language-javascript">// 改造后：单一状态枚举
+const USER_STATES = {
+  GUEST:            'GUEST',             // 未登录
+  VERIFIED:         'VERIFIED',          // 已 KYC,未绑保司
+  PREVIEWING:       'PREVIEWING',        // 正在查看保司覆盖
+  ACTIVATED:        'ACTIVATED',         // 已绑保司+保单
+  QR_READY:         'QR_READY',          // QR 已预生成
+  TOKEN_EXPIRING:   'TOKEN_EXPIRING',    // 即将过期
+  POLICY_EXPIRED:   'POLICY_EXPIRED',    // 保单过期
+};
+
+const [userState, setUserState] = useState(USER_STATES.GUEST);
+const [stateContext, setStateContext] = useState({
+  user: null,
+  selectedInsurer: null,
+  policies: [],
+  activePolicy: null,
+  qrToken: null,
+  error: null,
+});
+
+// 状态转移函数（只在一处定义）
+const transition = (newState, context) =&gt; {
+  // 校验转移合法性
+  if (!isValidTransition(userState, newState)) {
+    console.error(`非法状态转移: ${userState} → ${newState}`);
+    return;
+  }
+  setUserState(newState);
+  setStateContext(prev =&gt; ({ ...prev, ...context, error: null }));
+};
+</code></pre>
+<hr />
+<h2>16. 改进优先级</h2>
+<h3>P0 — 本周解决（阻塞其他改进）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>改进项</th>
+<th>理由</th>
+<th>预估工作量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>#9</strong></td>
+<td>状态驱动架构</td>
+<td>所有其他改进的地基。没有明确的状态枚举，错误处理、缓存策略、QR 预生成都无法可靠实现</td>
+<td>2-3天</td>
+</tr>
+<tr>
+<td><strong>#1</strong></td>
+<td>统一服务层</td>
+<td>当前最大代码异味。4 处 URL 硬编码 + Screen 绕过 API 层直接 fetch，不改的话其他 API 层面改进（缓存、统一错误处理）都无法做</td>
+<td>1天</td>
+</tr>
+<tr>
+<td><strong>#4</strong></td>
+<td>QR 鲁棒性</td>
+<td>直接决定核心业务能否在医院现场跑通。QR 失败 = 用户白跑一趟医院 = 信任崩塌</td>
+<td>1-2天</td>
+</tr>
+</tbody>
+</table>
+<p><strong>依赖关系：</strong></p>
+<pre><code>#9 (状态机) ──→ #6 (错误路径) ──→ #4 (QR鲁棒性)
+     └──→ #1 (服务层) ──→ #3 (缓存) ──→ #2 (保障预览)
+                              └──→ #7 (结算优化)
+</code></pre>
+<h3>P1 — 下周解决（依赖 P0 完成）</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>改进项</th>
+<th>理由</th>
+<th>预估工作量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>#6</strong></td>
+<td>补充错误路径</td>
+<td>用户遇到问题时不能静默失败。需要状态机 (#9) 先定义好所有状态，然后补齐错误 UI</td>
+<td>1-2天</td>
+</tr>
+<tr>
+<td><strong>#3</strong></td>
+<td>API 缓存</td>
+<td>依赖统一服务层 (#1)。减少重复请求，提升医院场景下的响应速度</td>
+<td>1天</td>
+</tr>
+<tr>
+<td><strong>#2</strong></td>
+<td>保障预览前置</td>
+<td>UX 优化。避免用户绑定完才发现保司不适用</td>
+<td>1天</td>
+</tr>
+</tbody>
+</table>
+<h3>P2 — 后续迭代</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>改进项</th>
+<th>理由</th>
+<th>预估工作量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>#7</strong></td>
+<td>结算流程对齐</td>
+<td>QR 直赔已有基础，主要是 ClaimsList 的 UI/文案调整</td>
+<td>0.5天</td>
+</tr>
+<tr>
+<td><strong>#8</strong></td>
+<td>用户通知</td>
+<td>需要后端 Push 基础设施配合，App 端改动不大</td>
+<td>1-2天 (含后端)</td>
+</tr>
+<tr>
+<td><strong>#5</strong></td>
+<td>身份验证自动化</td>
+<td>主要在后端，App 端只需改 QR payload 加 HKID hash</td>
+<td>0.5天 (App端)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>建议执行顺序</h3>
+<pre><code>Week 1:  #9 状态驱动架构 (2-3天)
+         #1 统一服务层   (1天)
+         #4 QR 鲁棒性    (1-2天)
+
+Week 2:  #6 错误路径     (1-2天)
+         #3 API 缓存     (1天)
+         #2 保障预览     (1天)
+
+Week 3+:  #7 结算对齐    (0.5天)
+         #8 通知系统     (1-2天)
+         #5 身份验证     (0.5天)
+</code></pre>
+<hr />
+<h2>17. 实现契约 — #9 状态驱动 + #1 统一服务层</h2>
+<blockquote>
+<p>两个改进并行开发的前置接口约定。所有后续实现以此为准。</p>
+</blockquote>
+<h3>17.1 #9 状态机契约</h3>
+<h4>状态枚举</h4>
+<pre><code class="language-typescript">// context/UserContext.js
+
+const USER_STATES = {
+  GUEST:            'GUEST',           // 未登录，可浏览首页（受限）
+  VERIFIED:         'VERIFIED',        // KYC 完成，未绑保司
+  PREVIEWING:       'PREVIEWING',      // 正在查看某保司的保障预览
+  ACTIVATED:        'ACTIVATED',       // 已绑保司+保单，QR 待生成
+  QR_READY:         'QR_READY',        // QR 已预生成，可直接展示
+  TOKEN_EXPIRING:   'TOKEN_EXPIRING',  // Token 即将过期（最后 10s）
+  POLICY_EXPIRED:   'POLICY_EXPIRED',  // 保单已过期
+};
+</code></pre>
+<h4>状态上下文</h4>
+<pre><code class="language-typescript">interface StateContext {
+  user: { name: string; phone: string; hkid: string } | null;
+  selectedInsurer: string | null;
+  policies: Policy[];
+  activePolicy: Policy | null;
+  qrToken: { token: string; exp: number; policyNo: string } | null;
+  coverage: CoveragePreview | null;
+  error: { code: string; message: string } | null;
+}
+</code></pre>
+<h4>合法状态转移</h4>
+<pre><code>GUEST       → VERIFIED        (KYC 成功)
+GUEST       → GUEST           (浏览首页)
+
+VERIFIED    → PREVIEWING      (查看保司覆盖)
+VERIFIED    → GUEST           (登出)
+
+PREVIEWING  → ACTIVATED       (确认绑定)
+PREVIEWING  → VERIFIED        (不适用/过期/取消)
+
+ACTIVATED   → QR_READY        (预生成 QR 成功)
+ACTIVATED   → PREVIEWING      (切换保司)
+ACTIVATED   → ACTIVATED       (切换保单)
+ACTIVATED   → VERIFIED        (解绑保司)
+ACTIVATED   → POLICY_EXPIRED  (保单过期通知)
+ACTIVATED   → GUEST           (登出)
+
+QR_READY    → TOKEN_EXPIRING  (倒计时到 10s)
+QR_READY    → PREVIEWING      (切换保司)
+TOKEN_EXPIRING → QR_READY     (刷新成功)
+TOKEN_EXPIRING → ACTIVATED    (刷新失败，需手动重试)
+TOKEN_EXPIRING → PREVIEWING   (切换保司)
+
+POLICY_EXPIRED → PREVIEWING   (重新选择保司)
+POLICY_EXPIRED → GUEST        (登出)
+</code></pre>
+<h4>Hook 接口</h4>
+<pre><code class="language-typescript">const { userState, stateContext, transition, logout } = useUser();
+
+// 用法示例
+transition(USER_STATES.PREVIEWING, { selectedInsurer: 'AIA' });
+transition(USER_STATES.ACTIVATED, { policies, activePolicy: policies[0] });
+transition(USER_STATES.QR_READY, { qrToken });
+</code></pre>
+<hr />
+<h3>17.2 #1 统一服务层契约</h3>
+<h4>目录结构</h4>
+<pre><code>api/
+├── index.js          ← 统一出口，Screen 只 import 这个文件
+├── client.js         ← Axios instance + 拦截器（从 policyApi.js 提取）
+├── policyApi.js      ← 保单相关（已有，不动签名）
+├── claimApi.js       ← 理赔相关（从 Screen 迁出）
+├── chatApi.js        ← AI 对话（从 HomeScreen 迁出）
+├── qrApi.js          ← QR 验证（从 QrScanScreen 迁出）
+└── cache.js          ← 内存缓存（为 #3 预留接口）
+</code></pre>
+<h4><code>api/index.js</code> 导出清单</h4>
+<pre><code class="language-typescript">// 统一出口 — 任何 Screen 只 import 这里
+import * as api from '../api';
+
+// 保单
+api.fetchPoliciesByCompany(companyName, hkid)
+api.fetchHospitalsByPolicy(policyNo)
+api.issueQrToken(policyNo)
+api.refreshQrToken(policyNo)
+api.syncFromConsole(hkid)
+
+// 理赔（从 Screen fetch 迁出）
+api.fetchClaims(hkid)
+  // → GET /api/app/claims?hkid=
+  // → 返回 { success, data: Claim[] }
+
+// AI 对话（从 HomeScreen fetch 迁出）
+api.sendChatMessage(sessionId, query)
+  // → POST /api/chat
+  // → 返回 { success, data: { reply } }
+
+// QR 验证（从 QrScanScreen 迁出）
+api.verifyQrCode(qrData, hospitalId)
+  // → POST /api/qr/verify
+  // → 返回 { success, data: { patient, claim } }
+
+// 保障预览（为 #2 预留）
+api.fetchCoveragePreview(hkid, companyName)
+  // → GET /api/app/coverage/preview?hkid=&amp;company=
+  // → 返回 { eligible, hospitals[], coverage, validUntil }
+</code></pre>
+<h4>禁止事项</h4>
+<pre><code>❌ Screen 中禁止直接 import axios 或使用 fetch()
+❌ Screen 中禁止定义 CONSOLE_BASE_URL / API_BASE_URL
+❌ Screen 中禁止直接 import api/policyApi.js（走 api/index.js）
+</code></pre>
+<h4>Screen 迁移对照</h4>
+<table>
+<thead>
+<tr>
+<th>Screen</th>
+<th>原来</th>
+<th>改为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HomeScreen.js:57</code></td>
+<td><code>fetch(url)</code> 查理赔概览</td>
+<td><code>api.fetchClaims(hkid)</code> + 本地计算</td>
+</tr>
+<tr>
+<td><code>HomeScreen.js:162</code></td>
+<td><code>fetch(serverUrl)</code> AI 对话</td>
+<td><code>api.sendChatMessage(sessionId, query)</code></td>
+</tr>
+<tr>
+<td><code>ClaimsListScreen.js:33</code></td>
+<td><code>fetch(apiUrl)</code> 查理赔</td>
+<td><code>api.fetchClaims(hkid)</code></td>
+</tr>
+<tr>
+<td><code>QrScanScreen.js:32</code></td>
+<td><code>axios.post(url, body)</code> 验码</td>
+<td><code>api.verifyQrCode(qrData, hospitalId)</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>18. 20260616 上线验证与 Bug 修复</h2>
+<blockquote>
+<p>iPhone 17 Pro 模拟器 (iOS 26.5) · Metro bundler · Fast Refresh 热加载<br />
+起始 commit: <code>e495e75</code> → 修复 commit: <code>a4e58d6</code></p>
+</blockquote>
+<h3>18.1 验证环境</h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>设备</td>
+<td>iPhone 17 Pro 模拟器 (iOS 26.5 / 23F77)</td>
+</tr>
+<tr>
+<td>Node.js</td>
+<td>v25.6.0 (<code>/opt/homebrew/bin/node</code>)</td>
+</tr>
+<tr>
+<td>启动方式</td>
+<td><code>npx react-native start --reset-cache</code> + <code>npx react-native run-ios --no-packager</code></td>
+</tr>
+<tr>
+<td>构建问题</td>
+<td>AppIcon 缺失 → 去掉 <code>ASSETCATALOG_COMPILER_APPICON_NAME</code></td>
+</tr>
+</tbody>
+</table>
+<h3>18.2 界面验证 — #9 #1 #4 改动在模拟器上的表现</h3>
+<h4>GUEST 态（首页初始状态）</h4>
+<ul>
+<li>Hero Card 橄榄绿 <code>#556B50</code>，引导激活</li>
+<li>Header: 头像 + "Welcome Back" + "Guest" + 主题/语言切换</li>
+<li>Categories: 医保码 / 理赔 / AI助手 / 医院地图</li>
+<li>Dock: 首页(高亮) / 扫码 / 理赔 / 我的</li>
+<li><strong>结论: GUEST 态无变化（#9 #1 是架构重构，外观不变）</strong></li>
+</ul>
+<h4>VERIFIED → PREVIEWING → ACTIVATED 流转</h4>
+<ul>
+<li>激活后 Hero Card 变红色引导绑定态（<code>#E57B65</code>）</li>
+<li>选保司 → 弹 9 家列表 → 选 AIA → Hero Card 变绿 + 显示保司徽章 + 保单名</li>
+<li><strong>结论: 状态流转正常，Hero Card 三态与改动前一致</strong></li>
+</ul>
+<h4>QRCodeScreen — #4 新功能确认</h4>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>骨架屏加载态（替代空白页）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>预生成 QR（绑保司后秒开）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>网络失败重试 UI（云离线图标 + 重试按钮）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>本地降级（btoa 兜底 token）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>保存按钮 + 分享 Sheet</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h3>18.3 发现的 Bug 与修复</h3>
+<h4>Bug 1: PolicyPickerModal 无法勾选保单</h4>
+<p><strong>现象:</strong> 选 AIA 后弹出两个套餐（尊尚醫療 Premier / 基礎醫療 Basic），点击任意一行无反应，勾选图标不切换。</p>
+<p><strong>根因:</strong> <code>HomeScreen.js</code> 和 <code>QRCodeScreen.tsx</code> 的 <code>handlePickPolicy</code> 调用了 <code>setActivePolicy(policy.id)</code>，传入的是字符串（如 <code>"p_aia_001"</code>），但 <code>setActivePolicy</code> 期望完整 policy 对象。导致 <code>activePolicy</code> 变成字符串，<code>.id</code> / <code>.policyNo</code> / <code>.planName</code> 全部为 <code>undefined</code>。PolicyPickerModal 的 <code>isActive</code> 判断 <code>item.id === activePolicyId</code> 永远不匹配。</p>
+<p><strong>修复:</strong> 两处 <code>setActivePolicy(policy.id)</code> → <code>setActivePolicy(policy)</code>。</p>
+<p><strong>影响文件:</strong><br />
+- <code>screen/HomeScreen.js:95</code><br />
+- <code>screen/QRCodeScreen.tsx:111</code></p>
+<h4>Bug 2: 切换保险公司后 Hero Card 仍显示旧保司名</h4>
+<p><strong>现象:</strong> 已绑 AIA 的用户点击保司徽章切换为 Prudential，保单列表正确更新为 Prudential 的保单，但 Hero Card 徽章仍显示 "AIA Hong Kong (友邦)"。</p>
+<p><strong>根因:</strong> <code>VALID_TRANSITIONS</code> 缺少 <code>ACTIVATED → PREVIEWING</code> 转移。<code>bindInsurer()</code> 尝试从 ACTIVATED 跳到 PREVIEWING 被状态机拦截返回 <code>false</code>，<code>selectedInsurer</code> 未更新。但后面的 <code>activatePolicies()</code> 没有检查返回值照常执行（<code>ACTIVATED → ACTIVATED</code> 是合法的），导致「policies 换了但公司名没换」。</p>
+<p><strong>修复:</strong><br />
+- <code>VALID_TRANSITIONS</code> 补了 <code>ACTIVATED → PREVIEWING</code>、<code>QR_READY → PREVIEWING</code>、<code>TOKEN_EXPIRING → PREVIEWING</code><br />
+- <code>handleBindCompany</code> 加了 <code>bindInsurer</code> 返回值校验，失败直接 <code>return</code></p>
+<p><strong>影响文件:</strong><br />
+- <code>context/UserContext.js</code> — 合法转移表<br />
+- <code>screen/HomeScreen.js</code> — 防御检查</p>
+<h4>Bug 3: iOS 构建失败 — AppIcon 缺失</h4>
+<p><strong>现象:</strong> <code>xcodebuild</code> 报错 <code>None of the input catalogs contained a matching stickers icon set, app icon set, or icon stack named "AppIcon"</code>。</p>
+<p><strong>根因:</strong> <code>project.pbxproj</code> 中 <code>ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon</code>，但 <code>Images.xcassets</code> 内没有 <code>AppIcon.appiconset</code>。</p>
+<p><strong>修复:</strong> 删除 Debug 和 Release 两个 configuration 中的 <code>ASSETCATALOG_COMPILER_APPICON_NAME</code> 配置行。</p>
+<p><strong>影响文件:</strong><br />
+- <code>ios/HKEdgeApp.xcodeproj/project.pbxproj</code></p>
+<h3>18.4 最终状态</h3>
+<pre><code>Branch: main
+Remote: git@github.com:cuhkszdev/Cross-Boarder-Data-Cloud-CUHKSZ-.git
+Commit: a4e58d6 (HEAD)
+Diff:   +14 −9 across 4 files
+Date:   2026-06-16
+</code></pre>
+<h3>18.5 遗留问题 &amp; 后续建议</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AppIcon</td>
+<td>当前绕过了，正式发布前需要在 Xcode 中添加 AppIcon 资源</td>
+</tr>
+<tr>
+<td>P1 改进</td>
+<td>#6 错误路径 / #3 API 缓存 / #2 保障预览（架构文档 §16 P1）</td>
+</tr>
+<tr>
+<td>预生成 QR 时机</td>
+<td>当前在 <code>activatePolicies</code> 后立即调用 <code>preGenerateQr()</code>，但由于 React state 闭包问题，<code>stateContext.activePolicy</code> 可能指向旧值。建议改为在 <code>useEffect</code> 中监听 <code>activePolicy</code> 变化自动触发</td>
+</tr>
+</tbody>
+</table>
+  </main>
+  <footer>
+    <p><a href="../hkedgeapp.html">← Back to HKEdgeApp project page</a> · © 2026 Jiazhi (Jasper) Xie</p>
+  </footer>
+</body>
+</html>
