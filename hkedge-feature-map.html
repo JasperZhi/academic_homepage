@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>HKEdge APP · 全功能地图(2026-05 版)</title>
+<style>
+:root {
+  --bg: #0a0c11;
+  --panel: #141821;
+  --panel-2: #1c2029;
+  --text: #e8eaee;
+  --dim: #8991a0;
+  --border: #262b36;
+  --heroCard: #556B50;
+  --heroLight: #7a9670;
+  --gold: #d4a847;
+  --blue: #4a8cd9;
+  --danger: #E57B65;
+  --textDark: #1a1a1a;
+  --card: #1d212c;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, "PingFang SC", system-ui, sans-serif;
+  height: 100vh; overflow: hidden; font-size: 12px;
+}
+body { padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+
+/* ===== Top ===== */
+.top { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.top h1 { font-size: 13px; font-weight: 700; }
+.top h1 small { color: var(--dim); font-weight: 400; margin-left: 6px; font-size: 10px; }
+.ctrls { display: flex; gap: 5px; align-items: center; }
+.btn { background: var(--panel); color: var(--text); border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 500; }
+.btn:hover { border-color: var(--heroLight); }
+.btn.primary { background: var(--heroCard); border-color: var(--heroCard); color: white; }
+.legend { display: flex; gap: 7px; align-items: center; font-size: 10px; color: var(--dim); }
+.legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.legend .dot.ok { background: var(--heroLight); }
+.legend .dot.placeholder { background: var(--gold); }
+.legend .dot.bug { background: var(--danger); }
+
+/* ===== Layout ===== */
+.main { display: grid; grid-template-columns: 230px 360px 1fr; gap: 12px; }
+
+/* ===== Module nav (左) ===== */
+.modnav { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px; max-height: calc(100vh - 90px); overflow-y: auto; }
+.modnav h2 { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1.5px; margin: 8px 6px 6px; }
+.mod {
+  padding: 9px 11px; border-radius: 8px; margin-bottom: 3px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text);
+  border: 1px solid transparent;
+  transition: all .15s;
+}
+.mod:hover { background: var(--panel-2); }
+.mod.active { background: rgba(85,107,80,0.18); border-color: var(--heroCard); color: white; font-weight: 600; }
+.mod .ico { font-size: 14px; width: 20px; text-align: center; }
+.mod .nm { flex: 1; }
+.mod .cnt { background: var(--panel-2); padding: 1px 7px; border-radius: 8px; font-size: 10px; color: var(--dim); }
+.mod.active .cnt { background: var(--heroCard); color: white; }
+
+/* ===== Phone (中) ===== */
+.phonecol { display: flex; flex-direction: column; align-items: center; }
+.phone {
+  width: 340px; height: 700px;
+  background: #000; border-radius: 46px; padding: 11px;
+  box-shadow: 0 0 0 2px #2a2f3a inset, 0 20px 60px rgba(0,0,0,0.6);
+  position: relative;
+  flex-shrink: 0;
+}
+.phone::before {
+  content: ''; position: absolute; top: 13px; left: 50%; transform: translateX(-50%);
+  width: 108px; height: 26px; background: #000; border-radius: 16px; z-index: 10;
+}
+.screen { width: 100%; height: 100%; border-radius: 36px; overflow: hidden; position: relative; background: var(--bg); }
+.scr { position: absolute; inset: 0; padding: 50px 16px 20px; overflow-y: auto; opacity: 0; pointer-events: none; transition: opacity .35s; }
+.scr.show { opacity: 1; pointer-events: auto; }
+
+.phone-cap { font-size: 11px; color: var(--dim); margin-top: 10px; text-align: center; max-width: 340px; line-height: 1.5; }
+
+/* APP UI 复刻 (与 07 一致) */
+.scr-hdr { position: absolute; top: 45px; left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; }
+.scr-hdr .x, .scr-hdr .b { font-size: 22px; cursor: pointer; }
+.scr-hdr .ttl { font-size: 14px; font-weight: 600; }
+
+/* Home pieces */
+.hs-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.hs-l { display: flex; align-items: center; gap: 10px; }
+.hs-av { width: 38px; height: 38px; border-radius: 19px; background: var(--text); display: flex; align-items: center; justify-content: center; color: var(--bg); font-weight: 800; font-size: 16px; }
+.hs-greet { font-size: 12px; color: var(--dim); }
+.hs-name { font-size: 17px; font-weight: 600; }
+.hs-icons { display: flex; gap: 6px; }
+.hs-icb { width: 32px; height: 32px; border-radius: 16px; background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+
+.hero { background: var(--heroCard); border-radius: 22px; padding: 18px; margin-bottom: 24px; }
+.hero.danger { background: var(--danger); }
+.hero .t1 { font-family: Georgia, serif; font-size: 21px; color: white; font-weight: 700; line-height: 1.2; margin-bottom: 7px; }
+.hero .t2 { font-size: 12px; color: rgba(255,255,255,0.85); line-height: 1.5; margin-bottom: 14px; }
+.hero .badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.85); color: var(--textDark); padding: 5px 10px; border-radius: 11px; font-size: 10px; font-weight: 700; margin-bottom: 7px; margin-right: 4px; }
+.hero .badge.dark { background: rgba(0,0,0,0.28); color: white; margin-bottom: 14px; }
+.hero .hbtn { background: var(--text); color: var(--textDark); border: none; padding: 11px; border-radius: 22px; font-size: 13px; font-weight: 700; width: 100%; cursor: pointer; }
+.hero .hbtn.white { background: white; color: var(--danger); }
+
+.shdr { display: flex; justify-content: space-between; margin-bottom: 11px; margin-top: 6px; align-items: flex-end; }
+.st { font-size: 15px; font-weight: 600; }
+.sa { font-size: 12px; color: var(--dim); }
+.cats { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 22px; }
+.cat { flex-shrink: 0; width: 72px; height: 86px; border-radius: 16px; background: var(--card); padding: 11px; display: flex; flex-direction: column; justify-content: space-between; font-size: 10px; color: var(--dim); font-weight: 500; }
+.cat .i { font-size: 19px; }
+
+.dock-w { position: absolute; bottom: 22px; left: 0; right: 0; display: flex; justify-content: center; }
+.dock { display: flex; padding: 6px; border-radius: 26px; background: var(--card); width: 84%; justify-content: space-between; }
+.di { padding: 12px; flex: 1; text-align: center; color: var(--dim); font-size: 16px; }
+.di.act { background: var(--danger); border-radius: 22px; padding: 10px 20px; color: white; }
+
+/* Registration */
+.reg-bb { display: flex; align-items: center; gap: 8px; font-size: 14px; margin-top: 4px; margin-bottom: 24px; }
+.reg-t { font-family: Georgia, serif; font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+.reg-s { font-size: 12px; color: var(--dim); margin-bottom: 22px; line-height: 1.5; }
+.reg-ai { background: var(--danger); color: white; padding: 14px; border-radius: 27px; text-align: center; font-weight: 700; font-size: 13px; margin-bottom: 18px; }
+.reg-or { display: flex; align-items: center; gap: 12px; color: var(--dim); margin-bottom: 22px; font-size: 11px; font-weight: 600; }
+.reg-or::before, .reg-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.reg-lbl { font-size: 11px; color: var(--dim); text-transform: uppercase; margin: 12px 0 5px; font-weight: 600; letter-spacing: 0.5px; }
+.reg-in { border-bottom: 1px solid var(--border); padding: 7px 0; font-size: 16px; }
+.reg-sub { background: var(--heroCard); color: white; padding: 16px; border-radius: 28px; text-align: center; font-weight: 700; font-size: 13px; margin-top: auto; }
+
+/* Modal */
+.modal-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; }
+.sheet { width: 100%; background: var(--card); border-top-left-radius: 28px; border-top-right-radius: 28px; padding: 18px; max-height: 70%; overflow-y: auto; }
+.sheet .handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 12px; }
+.sheet h3 { font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 14px; }
+.opt { display: flex; align-items: center; padding: 12px 8px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.opt:last-child { border-bottom: none; }
+.opt .om { flex: 1; }
+.opt .ot { font-size: 13px; font-weight: 600; }
+.opt .os { font-size: 11px; color: var(--dim); margin-top: 2px; }
+.opt .arr { color: var(--dim); }
+.sheet-cancel { text-align: center; padding: 14px; color: var(--dim); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+/* AI sheet */
+.ai-sheet { height: 70%; }
+.ai-bub-r { align-self: flex-end; padding: 10px 14px; border-radius: 18px; background: var(--danger); color: white; max-width: 80%; margin-bottom: 10px; font-size: 13px; }
+.ai-bub-l { align-self: flex-start; padding: 12px; border-radius: 16px; background: var(--card); border: 1px solid var(--border); max-width: 80%; margin-bottom: 10px; font-size: 13px; line-height: 1.5; }
+.ai-thinking { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--dim); margin: 10px 0; }
+.ai-input-row { display: flex; gap: 6px; margin-top: 10px; }
+.ai-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 22px; padding: 12px 16px; color: var(--text); font-size: 13px; }
+.ai-send { width: 44px; height: 44px; border-radius: 22px; background: var(--text); color: var(--textDark); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+/* Claims */
+.claim-card { background: var(--card); border-radius: 22px; padding: 16px; margin-bottom: 12px; }
+.claim-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.claim-h-l { display: flex; gap: 10px; align-items: center; }
+.claim-icb { width: 36px; height: 36px; border-radius: 18px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.claim-name { font-size: 14px; font-weight: 700; }
+.claim-bdg { padding: 4px 10px; border-radius: 11px; font-size: 10px; font-weight: 700; }
+.claim-bdg.s { background: rgba(85,107,80,0.2); color: var(--heroLight); }
+.claim-bdg.p { background: rgba(229,123,101,0.2); color: var(--danger); }
+.claim-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; }
+.claim-row .k { color: var(--dim); }
+.claim-row .v { font-weight: 500; }
+.claim-divider { height: 1px; background: var(--border); margin: 12px 0; }
+.claim-math { display: flex; justify-content: space-between; align-items: flex-end; padding: 0 4px; }
+.claim-math .col { text-align: center; }
+.claim-math .lbl { font-size: 9px; text-transform: uppercase; color: var(--dim); margin-bottom: 4px; font-weight: 700; }
+.claim-math .val { font-size: 14px; font-weight: 700; }
+.claim-math .val.red { color: var(--danger); font-size: 16px; }
+.claim-math .val.green { color: var(--danger); }
+.claim-math .sym { font-size: 16px; color: var(--dim); padding-bottom: 1px; }
+
+/* Detail timeline */
+.tl-card { background: var(--card); border-radius: 22px; padding: 18px; margin-bottom: 22px; }
+.tl-step { display: flex; gap: 12px; min-height: 56px; }
+.tl-l { display: flex; flex-direction: column; align-items: center; }
+.tl-circle { width: 28px; height: 28px; border-radius: 14px; background: var(--border); color: var(--dim); display: flex; align-items: center; justify-content: center; font-size: 12px; }
+.tl-circle.act { background: var(--heroCard); color: white; }
+.tl-line { width: 2px; flex: 1; background: var(--border); }
+.tl-line.act { background: var(--heroCard); }
+.tl-r { flex: 1; padding-bottom: 18px; }
+.tl-tt { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.tl-tt.dim { color: var(--dim); }
+.tl-td { font-size: 11px; color: var(--dim); }
+
+.fin-card { background: var(--card); border-radius: 22px; padding: 18px; margin-bottom: 18px; }
+.fin-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; }
+.fin-row .lk { color: var(--dim); }
+.fin-row.hi .lk { color: var(--heroLight); font-weight: 600; }
+.fin-row.hi .vk { color: var(--heroLight); font-weight: 700; }
+.fin-row.al .lk { color: var(--danger); font-weight: 600; }
+.fin-row.al .vk { color: var(--danger); font-weight: 700; }
+.fin-divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+.action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; height: 50px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); border-radius: 25px; font-size: 13px; font-weight: 600; }
+
+/* Profile */
+.pr-card { background: var(--card); border-radius: 22px; padding: 22px; text-align: center; margin-bottom: 22px; }
+.pr-av { width: 70px; height: 70px; border-radius: 35px; background: var(--danger); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 24px; margin: 0 auto 12px; }
+.pr-name { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+.pr-co { font-size: 13px; color: var(--dim); }
+.pr-sec-t { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 12px; font-weight: 600; }
+.pr-info { background: var(--card); border-radius: 18px; padding: 4px 16px; margin-bottom: 18px; }
+.pr-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.pr-row:last-child { border-bottom: none; }
+.pr-row .l { display: flex; align-items: center; gap: 8px; color: var(--dim); font-size: 13px; }
+.pr-row .v { font-size: 13px; font-weight: 600; }
+.pr-menu { background: var(--card); padding: 14px 16px; border-radius: 18px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.pr-menu-l { display: flex; align-items: center; gap: 10px; }
+.pr-menu-ic { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; }
+.pr-menu-t { font-size: 14px; font-weight: 600; }
+.pr-out { background: rgba(255,69,58,0.08); border: 1px solid rgba(255,69,58,0.3); padding: 16px; border-radius: 18px; text-align: center; color: #FF453A; font-weight: 700; font-size: 14px; margin-top: 6px; }
+
+/* Activities */
+.act-row { background: var(--card); border-radius: 18px; padding: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.act-icb { width: 44px; height: 44px; border-radius: 22px; border: 1px solid; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.act-info { flex: 1; }
+.act-tt { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.act-dt { font-size: 12px; color: var(--dim); }
+.act-bdg { padding: 4px 10px; border-radius: 11px; font-size: 10px; font-weight: 700; color: white; }
+
+/* Categories grid */
+.cgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 4px; }
+.ccard { background: var(--card); height: 110px; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.ccard .i { font-size: 26px; color: var(--danger); }
+.ccard .n { font-size: 12px; font-weight: 600; text-align: center; }
+
+/* Alert overlay */
+.alert-mask { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 30px; }
+.alert-box { background: rgba(60,60,60,0.95); backdrop-filter: blur(10px); border-radius: 14px; padding: 18px; min-width: 240px; text-align: center; }
+.alert-t { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.alert-d { font-size: 13px; color: var(--dim); margin-bottom: 18px; line-height: 1.5; }
+.alert-btns { display: flex; gap: 1px; border-top: 1px solid var(--border); margin: 0 -18px -18px; }
+.alert-btn { flex: 1; padding: 12px; font-size: 14px; color: var(--blue); cursor: pointer; }
+.alert-btn.danger { color: var(--danger); }
+
+/* ===== Right info ===== */
+.info { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; max-height: calc(100vh - 90px); overflow-y: auto; }
+.info-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.info-head .ico { font-size: 26px; }
+.info-h-t { font-size: 18px; font-weight: 700; }
+.info-h-s { font-size: 11px; color: var(--dim); margin-top: 2px; }
+
+.info-section { margin-bottom: 18px; }
+.info-section .t { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600; }
+
+.btn-list { display: flex; flex-direction: column; gap: 6px; }
+.bb {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 11px 13px; display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  cursor: pointer; transition: all .15s;
+}
+.bb:hover { border-color: var(--heroLight); }
+.bb.active { border-color: var(--gold); box-shadow: 0 0 12px rgba(212,168,71,0.2); }
+.bb .head { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+.bb .badge { font-size: 9px; padding: 2px 7px; border-radius: 8px; font-weight: 700; }
+.bb .badge.ok { background: rgba(85,107,80,0.25); color: var(--heroLight); }
+.bb .badge.placeholder { background: rgba(212,168,71,0.18); color: var(--gold); }
+.bb .badge.bug { background: rgba(229,123,101,0.18); color: var(--danger); }
+.bb .desc { grid-column: 1 / -1; font-size: 11px; color: var(--dim); line-height: 1.5; }
+.bb .ref { grid-column: 1 / -1; font-family: ui-monospace, monospace; font-size: 10px; color: var(--heroLight); margin-top: 4px; padding-top: 6px; border-top: 1px dashed var(--border); }
+.bb .ref.bug { color: var(--danger); }
+
+.biz-card {
+  background: linear-gradient(135deg, rgba(212,168,71,0.1), rgba(212,168,71,0.02));
+  border: 1px solid rgba(212,168,71,0.3); border-radius: 10px;
+  padding: 10px 12px; font-size: 11px; color: var(--text); line-height: 1.6;
+}
+.biz-card b { color: var(--gold); }
+
+/* highlight ring on phone for "active button" */
+.btn-ring {
+  position: absolute; pointer-events: none; z-index: 50;
+  border: 2px solid var(--gold); border-radius: 14px;
+  box-shadow: 0 0 16px rgba(212,168,71,0.6);
+  animation: ring-pulse 1.4s infinite;
+  opacity: 0; transition: all .3s;
+}
+.btn-ring.show { opacity: 1; }
+@keyframes ring-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>📂 <span data-i18n-zh="HKEdge APP · 全功能地图" data-i18n-en="HKEdge APP · Full Feature Map">HKEdge APP · 全功能地图</span> <small>· <span data-i18n-zh="13 大模块 · 含退款闭环 + 适老化(2026-05 版)" data-i18n-en="13 modules · refund closure + elder mode (May 2026)">13 大模块 · 含退款闭环 + 适老化(2026-05 版)</span></small></h1>
+  <div class="ctrls">
+    <span class="legend">
+      <span><span class="dot ok"></span><span data-i18n-zh="已实装" data-i18n-en="Shipped">已实装</span></span>
+      <span><span class="dot placeholder"></span><span data-i18n-zh="占位/待实装" data-i18n-en="Placeholder">占位/待实装</span></span>
+      <span><span class="dot bug"></span><span data-i18n-zh="已知缺陷" data-i18n-en="Known Bug">已知缺陷</span></span>
+    </span>
+    <button class="btn" id="lang-toggle">EN</button>
+    <button class="btn" id="prev" data-i18n-zh="◀ 上一模块" data-i18n-en="◀ Prev">◀ 上一模块</button>
+    <button class="btn primary" id="play" data-i18n-zh="▶ 自动巡览" data-i18n-en="▶ Auto Tour">▶ 自动巡览</button>
+    <button class="btn" id="next" data-i18n-zh="下一模块 ▶" data-i18n-en="Next ▶">下一模块 ▶</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- 左:模块导航 -->
+  <div class="modnav" id="modnav"></div>
+
+  <!-- 中:Phone -->
+  <div class="phonecol">
+    <div class="phone">
+      <div class="screen" id="screen">
+
+        <!-- M1 Auth: 注册页 (初始) -->
+        <div class="scr" data-key="auth-empty">
+          <div class="reg-bb">◀ Back</div>
+          <div class="reg-t">Identity Verification</div>
+          <div class="reg-s">Please enter your details exactly as they appear on your HKID and insurance policy.</div>
+          <div class="reg-ai">⌬ One-Tap Auto Fill (iAM Smart)</div>
+          <div class="reg-or">OR</div>
+          <div class="reg-lbl">FULL NAME</div>
+          <div class="reg-in" style="color:var(--dim)">e.g. CHAN Tai Man</div>
+          <div class="reg-lbl">HKID</div>
+          <div class="reg-in" style="color:var(--dim)">e.g. A1234567</div>
+          <div class="reg-lbl">PHONE NUMBER</div>
+          <div class="reg-in" style="color:var(--dim)">e.g. 98765432</div>
+          <div style="margin-top:30px"></div>
+          <div class="reg-sub">Verify &amp; Activate</div>
+        </div>
+
+        <!-- M1 Auth: iAM Smart 填好 -->
+        <div class="scr" data-key="auth-filled">
+          <div class="reg-bb">◀ Back</div>
+          <div class="reg-t">Identity Verification</div>
+          <div class="reg-ai">✓ iAM Smart 填充成功</div>
+          <div class="reg-or">OR</div>
+          <div class="reg-lbl">FULL NAME</div>
+          <div class="reg-in">CHAN Tai Man</div>
+          <div class="reg-lbl">HKID</div>
+          <div class="reg-in">A1234567</div>
+          <div class="reg-lbl">PHONE NUMBER</div>
+          <div class="reg-in">98765432</div>
+          <div style="margin-top:30px"></div>
+          <div class="reg-sub">Verify &amp; Activate</div>
+        </div>
+
+        <!-- M2 Theme + Lang + Logout (Home Header) -->
+        <div class="scr" data-key="home-header-light" style="background:#F5F0E6;color:#1a1a1a">
+          <div class="hs-h">
+            <div class="hs-l">
+              <div class="hs-av" style="background:#1a1a1a;color:#F5F0E6">C</div>
+              <div>
+                <div class="hs-greet" style="color:#666">Welcome back</div>
+                <div class="hs-name" style="color:#1a1a1a">Chen Tai Man</div>
+              </div>
+            </div>
+            <div class="hs-icons">
+              <div class="hs-icb" style="background:rgba(0,0,0,0.06)">☀️</div>
+              <div class="hs-icb" style="background:rgba(0,0,0,0.06);font-weight:700;font-size:11px">EN</div>
+              <div class="hs-icb" style="background:rgba(0,0,0,0.06)">⎋</div>
+            </div>
+          </div>
+          <div style="background:rgba(0,0,0,0.04);border-radius:14px;padding:14px;font-size:12px;color:#555;text-align:center;line-height:1.6">
+            <b>主题切换 · 浅色模式</b><br>
+            点击 ☀️/🌙 即时切换<br>
+            <small style="color:#888">由 ThemeContext.toggleTheme() 控制</small>
+          </div>
+        </div>
+
+        <!-- M2 Home Header (logout alert) -->
+        <div class="scr" data-key="home-logout-alert">
+          <div class="hs-h">
+            <div class="hs-l">
+              <div class="hs-av">C</div>
+              <div>
+                <div class="hs-greet">Welcome back</div>
+                <div class="hs-name">Chen Tai Man</div>
+              </div>
+            </div>
+            <div class="hs-icons">
+              <div class="hs-icb">🌙</div>
+              <div class="hs-icb">EN</div>
+              <div class="hs-icb" style="border:1px solid var(--gold)">⎋</div>
+            </div>
+          </div>
+          <div class="alert-mask">
+            <div class="alert-box">
+              <div class="alert-t">Secure Logout</div>
+              <div class="alert-d">Are you sure you want to log out?</div>
+              <div class="alert-btns">
+                <div class="alert-btn">Cancel</div>
+                <div class="alert-btn danger">Log out</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- M3 Insurance binding - 未绑保司 -->
+        <div class="scr" data-key="bind-empty">
+          <div class="hs-h">
+            <div class="hs-l"><div class="hs-av">C</div><div><div class="hs-greet">Welcome back</div><div class="hs-name">Chen Tai Man</div></div></div>
+            <div class="hs-icons"><div class="hs-icb">🌙</div><div class="hs-icb">EN</div><div class="hs-icb">⎋</div></div>
+          </div>
+          <div class="hero danger">
+            <div class="t1">🛡 Link Insurance</div>
+            <div class="t2">选择您的保险公司,解锁医疗直赔与专属理赔服务。</div>
+            <button class="hbtn white" style="border:2px solid var(--gold)">Select Provider</button>
+          </div>
+        </div>
+
+        <!-- M3 选保司 Modal -->
+        <div class="scr" data-key="bind-company-modal">
+          <div class="hs-h">
+            <div class="hs-l"><div class="hs-av">C</div><div><div class="hs-greet">Welcome back</div><div class="hs-name">Chen Tai Man</div></div></div>
+            <div class="hs-icons"><div class="hs-icb">🌙</div><div class="hs-icb">EN</div><div class="hs-icb">⎋</div></div>
+          </div>
+          <div class="hero danger" style="opacity:0.4">
+            <div class="t1">🛡 Link Insurance</div>
+            <div class="t2">选择您的保险公司...</div>
+          </div>
+          <div class="modal-mask">
+            <div class="sheet">
+              <div class="handle"></div>
+              <h3>选择保险公司</h3>
+              <div class="opt"><div class="om"><div class="ot">中国人寿</div><div class="os">China Life</div></div><div class="arr">›</div></div>
+              <div class="opt" style="background:rgba(85,107,80,0.12)"><div class="om"><div class="ot">友邦保险</div><div class="os">AIA Hong Kong</div></div><div class="arr">›</div></div>
+              <div class="opt"><div class="om"><div class="ot">保诚</div><div class="os">Prudential</div></div><div class="arr">›</div></div>
+              <div class="opt"><div class="om"><div class="ot">宏利</div><div class="os">Manulife</div></div><div class="arr">›</div></div>
+              <div class="sheet-cancel">取消</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- M3 选保单 Modal -->
+        <div class="scr" data-key="bind-policy-modal">
+          <div class="hs-h">
+            <div class="hs-l"><div class="hs-av">C</div><div><div class="hs-greet">Welcome back</div><div class="hs-name">Chen Tai Man</div></div></div>
+            <div class="hs-icons"><div class="hs-icb">🌙</div><div class="hs-icb">EN</div><div class="hs-icb">⎋</div></div>
+          </div>
+          <div class="hero" style="opacity:0.5">
+            <div class="t1">您的保障已生效</div>
+            <span class="badge">✓ AIA Hong Kong ⇄</span>
+          </div>
+          <div class="modal-mask">
+            <div class="sheet">
+              <div class="handle"></div>
+              <h3>选择保单</h3>
+              <div class="opt" style="background:rgba(85,107,80,0.15)">
+                <div class="om">
+                  <div class="ot">尊尚醫療 Premier</div>
+                  <div class="os">AIA-HK-2026-001 · HKD 5,000,000</div>
+                </div>
+                <div style="color:var(--heroLight);font-size:18px">✓</div>
+              </div>
+              <div class="opt">
+                <div class="om">
+                  <div class="ot">基礎醫療 Basic</div>
+                  <div class="os">AIA-HK-2026-077 · HKD 1,000,000</div>
+                </div>
+                <div class="arr">○</div>
+              </div>
+              <div class="sheet-cancel">取消</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- M4 Route Guard alert -->
+        <div class="scr" data-key="guard-not-bound">
+          <div class="hs-h"><div class="hs-l"><div class="hs-av">C</div><div><div class="hs-greet">Welcome</div><div class="hs-name">Chen Tai Man</div></div></div><div class="hs-icons"><div class="hs-icb">🌙</div><div class="hs-icb">EN</div><div class="hs-icb">⎋</div></div></div>
+          <div class="hero danger" style="opacity:0.4"><div class="t1">未绑定保司</div></div>
+          <div class="alert-mask">
+            <div class="alert-box">
+              <div class="alert-t">需要绑定保险</div>
+              <div class="alert-d">请先在首页绑定您的保险公司,以查看专属理赔记录。</div>
+              <div class="alert-btns">
+                <div class="alert-btn">稍后再说</div>
+                <div class="alert-btn" style="font-weight:700">立即绑定</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- M5 Hero - 已绑保单的主壳 -->
+        <div class="scr" data-key="home-bound">
+          <div class="hs-h"><div class="hs-l"><div class="hs-av">C</div><div><div class="hs-greet">Welcome back</div><div class="hs-name">Chen Tai Man</div></div></div><div class="hs-icons"><div class="hs-icb">🌙</div><div class="hs-icb">EN</div><div class="hs-icb">⎋</div></div></div>
+          <div class="hero">
+            <div class="t1">您的保障已生效</div>
+            <div class="t2">在合作医院出示跨境医保码即可直接结算。</div>
+            <span class="badge">✓ AIA Hong Kong ⇄</span>
+            <span class="badge dark">📄 尊尚醫療 · AIA-HK-2026-001 ⇄</span>
+            <button class="hbtn">Show Insurance Code</button>
+          </div>
+          <div class="shdr"><div class="st">Categories</div><div class="sa">See all &gt;</div></div>
+          <div class="cats">
+            <div class="cat"><div class="i">▦</div><div>Insurance Code</div></div>
+            <div class="cat"><div class="i">⎙</div><div>Claims</div></div>
+            <div class="cat"><div class="i">🤖</div><div>AI Agent</div></div>
+            <div class="cat"><div class="i">⌖</div><div>Hospital Map</div></div>
+          </div>
+          <div class="dock-w"><div class="dock"><div class="di act">⌂</div><div class="di">▣</div><div class="di">📅</div><div class="di">👤</div></div></div>
+        </div>
+
+        <!-- M7 Claims List -->
+        <div class="scr" data-key="claims-list">
+          <div class="scr-hdr"><div class="b">◀</div><div class="ttl">Claim History</div><div style="width:22px"></div></div>
+          <div style="margin-top:30px"></div>
+          <div style="font-family:Georgia,serif;font-size:24px;font-weight:700;margin-bottom:18px">Recent Activity</div>
+          <div class="claim-card">
+            <div class="claim-h">
+              <div class="claim-h-l"><div class="claim-icb">🏥</div><div class="claim-name">深圳和睦家</div></div>
+              <div class="claim-bdg s">Settled</div>
+            </div>
+            <div class="claim-row"><div class="k">Claim No.</div><div class="v">CLM-2026-001</div></div>
+            <div class="claim-row"><div class="k">Date</div><div class="v">May 13, 2026</div></div>
+            <div class="claim-row"><div class="k">Category</div><div class="v">Outpatient</div></div>
+            <div class="claim-divider"></div>
+            <div class="claim-math">
+              <div class="col"><div class="lbl">Total</div><div class="val">$450</div></div>
+              <div class="sym">−</div>
+              <div class="col"><div class="lbl">Covered</div><div class="val" style="color:var(--danger)">$405</div></div>
+              <div class="sym">=</div>
+              <div class="col"><div class="lbl">You Pay</div><div class="val red">$45</div></div>
+            </div>
+          </div>
+          <div class="claim-card">
+            <div class="claim-h">
+              <div class="claim-h-l"><div class="claim-icb">⚡</div><div class="claim-name">南方医科大学医院</div></div>
+              <div class="claim-bdg p">Pending</div>
+            </div>
+            <div class="claim-row"><div class="k">Claim No.</div><div class="v">CLM-2026-002</div></div>
+            <div class="claim-row"><div class="k">Category</div><div class="v">Emergency</div></div>
+          </div>
+        </div>
+
+        <!-- M8 Claim Details -->
+        <div class="scr" data-key="claim-detail">
+          <div class="scr-hdr"><div class="b">◀</div><div class="ttl">Claim Details</div><div style="width:22px"></div></div>
+          <div style="margin-top:36px;text-align:center;margin-bottom:25px">
+            <div style="font-size:12px;color:var(--dim);letter-spacing:1px;margin-bottom:5px">CLM-2026-001</div>
+            <div style="font-family:Georgia,serif;font-size:26px;font-weight:700;margin-bottom:9px">Outpatient</div>
+            <div style="font-size:13px;color:var(--dim)">📍 深圳和睦家</div>
+            <div style="font-size:12px;color:var(--dim);margin-top:3px">2026-05-13</div>
+          </div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:10px">Status Tracker</div>
+          <div class="tl-card">
+            <div class="tl-step">
+              <div class="tl-l"><div class="tl-circle act">📄</div><div class="tl-line act"></div></div>
+              <div class="tl-r"><div class="tl-tt">Claim Submitted</div><div class="tl-td">Hospital uploaded documents</div></div>
+            </div>
+            <div class="tl-step">
+              <div class="tl-l"><div class="tl-circle act">🛡</div><div class="tl-line act"></div></div>
+              <div class="tl-r"><div class="tl-tt">Under Review</div><div class="tl-td">AI is verifying policy coverage</div></div>
+            </div>
+            <div class="tl-step">
+              <div class="tl-l"><div class="tl-circle act">✓</div><div class="tl-line act"></div></div>
+              <div class="tl-r"><div class="tl-tt">Approved</div><div class="tl-td">Direct billing authorized</div></div>
+            </div>
+            <div class="tl-step">
+              <div class="tl-l"><div class="tl-circle act">💰</div></div>
+              <div class="tl-r"><div class="tl-tt">Settled</div><div class="tl-td">Funds transferred to hospital</div></div>
+            </div>
+          </div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:10px">Financial Breakdown</div>
+          <div class="fin-card">
+            <div class="fin-row"><div class="lk">Total Billed</div><div class="vk">¥ 450</div></div>
+            <div class="fin-row"><div class="lk">Deductible</div><div class="vk">- ¥ 45</div></div>
+            <div class="fin-divider"></div>
+            <div class="fin-row hi"><div class="lk">Covered by HKEdge</div><div class="vk">¥ 405</div></div>
+            <div class="fin-row al"><div class="lk">Patient Responsibility</div><div class="vk">¥ 45</div></div>
+          </div>
+          <div class="action-btn">📑 View Hospital Invoice</div>
+        </div>
+
+        <!-- M9 AI Agent Modal -->
+        <div class="scr" data-key="ai-agent">
+          <div class="hs-h"><div class="hs-l"><div class="hs-av">C</div><div><div class="hs-greet">Welcome back</div><div class="hs-name">Chen Tai Man</div></div></div><div class="hs-icons"><div class="hs-icb">🌙</div><div class="hs-icb">EN</div><div class="hs-icb">⎋</div></div></div>
+          <div class="modal-mask">
+            <div class="sheet ai-sheet">
+              <div class="handle"></div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                <div style="width:40px;height:40px;background:var(--card);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">🤖</div>
+                <div>
+                  <div style="font-size:15px;font-weight:600">AI Agent</div>
+                  <div style="font-size:10px;color:var(--dim)">Powered by HKEdge LLM</div>
+                </div>
+                <div style="margin-left:auto;color:var(--dim);font-size:18px">✕</div>
+              </div>
+              <div style="display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;margin-bottom:10px">
+                <div class="ai-bub-r">我的保单覆盖深圳哪些医院?</div>
+                <div class="ai-bub-l">您的 AIA 尊尚醫療 (POL-001) 在深圳覆盖以下 5 家:<br>• 深圳市人民医院<br>• 深圳和睦家医院<br>• 南方医科大学深圳医院<br>...</div>
+              </div>
+              <div class="ai-input-row">
+                <div class="ai-input" style="color:var(--dim)">Ask me about your policy...</div>
+                <div class="ai-send">↑</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- M10 Profile -->
+        <div class="scr" data-key="profile">
+          <div class="scr-hdr"><div class="b">‹</div><div class="ttl">My Profile</div><div style="width:30px"></div></div>
+          <div style="margin-top:30px"></div>
+          <div class="pr-card">
+            <div class="pr-av">C</div>
+            <div class="pr-name">Chen Tai Man</div>
+            <div class="pr-co">AIA Hong Kong (友邦)</div>
+          </div>
+          <div class="pr-sec-t">PERSONAL INFORMATION</div>
+          <div class="pr-info">
+            <div class="pr-row"><div class="l">📇 HKID</div><div class="v">A1234567</div></div>
+            <div class="pr-row"><div class="l">📞 Phone</div><div class="v">98765432</div></div>
+            <div class="pr-row"><div class="l">📄 Policy No.</div><div class="v">AIA-HK-2026-001</div></div>
+          </div>
+          <div class="pr-sec-t">ACCOUNT SETTINGS</div>
+          <div class="pr-menu">
+            <div class="pr-menu-l"><div class="pr-menu-ic" style="background:rgba(56,189,248,0.2);color:#38BDF8">?</div><div class="pr-menu-t">Contact Us</div></div>
+            <div style="color:var(--dim)">›</div>
+          </div>
+          <div class="pr-menu">
+            <div class="pr-menu-l"><div class="pr-menu-ic" style="background:rgba(168,85,247,0.2);color:#a855f7">ⓘ</div><div class="pr-menu-t">Version</div></div>
+            <div style="color:var(--dim)">›</div>
+          </div>
+          <div class="pr-out">Log out</div>
+        </div>
+
+        <!-- M11 Activities -->
+        <div class="scr" data-key="activities">
+          <div class="scr-hdr"><div class="b">◀</div><div class="ttl">All Activities</div><div style="width:22px"></div></div>
+          <div style="margin-top:30px;font-family:Georgia,serif;font-size:24px;font-weight:700;margin-bottom:20px">All Activities</div>
+          <div class="act-row">
+            <div class="act-icb" style="border-color:var(--danger);background:rgba(229,123,101,0.12);color:var(--danger)">⏳</div>
+            <div class="act-info"><div class="act-tt">Claim Submitted</div><div class="act-dt">2026-04-20</div></div>
+            <div class="act-bdg" style="background:var(--danger)">Pending</div>
+          </div>
+          <div class="act-row">
+            <div class="act-icb" style="border-color:var(--heroCard);background:rgba(85,107,80,0.12);color:var(--heroCard)">✓</div>
+            <div class="act-info"><div class="act-tt">Claim Approved</div><div class="act-dt">2026-04-15</div></div>
+            <div class="act-bdg" style="background:var(--heroCard)">Settled</div>
+          </div>
+          <div class="act-row">
+            <div class="act-icb" style="border-color:#38BDF8;background:rgba(56,189,248,0.12);color:#38BDF8">💰</div>
+            <div class="act-info"><div class="act-tt">Cost Saved</div><div class="act-dt">2026-04-10</div></div>
+            <div style="font-weight:700">12,000 HKD</div>
+          </div>
+          <div class="act-row">
+            <div class="act-icb" style="border-color:var(--dim);background:rgba(137,145,160,0.12);color:var(--dim)">👤</div>
+            <div class="act-info"><div class="act-tt">Profile Updated</div><div class="act-dt">2026-04-05</div></div>
+            <div class="act-bdg" style="background:var(--dim)">Success</div>
+          </div>
+        </div>
+
+        <!-- M12 Categories All -->
+        <div class="scr" data-key="categories">
+          <div class="scr-hdr"><div class="b">◀</div><div class="ttl">Categories</div><div style="width:22px"></div></div>
+          <div style="margin-top:30px;font-family:Georgia,serif;font-size:26px;font-weight:700;margin-bottom:20px">Categories</div>
+          <div class="cgrid">
+            <div class="ccard"><div class="i">▦</div><div class="n">Insurance Code</div></div>
+            <div class="ccard"><div class="i">⎙</div><div class="n">Claims</div></div>
+            <div class="ccard" style="border:1px dashed var(--gold)"><div class="i">🤖</div><div class="n" style="color:var(--gold)">AI Agent ⚠️</div></div>
+            <div class="ccard" style="border:1px dashed var(--gold)"><div class="i">⌖</div><div class="n" style="color:var(--gold)">Hospital Map ⚠️</div></div>
+            <div class="ccard" style="border:1px dashed var(--gold)"><div class="i">❤</div><div class="n" style="color:var(--gold)">Health Tips ⚠️</div></div>
+            <div class="ccard" style="border:1px dashed var(--gold)"><div class="i">🛡</div><div class="n" style="color:var(--gold)">Insurance Policy ⚠️</div></div>
+          </div>
+        </div>
+
+        <!-- M13 Hospital Demo (QrScanScreen) -->
+        <div class="scr" data-key="hospital-demo" style="background:#F5F5F5;color:#333">
+          <div style="background:#52C41A;padding:60px 20px 20px;color:white;margin:0 -16px 14px">
+            <div style="font-size:22px;font-weight:700">醫院驗證端</div>
+            <div style="font-size:14px;opacity:0.85">Hospital Verification</div>
+          </div>
+          <div style="background:white;border-radius:12px;padding:14px;margin-bottom:14px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px;color:#222">掃描窗口 / Scan Window</div>
+            <div style="background:#eee;border:2px dashed #ccc;height:100px;display:flex;align-items:center;justify-content:center;color:#666;border-radius:8px">📷 模擬攝像頭</div>
+            <div style="font-size:11px;color:#333;margin:10px 0 5px;font-weight:700">手動輸入跨境醫保碼:</div>
+            <div style="border:1px solid #ddd;border-radius:6px;padding:9px;font-size:12px;color:#333;background:white">HKEdge-2026-Token-XYZ</div>
+            <div style="background:#52C41A;color:white;padding:11px;border-radius:8px;text-align:center;font-weight:700;font-size:13px;margin-top:12px">開始驗證 Verify Code</div>
+          </div>
+        </div>
+
+        <!-- M14 适老化首页 -->
+        <div class="scr" data-key="elder-home">
+          <div style="padding:20px 10px">
+            <div style="text-align:center;margin-top:14px;margin-bottom:24px">
+              <div style="font-size:18px;color:var(--text-dim)">您好</div>
+              <div style="font-size:30px;font-weight:800;letter-spacing:1px;margin:6px 0 12px">Chen Tai Man</div>
+              <div style="display:inline-flex;align-items:center;gap:6px;background:var(--card);padding:8px 14px;border-radius:18px"><span style="color:var(--accent)">🛡</span><span style="font-size:13px;font-weight:700">AIA-HK-2026-001</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px">
+              <div style="background:var(--accent);min-height:110px;border-radius:22px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:36px;color:white;margin-bottom:8px">▦</div>
+                <div style="color:white;font-size:18px;font-weight:800;text-align:center;line-height:24px">出示<br>医保码</div>
+              </div>
+              <div style="background:var(--danger);min-height:110px;border-radius:22px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:36px;color:white;margin-bottom:8px">📄</div>
+                <div style="color:white;font-size:18px;font-weight:800;text-align:center;line-height:24px">我的<br>理赔</div>
+              </div>
+              <div style="background:#38BDF8;min-height:110px;border-radius:22px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:36px;color:white;margin-bottom:8px">☎</div>
+                <div style="color:white;font-size:18px;font-weight:800;text-align:center;line-height:24px">联系<br>客服</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:center;padding:14px;border:1px solid var(--border);border-radius:16px;background:var(--card);font-size:14px;color:var(--text)">↔ 退出长者模式</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="btn-ring" id="ring"></div>
+    </div>
+    <div class="phone-cap" id="cap">—</div>
+  </div>
+
+  <!-- 右:按钮清单 + 商业价值 -->
+  <div class="info" id="info"></div>
+</div>
+
+<script>
+// ================== 功能模块定义 ==================
+const MODULES = [
+  {
+    id:'M1', ico:'🪪', name:'1. 身份认证 / KYC', short:'Auth',
+    desc:'用户首次进入或退出后重新使用 APP 的入口。包含 iAM Smart 一键认证、手动表单、字段校验。',
+    biz:'KYC 数据进入 UserContext,后续保单查询、二维码生成等所有功能的前置依赖。',
+    screen:'auth-empty',
+    buttons:[
+      { name:'◀ 返回', desc:'回到上级页面', ref:'RegistrationScreen.tsx:114', state:'ok' },
+      { name:'⌬ One-Tap Auto Fill (iAM Smart)', desc:'mock 1.2s 后填入 CHAN Tai Man / A1234567 / 98765432', ref:'RegistrationScreen.tsx:66-79', state:'ok', altScreen:'auth-filled' },
+      { name:'姓名输入', desc:'文本输入,改变时清空 errors.name', ref:':150-168', state:'ok' },
+      { name:'HKID 输入', desc:'校验正则 /^[A-Za-z]{1,2}[0-9]{6}[0-9A-Za-z]$/', ref:':41-49', state:'ok' },
+      { name:'电话输入', desc:'数字键盘,8-11 位校验', ref:':52-60', state:'ok' },
+      { name:'Verify & Activate', desc:'校验 → login() → navigation.replace("Home")', ref:':81-105', state:'ok' },
+    ],
+  },
+  {
+    id:'M2', ico:'⚙️', name:'2. 全局开关', short:'Global',
+    desc:'Home 页右上角三个图标按钮,全局生效。三语切换已修正映射:按钮文字 = 当前语言名称。',
+    biz:'即时切换深浅 / 三语 / 退出登录,无需进设置页,所有界面同步更新。',
+    screen:'home-header-light',
+    buttons:[
+      { name:'🌙/☀️ 主题切换', desc:'调 toggleTheme(),即时切换 Light/Dark', ref:'HomeScreen.js:152-154 + ThemeContext.js', state:'ok' },
+      { name:'EN/简/繁 语言切换', desc:'三态循环:EN(显示"EN")→ zh_CN(显示"简")→ zh_HK(显示"繁")→ EN。已修正按钮文字与当前语言一致。', ref:'translations.js:6/146/286 + LanguageContext.js:12-18', state:'ok' },
+      { name:'⎋ 退出登录', desc:'Alert 二次确认 → logout() 清空 user 状态', ref:':74-92', state:'ok', altScreen:'home-logout-alert' },
+    ],
+  },
+  {
+    id:'M3', ico:'🔗', name:'3. 保险绑定 / 切换', short:'Insurance',
+    desc:'用户绑定保险公司、自动拉保单列表、激活某张保单。**直连中台 /api/app/policies**。',
+    biz:'每次切换保单 → 二维码 token 立即按新 policy_no 重签;保司更新 → APP 实时同步。',
+    screen:'bind-empty',
+    buttons:[
+      { name:'立即选择 (未绑保司)', desc:'红色 hero CTA,打开保司选择 Modal', ref:'HomeScreen.js:192-194', state:'ok' },
+      { name:'保司徽章 ⇄ (已绑)', desc:'再次打开保司 Modal 切换', ref:':206-219', state:'ok' },
+      { name:'保单胶囊 ⇄', desc:'打开保单选择 Modal', ref:'PolicyPickerModal.js + HomeScreen 保单 Badge', state:'ok' },
+      { name:'9 家保司选项', desc:'点选 → fetchPoliciesByCompany() 调中台 → 多张保单时自动弹保单选择器', ref:':38-58 + api/policyApi.js', state:'ok', altScreen:'bind-company-modal' },
+      { name:'保单选项', desc:'handlePickPolicy(policy) → setActivePolicy(id)', ref:':60-64', state:'ok', altScreen:'bind-policy-modal' },
+      { name:'Modal 取消', desc:'关闭 Modal', ref:':414-416', state:'ok' },
+    ],
+  },
+  {
+    id:'M4', ico:'🛡', name:'4. 路由守卫', short:'Guard',
+    desc:'横切所有受保护入口,在用户未达条件时弹 Alert 引导。',
+    biz:'防止用户进入"无意义"页面,把流失风险转化为引导转化。',
+    screen:'guard-not-bound',
+    buttons:[
+      { name:'未登录 → 受保护点击', desc:'Alert "Access Denied" → 跳 Registration', ref:'HomeScreen.js:62-70', state:'ok' },
+      { name:'未绑保司 → 进 Claims', desc:'Alert "需要绑定保险" → 弹保司 Modal', ref:':51-58', state:'ok' },
+      { name:'退出登录二次确认', desc:'Alert + destructive style', ref:':77-91', state:'ok' },
+    ],
+  },
+  {
+    id:'M5', ico:'🏠', name:'5. 主壳 / Hero / Dock', short:'Shell',
+    desc:'Home 页的三态 Hero 卡 + Categories(已调宽至 130px 单行) + Your Progress(已对齐真实数据)+ 底部 Dock 4 项。',
+    biz:'信息架构的"中央广场",所有核心功能都从这里一跳即达。Your Progress 现在从 /api/app/claims 实时统计。',
+    screen:'home-bound',
+    buttons:[
+      { name:'Hero - Activate Identity (未登录)', desc:'navigate("Registration")', ref:'HomeScreen.js:170-176', state:'ok' },
+      { name:'Hero - Show Insurance Code (已绑)', desc:'navigate("QRCodeScreen")', ref:':223-229', state:'ok' },
+      { name:'Categories "See all >"', desc:'navigate("Categories")', ref:':236-238', state:'ok' },
+      { name:'Cat 1 · Insurance Code', desc:'handleProtectedAction("QRCodeScreen") · 单行展示(已调宽 130px)', ref:':242-245 + styles.categoryCard', state:'ok' },
+      { name:'Cat 2 · Claims', desc:'handleProtectedAction("ClaimsList") · 中英文单行', ref:':247-250', state:'ok' },
+      { name:'Cat 3 · AI Agent', desc:'setAiModalVisible(true)', ref:':252-255', state:'ok' },
+      { name:'Cat 4 · Hospital Map', desc:'Alert("Coming Soon", "Hospital Map")', ref:':257-259', state:'placeholder' },
+      { name:'Your progress · Pending', desc:'真实数据:claims.filter(s==="Pending").length', ref:'useFocusEffect + claimsSummary.pending', state:'ok' },
+      { name:'Your progress · Settled', desc:'真实数据:claims.filter(s==="Settled").length', ref:'claimsSummary.settled', state:'ok' },
+      { name:'Your progress · Saved', desc:'真实数据:sum(covered_amount) WHERE Settled', ref:'claimsSummary.savedHKD', state:'ok' },
+      { name:'Your progress "See activity >"', desc:'navigate("Activities")', ref:':268-270', state:'ok' },
+      { name:'Dock · Home', desc:'当前页 (active)', ref:':307-309', state:'ok' },
+      { name:'Dock · 扫码', desc:'handleProtectedAction("QRCodeScreen")', ref:':310-312', state:'ok' },
+      { name:'Dock · 日历', desc:'handleProtectedAction("ClaimsList")', ref:':313-315', state:'ok' },
+      { name:'Dock · 个人', desc:'handleProtectedAction("Profile")', ref:':316-318', state:'ok' },
+    ],
+  },
+  {
+    id:'M7', ico:'📋', name:'6. 理赔列表 (跨保司聚合)', short:'Claims',
+    desc:'已重构:改用 /api/app/claims 跨保单聚合查询。每张卡顶部加 Policy No. 一行;顶部 4 档 chip 筛选:全部 / 当前保单 / AIA / CL。',
+    biz:'解决中国人寿保单看不到理赔的问题,客户能按保司分轴看。Total - Covered = You Pay 算式直观呈现实际节省。',
+    screen:'claims-list',
+    buttons:[
+      { name:'◀ 返回', desc:'goBack()', ref:'ClaimsListScreen.js (header)', state:'ok' },
+      { name:'下拉刷新', desc:'RefreshControl → fetchClaims()', ref:':48-52', state:'ok' },
+      { name:'API 调用', desc:'GET /api/app/claims?hkid=A1234567 — 后端按 phone=98765432 反查所有保单 → IN policy_id 集合 → JOIN claims', ref:'server.js: /api/app/claims', state:'ok' },
+      { name:'筛选 chip · 全部', desc:'默认显示所有 8 条', ref:'filter==="all"', state:'ok' },
+      { name:'筛选 chip · 当前保单', desc:'仅显示 activePolicy.policyNo 的理赔', ref:'filter==="active"', state:'ok' },
+      { name:'筛选 chip · AIA', desc:'只保留 policy_id 以 AIA 开头', ref:'filter==="aia"', state:'ok' },
+      { name:'筛选 chip · CL', desc:'只保留 policy_id 以 CL 开头(中国人寿)', ref:'filter==="cl"', state:'ok' },
+      { name:'卡片 Policy No. 行', desc:'新增 — 一眼看到本理赔属于哪张保单', ref:'ClaimsListScreen renderClaimCard', state:'ok' },
+      { name:'Refunded 第三态徽章', desc:'蓝色徽章 + 退回箭头图标,与退款闭环联动', ref:'isRefunded 分支', state:'ok' },
+      { name:'卡片点击进入详情', desc:'⚠ activeOpacity 已设置,但 onPress 仍占位', ref:':70-72', state:'placeholder' },
+    ],
+  },
+  {
+    id:'M8', ico:'🧾', name:'7. 理赔详情 + 退款入口', short:'ClaimDetails',
+    desc:'新增 PDF Step 19-24 退款闭环:Settled 状态卡新增"申请退款"按钮 → Alert 二次确认 → 退款后时间轴自动追加第 5 步。',
+    biz:'退款闭环让客户在 APP 内自助发起退费,无需到院排队。底部状态条「退款完成 · 已通知 CU Datahub」体现三方对齐。',
+    screen:'claim-detail',
+    buttons:[
+      { name:'◀ 返回', desc:'goBack()', ref:'ClaimDetailsScreen.js:64', state:'ok' },
+      { name:'时间轴 4 步(基础)', desc:'根据 claimData.status 切换 isActive', ref:':84-89', state:'ok' },
+      { name:'时间轴第 5 步(退款)', desc:'isRefunded 为 true 时追加「退款已到账 · 原路退回」', ref:':91-100', state:'ok' },
+      { name:'财务明细', desc:'只读 4 行 Total / Deductible / Covered / Pay', ref:':108-130', state:'ok' },
+      { name:'View Hospital Invoice', desc:'⚠ 按钮存在但仍无 onPress', ref:':132-141', state:'placeholder' },
+      { name:'申请退款(Settled 可见)', desc:'触发 Alert → 确认后 setIsRefunded(true) + 第二次 Alert 提示「退款已提交」', ref:':143-179', state:'ok' },
+      { name:'退款完成状态条', desc:'退款后变绿色「退款完成 · 已通知 CU Datahub」', ref:':181-186', state:'ok' },
+    ],
+  },
+  {
+    id:'M9', ico:'🤖', name:'8. AI 助手', short:'AI Agent',
+    desc:'底部 70% 高度 sheet。文字输入 → 调 n8n /api/chat → 返回 reply。',
+    biz:'卖点之一:用户随时可问"我的保单覆盖什么医院"等,无需翻 PDF 条款。',
+    screen:'ai-agent',
+    buttons:[
+      { name:'打开入口', desc:'Categories AI Agent 卡 / Categories 全集页', ref:'HomeScreen.js:252-255', state:'ok' },
+      { name:'Modal ✕ 关闭', desc:'setAiModalVisible(false) + 清 query/response', ref:':335-337', state:'ok' },
+      { name:'TextInput', desc:'onSubmitEditing → handleAskAI()', ref:':365-373', state:'ok' },
+      { name:'发送 ↑', desc:'调 n8n http://10.0.2.2:3000/api/chat (sessionId, query)', ref:':95-129 + :374-376', state:'ok' },
+      { name:'加载状态', desc:'isThinking 时显示 ActivityIndicator + "Processing..."', ref:':351-355', state:'ok' },
+      { name:'失败兜底', desc:'网络错误显示"网络请求失败,请检查连接"', ref:':117-124', state:'ok' },
+    ],
+  },
+  {
+    id:'M10', ico:'👤', name:'9. 个人中心 + 长者模式开关', short:'Profile',
+    desc:'用户信息只读 + 设置菜单 + 退出。已新增"长者模式"Switch,打开后自动跳转 ElderHome。',
+    biz:'承载"你是谁、你的保单"的信任凭证。长者模式入口集中在 Profile,与系统设置等位,符合无障碍设计预期。',
+    screen:'profile',
+    buttons:[
+      { name:'‹ 返回', desc:'goBack()', ref:'ProfileScreen.js:71-73', state:'ok' },
+      { name:'信息 4 行', desc:'只读 Name / HKID / Phone / 当前 activePolicy.policyNo', ref:':96-103', state:'ok' },
+      { name:'🟠 长者模式 Switch', desc:'打开 → toggleElderMode() + navigation.replace("ElderHome");关闭 → 由 ElderHome 内退出', ref:':109-128', state:'ok' },
+      { name:'Contact Us', desc:'⚠️ onPress={() => {}} 占位', ref:':130', state:'placeholder' },
+      { name:'Version', desc:'⚠️ onPress={() => {}} 占位', ref:':132', state:'placeholder' },
+      { name:'Log out', desc:'Alert 二次确认 → logout() + navigate("Home")', ref:':19-37', state:'ok' },
+    ],
+  },
+  {
+    id:'M11', ico:'📜', name:'10. 活动流水', short:'Activities',
+    desc:'4 行硬编码活动卡(Claim Submitted / Approved / Cost Saved / Profile Updated)。',
+    biz:'弱化版的时间轴,用于 Hero "See activity >" 跳转后展示。',
+    screen:'activities',
+    buttons:[
+      { name:'◀ 返回', desc:'goBack()', ref:'ActivitiesScreen.js:23-25', state:'ok' },
+      { name:'4 行活动卡', desc:'⚠️ 静态 mock 数据,无 onPress', ref:':13-18 + :30-50', state:'placeholder' },
+    ],
+  },
+  {
+    id:'M12', ico:'🗂', name:'11. Categories 全集', short:'Categories',
+    desc:'Home "See all" 跳转目标。6 张卡 — 2 张能跳,4 张点击无响应。',
+    biz:'功能聚合页;现有 4 张占位卡是产品演进路线图(Hospital Map/Health Tips/Insurance Policy)。',
+    screen:'categories',
+    buttons:[
+      { name:'◀ 返回', desc:'goBack()', ref:'CategoriesScreen.js:26-28', state:'ok' },
+      { name:'Insurance Code', desc:'navigate("QRCodeScreen")', ref:':15', state:'ok' },
+      { name:'Claims', desc:'navigate("ClaimsList")', ref:':16', state:'ok' },
+      { name:'AI Agent', desc:'⚠️ 标了 isAI 但 onPress 只判断 item.screen,实际点击无效(代码 bug)', ref:':17 + :38', state:'bug' },
+      { name:'Hospital Map', desc:'⚠️ 无 screen 字段,点击无反应', ref:':18', state:'placeholder' },
+      { name:'Health Tips', desc:'⚠️ 无 screen 字段,点击无反应', ref:':19', state:'placeholder' },
+      { name:'Insurance Policy', desc:'⚠️ 无 screen 字段,点击无反应', ref:':20', state:'placeholder' },
+    ],
+  },
+  {
+    id:'M13', ico:'🏥', name:'12. 医院端 Demo (QrScanScreen)', short:'HospitalDemo',
+    desc:'代码内仍存在但未在主导航暴露的医院侧验证页。绿色配色与患者侧明显区分。',
+    biz:'用于团队内部演示"医院如何扫客户的 QR 码并验证"。可考虑独立打包为商务 demo。',
+    screen:'hospital-demo',
+    buttons:[
+      { name:'手动输入框', desc:'存放扫码数据(默认填好演示值)', ref:'QrScanScreen.js:69-74', state:'ok' },
+      { name:'開始驗證 Verify Code', desc:'调 axios POST /qr/verify { qr_data, hospital_id }', ref:':20-46', state:'ok' },
+      { name:'查看關聯理賠單 (验证后)', desc:'navigate("ClaimDetails", { claimId })', ref:':109-115', state:'ok' },
+    ],
+  },
+  {
+    id:'M14', ico:'🟠', name:'13. 适老化模式 (Elder Mode)', short:'ElderMode',
+    desc:'独立的大字号/大按钮版首页。从 Profile 的「长者模式」Switch 进入,3 个极简入口 + 退出按钮。',
+    biz:'解决长者跨境就医的可用性门槛。所有核心功能(出示码 / 看理赔 / 联系客服)单击直达,字号 ≥18px,按钮 ≥110px 高。',
+    screen:'elder-home',
+    buttons:[
+      { name:'Profile · 长者模式 Switch', desc:'入口:Profile 设置区 toggle → 自动 navigation.replace("ElderHome")', ref:'ProfileScreen.js:109-128', state:'ok' },
+      { name:'🟢 出示医保码 (大按钮)', desc:'56px Ionicons + 28px 双行文字 → navigate("QRCodeScreen")', ref:'ElderHomeScreen.js:75-83', state:'ok' },
+      { name:'🟠 我的理赔 (大按钮)', desc:'同尺寸 → navigate("ClaimsList")', ref:':84-92', state:'ok' },
+      { name:'🔵 联系客服 (大按钮)', desc:'Alert 显示 "请拨打 800-820-8820"', ref:':93-99', state:'ok' },
+      { name:'退出长者模式', desc:'toggleElderMode() + navigation.replace("Home") 回到普通首页', ref:':40-46 + footer btn', state:'ok' },
+      { name:'退出登录(登录态显示)', desc:'同首页 logout 流程', ref:':28-39', state:'ok' },
+      { name:'保单胶囊 (顶部)', desc:'显示当前激活保单号 + 盾牌图标,只读', ref:':62-69', state:'ok' },
+    ],
+  },
+];
+
+// ================== 渲染 ==================
+const $ = id => document.getElementById(id);
+let cur = 0;
+let playing = false;
+let playTimer = null;
+let activeBtn = -1;
+let lang = 'zh';
+
+// ================== i18n ==================
+const I18N_STATIC = {
+  zh: { modSummary:'按钮 / 交互', help:'💡 怎么玩', moduleInfo:'📋 模块说明', bizValue:'💼 商业价值', btnList:'🔘 按钮 / 交互清单', shipped:'✓ 已实装', placeholder:'⚠ 占位', bug:'⚠ 缺陷' },
+  en: { modSummary:'buttons / actions', help:'💡 How to use', moduleInfo:'📋 Module', bizValue:'💼 Business Value', btnList:'🔘 Buttons / Interactions', shipped:'✓ Shipped', placeholder:'⚠ Placeholder', bug:'⚠ Bug' },
+};
+const I18N_GROUPS = {
+  zh: { intro:'入口与全局', binding:'保险与守卫', shell:'主导航壳', claims:'理赔流(含退款闭环)', ai:'AI 助手', personal:'个人服务', a11y:'无障碍 (新)', misc:'辅助页 / Demo' },
+  en: { intro:'Entry & Global', binding:'Insurance & Guards', shell:'Main Shell', claims:'Claims Flow (incl. Refund Closure)', ai:'AI Agent', personal:'Personal', a11y:'Accessibility (NEW)', misc:'Aux Pages / Demo' },
+};
+// 模块英文文案
+const MOD_EN = {
+  M1:  { name:'1. KYC / Identity Verification', short:'Auth',
+         desc:'First-time entry or post-logout re-entry. Includes iAM Smart one-tap fill, manual form, and field validation.',
+         biz:'KYC populates UserContext — a prerequisite for every downstream feature: policy lookup, QR generation, etc.' },
+  M2:  { name:'2. Global Toggles', short:'Global',
+         desc:'Three icon buttons in the Home header, with global scope. Language toggle now correctly shows the current language.',
+         biz:'Instant theme / language / logout — no settings page needed, every screen syncs immediately.' },
+  M3:  { name:'3. Insurance Binding / Switching', short:'Insurance',
+         desc:'Bind an insurer, auto-pull the policy list, activate a policy. Connects to the console via /api/app/policies.',
+         biz:'Switching a policy re-signs the QR token instantly; backend changes propagate to the app in real time.' },
+  M4:  { name:'4. Route Guard', short:'Guard',
+         desc:'Cuts across protected entries. When prerequisites are not met, shows an Alert that guides the user forward.',
+         biz:'Prevents users from landing on meaningless pages — converts drop-off risk into a guided onboarding moment.' },
+  M5:  { name:'5. Main Shell / Hero / Dock', short:'Shell',
+         desc:'Home: 3-state Hero card + Categories (widened to 130px, single-line) + Your Progress (real claims data) + 4-item Dock.',
+         biz:'The central plaza of the information architecture. Every core feature is one tap away. Your Progress now reflects live claims data.' },
+  M7:  { name:'6. Claims List (Cross-insurer)', short:'Claims',
+         desc:'Refactored: now uses /api/app/claims, aggregating all policies. New Policy No. row per card, plus 4 filter chips: All / Active / AIA / CL.',
+         biz:'Fixes the missing China Life claims problem. Total − Covered = You Pay makes savings transparent at a glance.' },
+  M8:  { name:'7. Claim Details + Refund Entry', short:'ClaimDetails',
+         desc:'PDF Step 19-24 refund closure added: Settled cards get a "Request Refund" button → Alert confirm → timeline auto-appends step 5.',
+         biz:'Customers can initiate a refund inside the app — no return trip to the hospital. "Refund Complete · CU Datahub notified" closes the loop.' },
+  M9:  { name:'8. AI Agent', short:'AI Agent',
+         desc:'Bottom sheet at 70% height. Text input → calls n8n /api/chat → returns the reply.',
+         biz:'A signature feature: users can ask "which hospitals does my policy cover?" anytime — no need to dig through PDFs.' },
+  M10: { name:'9. Profile + Elder Mode Toggle', short:'Profile',
+         desc:'Read-only personal info + settings menu + logout. The new "Elder Mode" Switch jumps directly to ElderHome.',
+         biz:'A trust anchor for "who you are" and "your policies". The Elder Mode toggle sits with system settings, matching accessibility expectations.' },
+  M11: { name:'10. Activities Feed', short:'Activities',
+         desc:'4 hard-coded activity rows (Claim Submitted / Approved / Cost Saved / Profile Updated).',
+         biz:'A lightweight timeline for the Hero "See activity" jump.' },
+  M12: { name:'11. Categories (Full)', short:'Categories',
+         desc:'Target of Home "See all". 6 cards — 2 navigate, 4 are placeholders.',
+         biz:'A feature roundup; the 4 placeholders preview the product roadmap (Hospital Map / Health Tips / Insurance Policy).' },
+  M13: { name:'12. Hospital Demo (QrScanScreen)', short:'HospitalDemo',
+         desc:'A hospital-side verification page that still lives in the code but is not exposed in the main nav. Green palette to distinguish it from the patient side.',
+         biz:'For internal team demos of "how the hospital scans the user QR". Could be packaged as a standalone B2B demo.' },
+  M14: { name:'13. Elder Mode', short:'ElderMode',
+         desc:'Standalone large-text / large-button Home. Entered from the Profile "Elder Mode" Switch. 3 minimal entries + exit button.',
+         biz:'Solves the accessibility barrier for senior cross-border patients. Core actions (show code / view claims / call support) are one tap away, font ≥18px, buttons ≥110px tall.' },
+};
+// 按钮列表英文映射 — 用 name 做 key
+const BTN_EN = {
+  // M1
+  '◀ 返回':'◀ Back',
+  '⌬ One-Tap Auto Fill (iAM Smart)':'⌬ One-Tap Auto Fill (iAM Smart)',
+  '姓名输入':'Name input',
+  'HKID 输入':'HKID input',
+  '电话输入':'Phone input',
+  'Verify & Activate':'Verify & Activate',
+  // M2
+  '🌙/☀️ 主题切换':'🌙/☀️ Theme toggle',
+  'EN/简/繁 语言切换':'EN / 简 / 繁 language switch',
+  '⎋ 退出登录':'⎋ Logout',
+  // M3
+  '立即选择 (未绑保司)':'Select Provider (unbound)',
+  '保司徽章 ⇄ (已绑)':'Provider badge ⇄ (bound)',
+  '保单胶囊 ⇄':'Policy chip ⇄',
+  '9 家保司选项':'9 insurer options',
+  '保单选项':'Policy option',
+  'Modal 取消':'Modal cancel',
+  // M4
+  '未登录 → 受保护点击':'Unauthenticated → protected tap',
+  '未绑保司 → 进 Claims':'Unbound → entering Claims',
+  '退出登录二次确认':'Logout double confirm',
+  // M5
+  'Hero - Activate Identity (未登录)':'Hero - Activate Identity (guest)',
+  'Hero - Show Insurance Code (已绑)':'Hero - Show Insurance Code (bound)',
+  'Categories "See all >"':'Categories "See all >"',
+  'Cat 1 · Insurance Code':'Cat 1 · Insurance Code',
+  'Cat 2 · Claims':'Cat 2 · Claims',
+  'Cat 3 · AI Agent':'Cat 3 · AI Agent',
+  'Cat 4 · Hospital Map':'Cat 4 · Hospital Map',
+  'Your progress · Pending':'Your progress · Pending',
+  'Your progress · Settled':'Your progress · Settled',
+  'Your progress · Saved':'Your progress · Saved',
+  'Your progress "See activity >"':'Your progress "See activity >"',
+  'Dock · Home':'Dock · Home',
+  'Dock · 扫码':'Dock · Scan',
+  'Dock · 日历':'Dock · Calendar',
+  'Dock · 个人':'Dock · Profile',
+  // M7
+  '下拉刷新':'Pull to refresh',
+  'API 调用':'API call',
+  '筛选 chip · 全部':'Filter chip · All',
+  '筛选 chip · 当前保单':'Filter chip · Active Policy',
+  '筛选 chip · AIA':'Filter chip · AIA',
+  '筛选 chip · CL':'Filter chip · CL (China Life)',
+  '卡片 Policy No. 行':'Card Policy No. row',
+  'Refunded 第三态徽章':'Refunded — third state badge',
+  '卡片点击进入详情':'Card tap → detail',
+  // M8
+  '时间轴 4 步(基础)':'Timeline · 4 base steps',
+  '时间轴第 5 步(退款)':'Timeline · step 5 (refund)',
+  '财务明细':'Financial breakdown',
+  'View Hospital Invoice':'View Hospital Invoice',
+  '申请退款(Settled 可见)':'Request Refund (Settled only)',
+  '退款完成状态条':'Refund-complete status bar',
+  // M9
+  '打开入口':'Open entry',
+  'Modal ✕ 关闭':'Modal ✕ close',
+  'TextInput':'TextInput',
+  '发送 ↑':'Send ↑',
+  '加载状态':'Loading state',
+  '失败兜底':'Failure fallback',
+  // M10
+  '‹ 返回':'‹ Back',
+  '信息 4 行':'4 info rows',
+  '🟠 长者模式 Switch':'🟠 Elder Mode Switch',
+  'Contact Us':'Contact Us',
+  'Version':'Version',
+  'Log out':'Log out',
+  // M11
+  '4 行活动卡':'4 activity rows',
+  // M12
+  'Insurance Code':'Insurance Code',
+  'Claims':'Claims',
+  'AI Agent':'AI Agent',
+  'Hospital Map':'Hospital Map',
+  'Health Tips':'Health Tips',
+  'Insurance Policy':'Insurance Policy',
+  // M13
+  '手动输入框':'Manual input',
+  '開始驗證 Verify Code':'Start Verify',
+  '查看關聯理賠單 (验证后)':'View linked claim (after verify)',
+  // M14
+  'Profile · 长者模式 Switch':'Profile · Elder Mode Switch',
+  '🟢 出示医保码 (大按钮)':'🟢 Show Insurance Code (big button)',
+  '🟠 我的理赔 (大按钮)':'🟠 My Claims (big button)',
+  '🔵 联系客服 (大按钮)':'🔵 Contact Support (big button)',
+  '退出长者模式':'Exit Elder Mode',
+  '退出登录(登录态显示)':'Logout (when signed in)',
+  '保单胶囊 (顶部)':'Policy chip (top)',
+};
+
+function applyStaticI18n() {
+  document.querySelectorAll('[data-i18n-zh][data-i18n-en]').forEach(el => {
+    el.textContent = el.getAttribute(lang === 'zh' ? 'data-i18n-zh' : 'data-i18n-en');
+  });
+}
+function toggleLang() {
+  lang = lang === 'zh' ? 'en' : 'zh';
+  $('lang-toggle').textContent = lang === 'zh' ? 'EN' : '中';
+  applyStaticI18n();
+  renderNav(); renderInfo(); renderPhone();
+}
+function modField(m, field) {
+  if (lang === 'en' && MOD_EN[m.id] && MOD_EN[m.id][field]) return MOD_EN[m.id][field];
+  return m[field];
+}
+function btnLabel(name) {
+  if (lang === 'en' && BTN_EN[name]) return BTN_EN[name];
+  return name;
+}
+
+function renderNav() {
+  const G = I18N_GROUPS[lang];
+  const groups = [
+    { name: G.intro,    mods: [0,1] },
+    { name: G.binding,  mods: [2,3] },
+    { name: G.shell,    mods: [4] },
+    { name: G.claims,   mods: [5,6] },
+    { name: G.ai,       mods: [7] },
+    { name: G.personal, mods: [8,9] },
+    { name: G.a11y,     mods: [12] },
+    { name: G.misc,     mods: [10,11] },
+  ];
+  $('modnav').innerHTML = groups.map(g => `
+    <h2>${g.name}</h2>
+    ${g.mods.map(i => `
+      <div class="mod ${i === cur ? 'active' : ''}" data-i="${i}">
+        <span class="ico">${MODULES[i].ico}</span>
+        <span class="nm">${modField(MODULES[i], 'name')}</span>
+        <span class="cnt">${MODULES[i].buttons.length}</span>
+      </div>
+    `).join('')}
+  `).join('');
+  document.querySelectorAll('.mod').forEach(el => el.onclick = () => jumpTo(+el.dataset.i));
+}
+
+function renderInfo() {
+  const m = MODULES[cur];
+  const T = I18N_STATIC[lang];
+  $('info').innerHTML = `
+    <div class="info-head">
+      <div class="ico">${m.ico}</div>
+      <div>
+        <div class="info-h-t">${modField(m, 'name')}</div>
+        <div class="info-h-s">${modField(m, 'short')} · ${m.buttons.length} ${T.modSummary}</div>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <div class="t">${T.moduleInfo}</div>
+      <div style="font-size:12px;color:var(--text);line-height:1.6">${modField(m, 'desc')}</div>
+    </div>
+
+    <div class="info-section">
+      <div class="t">${T.bizValue}</div>
+      <div class="biz-card">${modField(m, 'biz')}</div>
+    </div>
+
+    <div class="info-section">
+      <div class="t">${T.btnList}</div>
+      <div class="btn-list">
+        ${m.buttons.map((b, i) => `
+          <div class="bb ${i === activeBtn ? 'active' : ''}" data-i="${i}">
+            <div class="head">
+              <span>${btnLabel(b.name)}</span>
+            </div>
+            <span class="badge ${b.state}">
+              ${b.state === 'ok' ? T.shipped : b.state === 'placeholder' ? T.placeholder : T.bug}
+            </span>
+            <div class="desc">${b.desc}</div>
+            <div class="ref ${b.state === 'bug' ? 'bug' : ''}">📁 ${b.ref}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.bb').forEach(el => el.onclick = () => focusButton(+el.dataset.i));
+}
+
+function renderPhone() {
+  const m = MODULES[cur];
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('show'));
+  const target = document.querySelector(`.scr[data-key="${m.screen}"]`);
+  if (target) target.classList.add('show');
+  $('cap').textContent = `📱 ${modField(m, 'name')} · ${modField(m, 'short')}`;
+}
+
+function focusButton(i) {
+  const m = MODULES[cur];
+  const b = m.buttons[i];
+  if (b.altScreen) {
+    document.querySelectorAll('.scr').forEach(s => s.classList.remove('show'));
+    const target = document.querySelector(`.scr[data-key="${b.altScreen}"]`);
+    if (target) target.classList.add('show');
+    $('cap').textContent = `📱 ${m.name} · ${b.name}`;
+  } else {
+    renderPhone();
+  }
+  activeBtn = i;
+  document.querySelectorAll('.bb').forEach((el, idx) => el.classList.toggle('active', idx === i));
+}
+
+function jumpTo(i) {
+  if (i < 0 || i >= MODULES.length) return;
+  cur = i;
+  activeBtn = -1;
+  renderNav();
+  renderInfo();
+  renderPhone();
+}
+
+function next() { if (cur < MODULES.length - 1) jumpTo(cur + 1); else stopPlay(); }
+function prev() { if (cur > 0) jumpTo(cur - 1); }
+
+function startPlay() {
+  playing = true;
+  $('play').textContent = '⏸ 暂停';
+  playTimer = setInterval(() => {
+    if (cur >= MODULES.length - 1) { stopPlay(); return; }
+    next();
+  }, 2200);
+}
+function stopPlay() {
+  playing = false;
+  $('play').textContent = '▶ 自动巡览';
+  if (playTimer) clearInterval(playTimer);
+}
+
+$('prev').onclick = prev;
+$('next').onclick = next;
+$('play').onclick = () => playing ? stopPlay() : startPlay();
+$('lang-toggle').onclick = toggleLang;
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') next();
+  if (e.key === 'ArrowLeft') prev();
+  if (e.key === ' ') { e.preventDefault(); playing ? stopPlay() : startPlay(); }
+});
+
+jumpTo(0);
+</script>
+</body>
+</html>

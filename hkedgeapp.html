@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HKEdgeApp — Project Details | Jiazhi (Jasper) Xie</title>
+  <meta name="description" content="HKEdgeApp: a cross-border Hong Kong–Shenzhen medical data application. Project details, app demo, system architecture diagram, screenshots, feature map and Git branch strategy documentation.">
+  <style>
+    :root {
+      --bg: #ffffff; --text: #1a1a1a; --muted: #555555; --heading: #111111;
+      --rule: #d8d8d8; --link: #0b5394; --accent-bg: #f4f4f4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181d; --text: #d6d6d6; --muted: #9a9a9a; --heading: #f2f2f2;
+        --rule: #3a3d44; --link: #7ab3e0; --accent-bg: #22252b;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; padding: 0 1.25rem;
+      background: var(--bg); color: var(--text);
+      font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      font-size: 1.0625rem; line-height: 1.65;
+    }
+    main, header, footer { max-width: 760px; margin: 0 auto; }
+    header { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--rule); }
+    h1 { font-size: 1.8rem; line-height: 1.25; margin: 0 0 0.4rem; color: var(--heading); }
+    .back { font-size: 0.95rem; margin: 0 0 1rem; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 1rem; }
+    main { padding: 2rem 0 3rem; }
+    h2 {
+      font-size: 1.25rem; color: var(--heading); margin: 2.5rem 0 0.9rem;
+      padding-bottom: 0.3rem; border-bottom: 1px solid var(--rule);
+    }
+    h3 { font-size: 1.05rem; color: var(--heading); margin: 1.4rem 0 0.3rem; }
+    p { margin: 0 0 0.9rem; }
+    a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+    ul { margin: 0 0 1rem; padding-left: 1.4rem; }
+    li { margin-bottom: 0.35rem; }
+    .muted { color: var(--muted); font-size: 0.92rem; }
+    .figure { margin: 0 0 1.2rem; }
+    .figure img, figure img {
+      display: block; width: 100%; height: auto;
+      border: 1px solid var(--rule); border-radius: 6px; background: #ffffff;
+    }
+    figcaption { color: var(--muted); font-size: 0.9rem; margin-top: 0.45rem; text-align: center; }
+    video { display: block; width: 100%; height: auto; border-radius: 6px; border: 1px solid var(--rule); background: #000000; }
+    .shots { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .shots figure { margin: 0; }
+    .shots img { border: 1px solid var(--rule); border-radius: 6px; }
+    footer { padding: 1rem 0 2.5rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: 0.9rem; }
+    @media (max-width: 480px) {
+      body { font-size: 1rem; padding: 0 1rem; }
+      h1 { font-size: 1.5rem; }
+      .shots { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #ffffff; color: #000000; font-size: 11pt; }
+      h1, h2, h3 { color: #000000; }
+      a { color: #000000; text-decoration: none; }
+      video { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <p class="back"><a href="index.html">← Back to academic homepage</a></p>
+    <h1>HKEdgeApp — Project Details</h1>
+    <p class="subtitle">Jiazhi (Jasper) Xie · Hong Kong Data Ltd. · Jun–Sep 2026</p>
+  </header>
+
+  <main>
+
+    <section id="overview">
+      <h2>Overview</h2>
+      <p>HKEdgeApp is a cross-border Hong Kong–Shenzhen medical data application for iOS and Android, built through a school-enterprise internship with Hong Kong Data Ltd. It supports the flow for Hong Kong residents seeking medical treatment in mainland China: identity verification and insurance binding, a cross-border medical QR code, claims submission and tracking, and hospital-side claim verification.</p>
+      <p>The application consists of 19 front-end screens, 14 API modules, 57 documented files and 64 GitHub commits. The client is a React Native application with screens written in TypeScript and JavaScript, a Context-based state layer, a service layer for API calls, and a three-language interface; the back end is an Express server with static pages for the hospital and contract-signing demos.</p>
+      <p>I led the technical side of the four-developer team. I wrote and enforced the team's Git collaboration rules (documented in BRANCH_STRATEGY.md), and reported jointly to our company mentor and the director of the university's AI institute. After the internship, the project was handed over and is now carried forward by engineers at China Unicom.</p>
+      <p class="muted">The code repository is private. Demonstration materials, architecture documentation and selected project documents are reproduced on this page.</p>
+    </section>
+
+    <section id="demo">
+      <h2>App Demo</h2>
+      <h3>Screen recording</h3>
+      <figure>
+        <video controls preload="none" poster="hkedge-demo-poster.jpg" width="960" height="540">
+          <source src="hkedge-demo.mp4" type="video/mp4">
+          Your browser does not support embedded video. <a href="hkedge-demo.mp4">Download the demo video</a>.
+        </video>
+        <figcaption>Screen recording of the app demo (about 1 minute, from the project files).</figcaption>
+      </figure>
+      <h3>Interactive demos</h3>
+      <ul>
+        <li><a href="hkedge-feature-map.html" rel="noopener">Full feature map (auto tour)</a> — an interactive walkthrough of the 13 app modules; click "Auto Tour" to step through them. This page is self-contained and needs no server.</li>
+        <li><a href="hkedge-flow-demo.html" rel="noopener">End-to-end flow demo</a> — the cross-border medical QR code and claims flow, from identity verification to hospital verification.</li>
+      </ul>
+    </section>
+
+    <section id="screenshots">
+      <h2>Screenshots</h2>
+      <div class="shots">
+        <figure>
+          <img src="hkedge-shot1.jpg" alt="Cross-border medical QR code screen showing a validity period and a link to claims" width="520" height="910">
+          <figcaption>Cross-border medical QR code</figcaption>
+        </figure>
+        <figure>
+          <img src="hkedge-shot2.jpg" alt="Claims list screen showing two hospital claims with status labels" width="520" height="993">
+          <figcaption>Claims list (cross-insurer aggregation)</figcaption>
+        </figure>
+        <figure>
+          <img src="hkedge-shot3.jpg" alt="Insurer switching panel listing several insurance providers" width="520" height="983">
+          <figcaption>Insurer binding and switching</figcaption>
+        </figure>
+        <figure>
+          <img src="hkedge-shot4.jpg" alt="Dark-theme claims overview with total reimbursed amount and recent activity" width="520" height="990">
+          <figcaption>Claims overview, dark theme</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>System Architecture</h2>
+      <figure>
+        <img src="hkedge-architecture.svg" alt="System architecture diagram of HKEdgeApp showing client, server and data components" width="1195" height="689">
+        <figcaption>System architecture diagram from the project documentation (<a href="hkedge-architecture.svg">open full size</a>).</figcaption>
+      </figure>
+    </section>
+
+    <section id="features">
+      <h2>Feature Map</h2>
+      <p>The demo script in the project documentation lists 13 modules. In the order presented there:</p>
+      <ul>
+        <li>KYC — name, HKID, phone, or one-tap iAM Smart fill</li>
+        <li>Global toggles — theme, three-language cycle, secure logout</li>
+        <li>Insurance binding — pick insurer, auto-load policies, switch in one tap</li>
+        <li>Route guard — protects gated entries</li>
+        <li>Main shell — three-state hero, single-line categories, live progress</li>
+        <li>Claims list — cross-insurer aggregation, four filter chips</li>
+        <li>Refund on settled claims, with a five-step timeline</li>
+        <li>AI agent — bottom-sheet chat backed by the project's LLM endpoint</li>
+        <li>Profile — information card and Elder Mode switch</li>
+        <li>Activities — history feed</li>
+        <li>Categories grid — two live entries and four roadmap placeholders</li>
+        <li>Hospital demo — verification screen for B2B presentations</li>
+        <li>Elder Mode — fonts of 18px or larger, 110px buttons, three one-tap actions</li>
+      </ul>
+      <p class="muted"><a href="docs/hkedge-app-features-map-EN.md">Full feature-map demo script (Markdown, English)</a></p>
+    </section>
+
+    <section id="git">
+      <h2>Git Collaboration and Branch Strategy</h2>
+      <p>The team developed iOS and Android features on separate branches. A branch analysis in the project documentation (dated 8 July 2026) records four branches — <code>main</code>, <code>Sandbox_0702</code> (iOS and React Native feature development, 20 commits ahead of the merge base), <code>android_merged</code> (Android notifications and settlement, 4 commits), and <code>develop</code> (1 commit) — all forked from a common merge base.</p>
+      <p>The analysis compares the two development branches across state management, API layer, navigation and i18n; identifies around 20 conflicting files, including mutually exclusive route registrations in <code>App.tsx</code> and different API-layer architectures; and recommends a two-step merge — first the smaller <code>android_merged</code> branch into <code>develop</code>, then the larger <code>Sandbox_0702</code> branch — keeping both sets of screens and adopting the unified service layer and fuller i18n coverage from the iOS branch.</p>
+      <p class="muted"><a href="docs/hkedge-branch-merge-analysis.md">Full branch merge analysis (Markdown, Chinese)</a></p>
+    </section>
+
+    <section id="documents">
+      <h2>Project Documents</h2>
+      <ul>
+        <li><a href="docs/hkedge-app-features-map-EN.md">App feature map and demo script (English)</a></li>
+        <li><a href="docs/hkedge-branch-merge-analysis.md">Branch merge analysis and merge strategy (Chinese)</a></li>
+        <li><a href="hkedge-architecture.svg">System architecture diagram (SVG)</a></li>
+        <li><a href="hkedge-demo.mp4">App demo screen recording (MP4)</a></li>
+      </ul>
+      <p class="muted">Further source code and documentation are available on request; the repository itself is private.</p>
+    </section>
+
+  </main>
+
+  <footer>
+    <p><a href="index.html">← Back to academic homepage</a> · © 2026 Jiazhi (Jasper) Xie</p>
+  </footer>
+
+</body>
+</html>

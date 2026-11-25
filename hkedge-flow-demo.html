@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>HKEdge 全景交互演示 · 港人就医商保码全流程</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --bg: #0a0c11;
+  --panel: #141821;
+  --panel-2: #1c2029;
+  --text: #e8eaee;
+  --dim: #8991a0;
+  --border: #262b36;
+  --heroCard: #556B50;
+  --heroLight: #7a9670;
+  --gold: #d4a847;
+  --blue: #4a8cd9;
+  --danger: #E57B65;
+  --purple: #a855f7;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, "PingFang SC", system-ui, sans-serif;
+  height: 100vh; overflow: hidden; font-size: 13px;
+}
+body { padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+
+/* ======== Top bar ======== */
+.top { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.top h1 { font-size: 13px; font-weight: 700; }
+.top h1 small { color: var(--dim); font-weight: 400; margin-left: 6px; font-size: 10px; }
+.ctrls { display: flex; gap: 6px; align-items: center; }
+.btn {
+  background: var(--panel); color: var(--text); border: 1px solid var(--border);
+  padding: 4px 9px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 500;
+}
+.btn:hover { border-color: var(--heroLight); }
+.btn.primary { background: var(--heroCard); border-color: var(--heroCard); color: white; }
+.speed-sel { padding: 4px 7px; background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-size: 11px; }
+
+/* ======== Progress bar ======== */
+.progress-wrap { background: var(--panel); border-radius: 6px; padding: 5px 10px; border: 1px solid var(--border); flex-shrink: 0; }
+.progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; font-size: 10px; color: var(--dim); }
+.progress-info b { color: var(--text); }
+.progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--heroCard), var(--heroLight)); width: 0%; transition: width .4s ease; }
+
+/* ======== Phase tabs ======== */
+.phases { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; flex-shrink: 0; }
+.phase {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 9px; text-align: center; cursor: pointer;
+  transition: all .2s;
+}
+.phase.a { border-left: 3px solid var(--heroCard); }
+.phase.b { border-left: 3px solid var(--blue); }
+.phase.c { border-left: 3px solid var(--danger); }
+.phase.d { border-left: 3px solid var(--purple); }
+.phase:hover { background: var(--panel-2); }
+.phase .pn { font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+.phase .pt { font-size: 11px; font-weight: 700; margin-top: 1px; }
+.phase .ps { font-size: 9px; color: var(--dim); margin-top: 1px; }
+.phase.active { background: linear-gradient(135deg, rgba(85,107,80,0.18), rgba(85,107,80,0.05)); }
+.phase.active.b { background: linear-gradient(135deg, rgba(74,140,217,0.18), rgba(74,140,217,0.05)); }
+.phase.active.c { background: linear-gradient(135deg, rgba(229,123,101,0.18), rgba(229,123,101,0.05)); }
+.phase.active.d { background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(168,85,247,0.05)); }
+
+/* ======== Step ribbon ======== */
+.ribbon {
+  display: flex; gap: 3px; overflow-x: auto; padding: 5px;
+  background: var(--panel); border-radius: 6px; border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.rib {
+  min-width: 26px; height: 26px; border-radius: 5px; background: var(--panel-2);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  font-size: 10px; font-weight: 700; color: var(--dim);
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+.rib:hover { color: var(--text); border-color: var(--heroLight); }
+.rib.done { background: rgba(85,107,80,0.25); color: var(--heroLight); }
+.rib.active { background: var(--heroCard); color: white; transform: scale(1.15); }
+.rib.ph-b.done { background: rgba(74,140,217,0.25); color: var(--blue); }
+.rib.ph-b.active { background: var(--blue); }
+.rib.ph-c.done { background: rgba(229,123,101,0.25); color: var(--danger); }
+.rib.ph-c.active { background: var(--danger); }
+.rib.ph-d.done { background: rgba(168,85,247,0.25); color: var(--purple); }
+.rib.ph-d.active { background: var(--purple); }
+
+/* ======== Main stage - 4 lanes ======== */
+.stage {
+  position: relative;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px;
+  flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+  isolation: isolate;
+}
+.lanes {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  margin-bottom: 6px; flex-shrink: 0;
+  position: relative; z-index: 10;
+}
+.lane-hdr {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 5px 8px; text-align: center;
+}
+.lane-hdr .ico { font-size: 16px; margin-bottom: 1px; }
+.lane-hdr .nm { font-size: 11px; font-weight: 700; }
+.lane-hdr .sub { font-size: 9px; color: var(--dim); margin-top: 1px; }
+.lane-hdr.actor-lit { border-color: var(--heroCard); background: linear-gradient(135deg, rgba(85,107,80,0.25), var(--panel-2)); box-shadow: 0 0 16px rgba(85,107,80,0.3); }
+.lane-hdr.actor-lit.ph-b { border-color: var(--blue); background: linear-gradient(135deg, rgba(74,140,217,0.25), var(--panel-2)); box-shadow: 0 0 16px rgba(74,140,217,0.3); }
+.lane-hdr.actor-lit.ph-c { border-color: var(--danger); background: linear-gradient(135deg, rgba(229,123,101,0.25), var(--panel-2)); box-shadow: 0 0 16px rgba(229,123,101,0.3); }
+.lane-hdr.actor-lit.ph-d { border-color: var(--purple); background: linear-gradient(135deg, rgba(168,85,247,0.25), var(--panel-2)); box-shadow: 0 0 16px rgba(168,85,247,0.3); }
+
+/* ======== Step desc block ======== */
+.step-desc {
+  background: linear-gradient(135deg, rgba(85,107,80,0.12), rgba(85,107,80,0.02));
+  border: 1px solid rgba(85,107,80,0.3); border-radius: 8px;
+  padding: 7px 12px;
+  position: relative; overflow: hidden; flex-shrink: 0;
+}
+.step-desc.ph-b { background: linear-gradient(135deg, rgba(74,140,217,0.12), rgba(74,140,217,0.02)); border-color: rgba(74,140,217,0.3); }
+.step-desc.ph-c { background: linear-gradient(135deg, rgba(229,123,101,0.12), rgba(229,123,101,0.02)); border-color: rgba(229,123,101,0.3); }
+.step-desc.ph-d { background: linear-gradient(135deg, rgba(168,85,247,0.12), rgba(168,85,247,0.02)); border-color: rgba(168,85,247,0.3); }
+.step-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.step-num-big {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--heroCard); color: white; font-size: 15px; font-weight: 800;
+  flex-shrink: 0;
+}
+.step-num-big.ph-b { background: var(--blue); }
+.step-num-big.ph-c { background: var(--danger); }
+.step-num-big.ph-d { background: var(--purple); }
+.step-title { font-size: 13px; font-weight: 700; line-height: 1.2; }
+.step-lane-bar {
+  display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--dim);
+  font-family: ui-monospace, monospace; margin-top: 2px;
+}
+.step-lane-bar .arrow { color: var(--gold); font-weight: 700; }
+.step-lane-bar b { color: var(--text); }
+.step-text {
+  font-size: 11px; color: var(--text); line-height: 1.45;
+  margin-top: 5px; padding-top: 5px;
+  border-top: 1px dashed var(--border);
+}
+.step-biz {
+  margin-top: 10px; padding: 10px 12px;
+  background: rgba(212,168,71,0.08); border-left: 3px solid var(--gold);
+  border-radius: 6px; font-size: 11px; color: var(--dim); line-height: 1.6;
+}
+.step-biz b { color: var(--gold); }
+
+/* ======== Flying arrow animation ======== */
+.flight-arrow {
+  position: absolute; height: 3px; background: linear-gradient(90deg, transparent, var(--gold), var(--gold));
+  z-index: 40; top: 90px; transform-origin: left center;
+  border-radius: 2px; box-shadow: 0 0 12px rgba(212,168,71,0.8);
+  opacity: 0; transition: opacity .3s;
+  pointer-events: none;
+}
+.flight-arrow.show { opacity: 1; animation: fly 1s ease-out forwards; }
+.flight-arrow::after {
+  content: '▶'; position: absolute; right: -2px; top: -7px; color: var(--gold); font-size: 14px;
+}
+.flight-arrow.dir-reverse::after { content: '◀'; left: -2px; right: auto; }
+.flight-arrow.ph-b { background: linear-gradient(90deg, transparent, var(--blue), var(--blue)); box-shadow: 0 0 12px rgba(74,140,217,0.8); }
+.flight-arrow.ph-b::after { color: var(--blue); }
+.flight-arrow.ph-c { background: linear-gradient(90deg, transparent, var(--danger), var(--danger)); box-shadow: 0 0 12px rgba(229,123,101,0.8); }
+.flight-arrow.ph-c::after { color: var(--danger); }
+.flight-arrow.ph-d { background: linear-gradient(90deg, transparent, var(--purple), var(--purple)); box-shadow: 0 0 12px rgba(168,85,247,0.8); }
+.flight-arrow.ph-d::after { color: var(--purple); }
+.flight-arrow.dir-reverse { background: linear-gradient(90deg, var(--gold), var(--gold), transparent); }
+.flight-arrow.ph-b.dir-reverse { background: linear-gradient(90deg, var(--blue), var(--blue), transparent); }
+.flight-arrow.ph-c.dir-reverse { background: linear-gradient(90deg, var(--danger), var(--danger), transparent); }
+.flight-arrow.ph-d.dir-reverse { background: linear-gradient(90deg, var(--purple), var(--purple), transparent); }
+@keyframes fly {
+  0% { transform: scaleX(0) translateY(0); }
+  50% { transform: scaleX(1) translateY(-6px); }
+  100% { transform: scaleX(1) translateY(0); }
+}
+.flight-label {
+  position: absolute; top: 102px; padding: 2px 9px;
+  background: var(--gold); color: #000; font-size: 10px; font-weight: 700;
+  border-radius: 10px; opacity: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 41;
+  pointer-events: none;
+}
+.flight-label.show { opacity: 1; animation: label-pop 1s ease-out; }
+.flight-label.ph-b { background: var(--blue); color: white; }
+.flight-label.ph-c { background: var(--danger); color: white; }
+.flight-label.ph-d { background: var(--purple); color: white; }
+.flight-label.loop { top: 84px; }
+@keyframes label-pop { 0% { transform: translateX(-50%) translateY(10px); opacity: 0; } 40% { opacity: 1; } 100% { transform: translateX(-50%) translateY(0); opacity: 1; } }
+
+/* ======== Lane content (below headers) ======== */
+.lane-body {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  flex: 1; min-height: 0; overflow: hidden;
+  position: relative; z-index: 1;
+}
+.lane-box {
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px; position: relative;
+  transition: all .3s;
+  overflow: hidden;
+}
+.lane-box.active { border-color: var(--gold); background: rgba(212,168,71,0.06); }
+
+/* Patient (lane 1) content */
+.u-phone {
+  width: 110px; margin: 2px auto; background: #000; border-radius: 14px; padding: 4px;
+  box-shadow: 0 0 0 2px #2a2f3a inset;
+}
+.u-phone .u-screen {
+  background: var(--bg); border-radius: 10px; padding: 6px 5px;
+  min-height: 150px; position: relative; overflow: hidden;
+}
+.u-screen .u-hdr { font-size: 9px; color: var(--dim); margin-bottom: 6px; text-align: center; }
+.u-screen .u-hdr { font-size: 8px; color: var(--dim); margin-bottom: 4px; text-align: center; }
+.u-screen .u-hero { background: var(--heroCard); border-radius: 6px; padding: 5px; font-size: 8px; color: white; margin-bottom: 4px; }
+.u-screen .u-hero .t { font-weight: 700; margin-bottom: 2px; font-size: 9px; font-family: Georgia, serif; }
+.u-screen .u-hero .s { opacity: 0.85; font-size: 7px; }
+.u-screen .u-btn { background: white; color: #222; padding: 3px; border-radius: 6px; text-align: center; font-size: 8px; font-weight: 700; margin-top: 3px; }
+
+.u-screen .u-qrbox { background: white; padding: 4px; border-radius: 5px; margin: 3px auto; width: 70px; }
+.u-screen .u-qrbox img, .u-screen .u-qrbox canvas { width: 62px !important; height: 62px !important; display: block; }
+.u-screen .u-name { font-size: 10px; font-weight: 700; text-align: center; margin-top: 3px; }
+.u-screen .u-pol { font-size: 8px; color: var(--dim); text-align: center; font-family: ui-monospace, monospace; }
+.u-screen .u-timer { background: rgba(85,107,80,0.2); color: var(--heroLight); text-align: center; padding: 2px; border-radius: 6px; font-size: 8px; margin-top: 5px; font-weight: 700; }
+
+.u-screen .u-banner {
+  background: rgba(212,168,71,0.2); border: 1px solid var(--gold);
+  border-radius: 6px; padding: 5px; font-size: 8px; color: var(--gold);
+  text-align: center; margin-top: 4px; font-weight: 700;
+}
+.u-screen .u-success {
+  background: rgba(85,107,80,0.2); border-radius: 6px; padding: 8px 5px;
+  text-align: center; color: var(--heroLight);
+}
+.u-success .ck { font-size: 22px; margin-bottom: 3px; }
+.u-success .t { font-size: 9px; font-weight: 700; }
+
+.u-screen .u-alipay {
+  background: #1677ff; color: white; padding: 8px 5px; border-radius: 6px;
+  text-align: center; margin-top: 4px;
+}
+.u-alipay .t { font-size: 9px; font-weight: 700; }
+.u-alipay .a { font-size: 11px; font-weight: 800; margin-top: 2px; }
+
+.u-refund {
+  background: rgba(229,123,101,0.15); border: 1px solid var(--danger);
+  border-radius: 6px; padding: 6px; font-size: 8px; color: var(--danger);
+  text-align: center; margin-top: 4px; font-weight: 700;
+}
+
+.u-busy { padding: 8px 5px; text-align: center; font-size: 9px; color: var(--dim); }
+.u-busy .walking { font-size: 22px; margin-bottom: 3px; animation: walk 1s infinite; }
+@keyframes walk { 0%, 100% { transform: translateX(-6px); } 50% { transform: translateX(6px); } }
+
+/* QR Gen (lane 2) */
+.qr-gen-box {
+  background: white; border-radius: 6px; padding: 6px; text-align: center;
+  margin: 5px 0;
+}
+.qr-gen-box img, .qr-gen-box canvas { display: block; margin: 0 auto; max-width: 100px !important; max-height: 100px !important; }
+.qr-gen-label { font-size: 9px; color: #333; font-weight: 700; margin-top: 3px; }
+.policy-chip {
+  background: rgba(85,107,80,0.2); color: var(--heroLight); padding: 3px 6px;
+  border-radius: 5px; font-size: 9px; font-weight: 700; text-align: center;
+  margin: 4px 0; font-family: ui-monospace, monospace;
+}
+.alipay-tag {
+  background: #1677ff; color: white; padding: 3px 6px; border-radius: 5px;
+  font-size: 9px; font-weight: 700; text-align: center; margin: 4px 0;
+}
+
+/* Hospital HIS (lane 3) content */
+.his-scr {
+  background: #0d1220; border: 1px solid #2a3550; border-radius: 6px;
+  padding: 6px; font-family: ui-monospace, monospace; font-size: 9px;
+  color: #8ea3c7;
+}
+.his-scr .ttl { color: var(--blue); font-weight: 700; margin-bottom: 4px; font-size: 10px; border-bottom: 1px solid #2a3550; padding-bottom: 3px; }
+.his-scr .row { padding: 2px 0; font-size: 9px; }
+.his-scr .row.new { color: var(--gold); animation: his-flash 0.8s ease; }
+@keyframes his-flash { 0% { background: rgba(212,168,71,0.3); } 100% { background: transparent; } }
+.his-scr .ok { color: var(--heroLight); }
+.his-scr .err { color: var(--danger); }
+
+.bill-card {
+  background: var(--panel); border: 1px solid var(--gold); border-radius: 5px;
+  padding: 5px; margin-top: 4px; font-size: 9px;
+}
+.bill-card .bt { color: var(--gold); font-weight: 700; margin-bottom: 3px; }
+.bill-card .row { display: flex; justify-content: space-between; margin: 1px 0; color: var(--text); }
+
+/* Qianhai Platform (lane 4) */
+.qh-scr {
+  background: #1a0f2a; border: 1px solid #3e2555; border-radius: 6px;
+  padding: 6px; font-family: ui-monospace, monospace; font-size: 9px;
+  color: #b4a0d5;
+}
+.qh-scr .ttl { color: var(--purple); font-weight: 700; margin-bottom: 4px; font-size: 10px; border-bottom: 1px solid #3e2555; padding-bottom: 3px; }
+.qh-scr .req { color: #f0c674; padding: 2px 0; }
+.qh-scr .resp { color: var(--heroLight); padding: 2px 0; }
+.qh-scr .arrow-in { color: var(--gold); font-weight: 800; }
+.qh-scr pre { font-size: 8px; color: #b4a0d5; background: rgba(0,0,0,0.3); padding: 3px; border-radius: 3px; margin-top: 2px; }
+
+/* Empty lane content */
+.lane-idle {
+  text-align: center; padding: 12px 6px; color: var(--dim);
+  font-size: 9px; line-height: 1.4;
+}
+.lane-idle .em { font-size: 18px; margin-bottom: 3px; opacity: 0.35; }
+
+/* Pulse/glow on lane */
+.pulse-lane {
+  animation: pulse-ring 1.5s ease;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(212,168,71,0.6); }
+  70% { box-shadow: 0 0 0 14px rgba(212,168,71,0); }
+  100% { box-shadow: 0 0 0 0 rgba(212,168,71,0); }
+}
+
+/* Toast */
+.toast-wrap { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 6px; z-index: 999; }
+.toast {
+  background: var(--panel); border-left: 3px solid var(--heroLight); border-radius: 8px;
+  padding: 10px 14px; font-size: 11px; max-width: 320px;
+  animation: t-in .3s ease, t-out .3s ease 3s forwards;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+@keyframes t-in { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes t-out { to { transform: translateX(100%); opacity: 0; } }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>🎬 <span data-i18n-zh="HKEdge 全景交互演示" data-i18n-en="HKEdge Omniscient View Demo">HKEdge 全景交互演示</span> <small>· <span data-i18n-zh="全知视角 · 港人就医商保码全流程业务时序" data-i18n-en="Omniscient View · HK Resident Cross-border Medical Insurance Code Full Flow">全知视角 · 港人就医商保码全流程业务时序</span></small></h1>
+  <div class="ctrls">
+    <button class="btn" id="lang-toggle">EN</button>
+    <select class="speed-sel" id="speed">
+      <option value="1" data-i18n-zh="1× 标准" data-i18n-en="1× Normal">1× 标准</option>
+      <option value="0.5" data-i18n-zh="2× 快速" data-i18n-en="2× Fast">2× 快速</option>
+      <option value="2" data-i18n-zh="0.5× 慢速" data-i18n-en="0.5× Slow">0.5× 慢速</option>
+    </select>
+    <button class="btn" id="prev" data-i18n-zh="◀ 上一步" data-i18n-en="◀ Prev">◀ 上一步</button>
+    <button class="btn primary" id="play" data-i18n-zh="▶ 自动播放" data-i18n-en="▶ Auto Play">▶ 自动播放</button>
+    <button class="btn" id="next" data-i18n-zh="下一步 ▶" data-i18n-en="Next ▶">下一步 ▶</button>
+    <button class="btn" id="reset" data-i18n-zh="⟲ 重置" data-i18n-en="⟲ Reset">⟲ 重置</button>
+  </div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-info">
+    <div><span data-i18n-zh="Step" data-i18n-en="Step">Step</span> <b id="cur-step">1</b> / 17 · <span id="cur-phase">🅐 就医准备阶段</span></div>
+    <div><b id="cur-biz-val">0%</b> · <span data-i18n-zh="整体进度" data-i18n-en="Overall Progress">整体进度</span></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+</div>
+
+<div class="phases">
+  <div class="phase a" data-phase="a">
+    <div class="pn">Phase A · Step 1-2</div>
+    <div class="pt" data-i18n-zh="🅐 就医准备阶段" data-i18n-en="🅐 Pre-Visit Preparation">🅐 就医准备阶段</div>
+    <div class="ps" data-i18n-zh="打开商保码 · 查询保单信息" data-i18n-en="Open Insurance Code · Query Policy">打开商保码 · 查询保单信息</div>
+  </div>
+  <div class="phase b" data-phase="b">
+    <div class="pn">Phase B · Step 3-7</div>
+    <div class="pt" data-i18n-zh="🅑 就医登记阶段" data-i18n-en="🅑 Visit Registration">🅑 就医登记阶段</div>
+    <div class="ps" data-i18n-zh="签到核身 · 商保码解析 · 人员打标" data-i18n-en="Check-in · Code Resolution · Identity Tagging">签到核身 · 商保码解析 · 人员打标</div>
+  </div>
+  <div class="phase c" data-phase="c">
+    <div class="pn">Phase C · Step 8</div>
+    <div class="pt" data-i18n-zh="🅒 就诊服务阶段" data-i18n-en="🅒 Treatment Service">🅒 就诊服务阶段</div>
+    <div class="ps" data-i18n-zh="问诊 · 检查 · 诊疗" data-i18n-en="Consultation · Exams · Treatment">问诊 · 检查 · 诊疗</div>
+  </div>
+  <div class="phase d" data-phase="d">
+    <div class="pn">Phase D · Step 9-17</div>
+    <div class="pt" data-i18n-zh="🅓 结算报账阶段" data-i18n-en="🅓 Settlement & Reimbursement">🅓 结算报账阶段</div>
+    <div class="ps" data-i18n-zh="商保结算 · 数据推送 · 发起报账" data-i18n-en="Direct Settlement · Data Push · Claim Filing">商保结算 · 数据推送 · 发起报账</div>
+  </div>
+</div>
+
+<div class="ribbon" id="ribbon"></div>
+
+<div class="step-desc" id="step-desc">
+  <div class="step-meta">
+    <div class="step-num-big" id="sn">1</div>
+    <div>
+      <div class="step-title" id="st">到院就医,打开商保码登记</div>
+      <div class="step-lane-bar" id="sl"><b>用户</b> <span class="arrow">→</span> <b>商保码</b></div>
+    </div>
+  </div>
+  <div class="step-text" id="sd">用户来到合作医院。在 HKEdge APP 中,首页 hero 卡片显示已绑定的保单。用户点击 "Show Insurance Code",准备调出跨境医保码。</div>
+  <div class="step-biz" id="sb" style="display:none"></div>
+</div>
+
+<div class="stage">
+  <div class="lanes">
+    <div class="lane-hdr" id="lane-hdr-0">
+      <div class="ico">👤</div>
+      <div class="nm" data-i18n-zh="用户" data-i18n-en="User">用户</div>
+      <div class="sub" data-i18n-zh="Chen Tai Man · 香港居民" data-i18n-en="Chen Tai Man · HK Resident">Chen Tai Man · 香港居民</div>
+    </div>
+    <div class="lane-hdr" id="lane-hdr-1">
+      <div class="ico">📱</div>
+      <div class="nm" data-i18n-zh="商保码" data-i18n-en="Insurance Code">商保码</div>
+      <div class="sub" data-i18n-zh="HKEdgeApp · 二维码端" data-i18n-en="HKEdgeApp · QR Code Side">HKEdgeApp · 二维码端</div>
+    </div>
+    <div class="lane-hdr" id="lane-hdr-2">
+      <div class="ico">🏥</div>
+      <div class="nm" data-i18n-zh="医院 HIS 系统" data-i18n-en="Hospital HIS">医院 HIS 系统</div>
+      <div class="sub" data-i18n-zh="深圳和睦家医院 H006" data-i18n-en="Shenzhen United Family · H006">深圳和睦家医院 H006</div>
+    </div>
+    <div class="lane-hdr" id="lane-hdr-3">
+      <div class="ico">☁️</div>
+      <div class="nm">CU Datahub</div>
+      <div class="sub" data-i18n-zh="跨境商保数据中枢" data-i18n-en="Cross-border Insurance Data Hub">跨境商保数据中枢</div>
+    </div>
+  </div>
+
+  <!-- Flying arrow between lanes -->
+  <div class="flight-arrow" id="arrow"></div>
+  <div class="flight-label" id="arrow-label"></div>
+
+  <div class="lane-body">
+    <div class="lane-box" id="lane-0"></div>
+    <div class="lane-box" id="lane-1"></div>
+    <div class="lane-box" id="lane-2"></div>
+    <div class="lane-box" id="lane-3"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ============================================================
+// 17 步剧本 - 港人就医商保码全流程业务时序
+// from: 0=用户 1=商保码 2=医院HIS系统 3=CU Datahub
+// ============================================================
+const STEPS = [
+  // ===== Phase A · 就医准备阶段 =====
+  { n:1, phase:'a', from:0, to:1,
+    title:'用户到院就医,打开商保码',
+    titleEn:'User arrives at hospital, opens Insurance Code',
+    text:'用户到达合作医院后,在手机上打开 HKEdgeApp 商保码小程序/页面,准备出示商保码进行就医登记。',
+    textEn:'After arriving at a partner hospital, the user opens the HKEdgeApp Insurance Code mini-program/page on their phone, ready to present the code for visit registration.',
+    scene:'open-app' },
+  { n:2, phase:'a', from:1, to:1,
+    title:'商保码调用查询保单信息接口',
+    titleEn:'Insurance Code calls the Query Policy API',
+    text:'商保码端调用"查询保单信息接口",拉取并返回用户保单信息(保司、保单号、保额、有效期等),刷新展示在客户端。',
+    textEn:'The Insurance Code calls the "Query Policy Info" API, retrieving the user policy details (insurer, policy number, coverage, validity), then refreshes the client display.',
+    scene:'query-policy' },
+
+  // ===== Phase B · 就医登记阶段 =====
+  { n:3, phase:'b', from:0, to:2,
+    title:'用户向医院系统出示商保码',
+    titleEn:'User presents the Insurance Code to the hospital',
+    text:'用户在医院登记处出示商保码二维码,准备完成就医登记。',
+    textEn:'At the registration desk, the user presents the Insurance Code QR to complete visit registration.',
+    scene:'show-qr' },
+  { n:4, phase:'b', from:2, to:3,
+    title:'医院侧调用港人就医签到接口',
+    titleEn:'Hospital calls the HK Resident Check-in API',
+    text:'医院 HIS 系统扫描商保码后,向 CU Datahub 发起"港人就医签到接口"调用,提交医院编号与商保码值。',
+    textEn:'After scanning the QR, the hospital HIS calls the "HK Resident Check-in" API on CU Datahub, submitting the hospital ID and the code value.',
+    scene:'his-signin' },
+  { n:5, phase:'b', from:3, to:1,
+    title:'CU Datahub 调用商保码解析接口',
+    titleEn:'CU Datahub calls the Code Resolution API',
+    text:'CU Datahub 收到签到请求后,向商保码端调用"商保码解析接口",解析并返回该商保码对应的人员基础信息。',
+    textEn:'On receiving the check-in request, CU Datahub calls the "Code Resolution" API on the Insurance Code side to resolve and return the bearer\'s basic identity.',
+    scene:'qh-parse' },
+  { n:6, phase:'b', from:3, to:2,
+    title:'人员信息回传医院 HIS,完成身份打标',
+    titleEn:'Identity returned to Hospital HIS for tagging',
+    text:'CU Datahub 将解析所得人员信息回传给医院 HIS 系统,完成本次就诊人员的身份打标,使后续费用走商保结算通道。',
+    textEn:'CU Datahub returns the resolved identity to the hospital HIS, tagging the patient so that subsequent fees flow through the direct settlement channel.',
+    scene:'qh-to-his' },
+  { n:7, phase:'b', from:1, to:0,
+    title:'商保码端展示登记完成提示',
+    titleEn:'Insurance Code shows "Registration Complete"',
+    text:'商保码端通过人工提醒或自助机页面展示,提示用户"登记完成",可以进入下一步就诊环节。',
+    textEn:'The Insurance Code, via staff prompt or kiosk display, signals the user that registration is complete and treatment can begin.',
+    scene:'signin-done' },
+
+  // ===== Phase C · 就诊服务阶段 =====
+  { n:8, phase:'c', from:0, to:2,
+    title:'用户正常进行就医服务',
+    titleEn:'User goes through normal treatment',
+    text:'用户在医院依次完成问诊、检查、诊疗等就医服务。期间无需 APP 介入,商保身份已由 HIS 系统记录。',
+    textEn:'The user proceeds through consultation, examinations, and treatment. No app interaction is needed — the insurance identity is already recorded in HIS.',
+    scene:'patient-busy' },
+
+  // ===== Phase D · 结算报账阶段 =====
+  { n:9, phase:'d', from:2, to:0,
+    title:'就医结束,进入费用支付环节',
+    titleEn:'Visit ends, billing begins',
+    text:'医院 HIS 生成本次就诊的费用账单,提示用户进入结算环节。',
+    textEn:'The hospital HIS generates the bill for this visit and prompts the user to proceed to settlement.',
+    scene:'bill-ready' },
+  { n:10, phase:'d', from:0, to:1,
+    title:'用户出示移动支付码或商保码',
+    titleEn:'User presents a payment QR or the Insurance Code',
+    text:'用户在收费处出示个人移动支付码(支付宝/微信)或商保码进行结算。',
+    textEn:'At the cashier, the user presents a personal mobile payment QR (Alipay/WeChat) or the Insurance Code for settlement.',
+    scene:'pay-prompt' },
+  { n:11, phase:'d', from:1, to:1,
+    title:'商保码再次调用查询保单信息接口',
+    titleEn:'Insurance Code refreshes policy info once more',
+    text:'商保码端在结算前再次调用"查询保单信息接口",刷新并返回最新的保单状态与可用额度信息。',
+    textEn:'Right before settlement, the Insurance Code calls the Query Policy API again to refresh the latest policy status and available coverage.',
+    scene:'open-qr-pay' },
+  { n:12, phase:'d', from:2, to:3,
+    title:'医院 HIS 调用商保结算接口',
+    titleEn:'Hospital HIS calls the Direct Settlement API',
+    text:'医院 HIS 系统扫描商保码后,向 CU Datahub 调用"商保结算接口",发起线上商保结算,完成可报销部分的抵扣。',
+    textEn:'After scanning the code, the hospital HIS calls the "Direct Settlement" API on CU Datahub to initiate online settlement and deduct the reimbursable portion.',
+    scene:'sync-medical' },
+  { n:13, phase:'d', from:0, to:2,
+    title:'用户支付剩余自费金额',
+    titleEn:'User pays the out-of-pocket balance',
+    text:'系统完成商保抵扣后,显示用户应付的自费余额,用户使用支付宝/微信完成尾款支付。',
+    textEn:'Once the insurer\'s portion is deducted, the remaining balance is shown to the user, who completes payment via Alipay or WeChat.',
+    scene:'alipay-pay' },
+  { n:14, phase:'d', from:2, to:3,
+    title:'调用医院结算与就医数据推送接口',
+    titleEn:'Hospital pushes settlement & visit data',
+    text:'医院 HIS 系统调用"医院结算与就医数据推送接口",将本次就诊及结算数据(诊断、费用项、检查报告等)推送至 CU Datahub。',
+    textEn:'The hospital HIS calls the "Settlement & Visit Data Push" API, sending the full visit data (diagnoses, fee items, exam reports) to CU Datahub.',
+    scene:'sync-data' },
+  { n:15, phase:'d', from:3, to:2,
+    title:'CU Datahub 返回数据推送结果',
+    titleEn:'CU Datahub returns push acknowledgment',
+    text:'CU Datahub 完成数据落库并向医院 HIS 系统返回数据推送调用结果(成功/失败、流水号等)。',
+    textEn:'CU Datahub stores the data and returns the result (success/failure, transaction ID) to the hospital HIS.',
+    scene:'sync-ok' },
+  { n:16, phase:'d', from:3, to:3,
+    title:'CU Datahub 调用发起报账接口',
+    titleEn:'CU Datahub triggers the Claim Filing API',
+    text:'CU Datahub 携带本次交易流水号,自动调用"发起报账接口",向保司侧推送理赔报账请求。',
+    textEn:'Carrying the transaction ID, CU Datahub automatically calls the "Claim Filing" API to push the reimbursement request to the insurer.',
+    scene:'claim-filing' },
+  { n:17, phase:'d', from:3, to:0,
+    title:'报账立案结果同步给用户',
+    titleEn:'Claim result synced back to the user',
+    text:'报账接口返回立案结果,通过 APP 同步展示给用户(理赔编号、预计到账时间等),全流程闭环完成。',
+    textEn:'The claim filing API returns the case result. The app shows the user the claim ID and expected payout time — closing the full end-to-end loop.',
+    scene:'all-done' },
+];
+
+// ============================================================
+// State
+// ============================================================
+const $ = id => document.getElementById(id);
+let cur = 0;
+let playing = false;
+let playTimer = null;
+let speed = 1;
+let lang = 'zh'; // 'zh' | 'en'
+
+const sleep = ms => new Promise(r => setTimeout(r, ms / speed));
+
+// ============================================================
+// i18n
+// ============================================================
+function applyStaticI18n() {
+  document.querySelectorAll('[data-i18n-zh][data-i18n-en]').forEach(el => {
+    el.textContent = el.getAttribute(lang === 'zh' ? 'data-i18n-zh' : 'data-i18n-en');
+  });
+}
+function toggleLang() {
+  lang = lang === 'zh' ? 'en' : 'zh';
+  $('lang-toggle').textContent = lang === 'zh' ? 'EN' : '中';
+  applyStaticI18n();
+  renderPhases(); renderStepDesc(); renderProgress();
+}
+
+// ============================================================
+// Render
+// ============================================================
+function renderRibbon() {
+  $('ribbon').innerHTML = STEPS.map((s, i) => `
+    <div class="rib ph-${s.phase} ${i === cur ? 'active' : ''} ${i < cur ? 'done' : ''}" data-i="${i}">${s.n}</div>
+  `).join('');
+  document.querySelectorAll('.rib').forEach(el => el.onclick = () => jumpTo(+el.dataset.i));
+}
+
+function renderPhases() {
+  const curPhase = STEPS[cur].phase;
+  document.querySelectorAll('.phase').forEach(p => p.classList.toggle('active', p.dataset.phase === curPhase));
+}
+
+function renderStepDesc() {
+  const s = STEPS[cur];
+  const LANES_ZH = ['👤 用户', '📱 商保码', '🏥 医院 HIS 系统', '☁️ CU Datahub'];
+  const LANES_EN = ['👤 User', '📱 Insurance Code', '🏥 Hospital HIS', '☁️ CU Datahub'];
+  const LANES = lang === 'zh' ? LANES_ZH : LANES_EN;
+  $('step-desc').className = 'step-desc ph-' + s.phase;
+  $('sn').className = 'step-num-big ph-' + s.phase;
+  $('sn').textContent = s.n;
+  $('st').textContent = lang === 'zh' ? s.title : (s.titleEn || s.title);
+  $('sl').innerHTML = `<b>${LANES[s.from]}</b> <span class="arrow">→</span> <b>${LANES[s.to]}</b>`;
+  $('sd').textContent = lang === 'zh' ? s.text : (s.textEn || s.text);
+}
+
+function renderProgress() {
+  const pct = Math.round((cur + 1) / STEPS.length * 100);
+  $('cur-step').textContent = STEPS[cur].n;
+  $('cur-biz-val').textContent = pct + '%';
+  $('progress').style.width = pct + '%';
+  const pMap = lang === 'zh'
+    ? { a: '🅐 就医准备阶段', b: '🅑 就医登记阶段', c: '🅒 就诊服务阶段', d: '🅓 结算报账阶段' }
+    : { a: '🅐 Pre-Visit Preparation', b: '🅑 Visit Registration', c: '🅒 Treatment Service', d: '🅓 Settlement & Reimbursement' };
+  $('cur-phase').textContent = pMap[STEPS[cur].phase];
+}
+
+function renderLaneHeaders() {
+  const s = STEPS[cur];
+  for (let i = 0; i < 4; i++) {
+    const el = $(`lane-hdr-${i}`);
+    el.className = 'lane-hdr' + (s.from === i || s.to === i ? ' actor-lit' : '');
+    if ((s.from === i || s.to === i) && s.phase !== 'a') el.classList.add('ph-' + s.phase);
+  }
+}
+
+// Arrow from one lane to another
+async function playArrow() {
+  const s = STEPS[cur];
+  const laneEls = [0,1,2,3].map(i => $('lane-hdr-' + i));
+  const box = document.querySelector('.stage').getBoundingClientRect();
+  const fromEl = laneEls[s.from].getBoundingClientRect();
+  const toEl = laneEls[s.to].getBoundingClientRect();
+  const arrow = $('arrow');
+  const label = $('arrow-label');
+  arrow.className = 'flight-arrow ph-' + s.phase;
+  label.className = 'flight-label ph-' + s.phase;
+  arrow.classList.remove('show');
+  label.classList.remove('show', 'loop');
+  arrow.style.left = 'auto';
+  arrow.style.right = 'auto';
+  arrow.style.width = '0px';
+  arrow.style.transform = 'scaleX(0)';
+  arrow.style.transformOrigin = 'left center';
+
+  if (s.from === s.to) {
+    const centerX = fromEl.left - box.left + fromEl.width / 2;
+    label.style.left = centerX + 'px';
+    label.textContent = '↻ Step ' + s.n;
+    label.classList.add('loop');
+    await sleep(30);
+    label.classList.add('show');
+    return;
+  }
+
+  const forward = s.from < s.to;
+  const fromCenter = fromEl.left - box.left + fromEl.width / 2;
+  const toCenter = toEl.left - box.left + toEl.width / 2;
+  const leftX = Math.min(fromCenter, toCenter);
+  const rightX = Math.max(fromCenter, toCenter);
+  const length = rightX - leftX;
+
+  arrow.classList.add(forward ? 'dir-forward' : 'dir-reverse');
+  arrow.style.left = leftX + 'px';
+  arrow.style.width = length + 'px';
+  arrow.style.transformOrigin = forward ? 'left center' : 'right center';
+
+  label.style.left = (leftX + length / 2) + 'px';
+  label.textContent = 'Step ' + s.n;
+
+  await sleep(30);
+  arrow.classList.add('show');
+  label.classList.add('show');
+}
+
+// ============================================================
+// Lane content renderers (scene-specific)
+// ============================================================
+function renderLanes() {
+  const s = STEPS[cur];
+  for (let i = 0; i < 4; i++) $('lane-' + i).classList.toggle('active', s.from === i || s.to === i);
+
+  $('lane-0').innerHTML = renderUser(s.scene);
+  $('lane-1').innerHTML = renderQRGen(s.scene);
+  $('lane-2').innerHTML = renderHIS(s.scene);
+  $('lane-3').innerHTML = renderQH(s.scene);
+
+  // attach QR visuals if needed
+  ['qr-big', 'qr-big-pay', 'qr-u', 'qr-u-pay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) drawQR(el, el.dataset.policy || 'AIA-HK-2026-001');
+  });
+}
+
+function drawQR(el, policyNo) {
+  el.innerHTML = '';
+  const payload = JSON.stringify({
+    token: btoa(`${policyNo}.${Date.now()}.${Math.random().toString(36).slice(2,10)}`),
+    policy_no: policyNo,
+    exp: Date.now() + 60000,
+  });
+  new QRCode(el, {
+    text: payload,
+    width: +el.dataset.size || 90,
+    height: +el.dataset.size || 90,
+    colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+function renderUser(scene) {
+  // 各 scene 下用户侧看到什么
+  switch (scene) {
+    case 'open-app':
+      return `<div class="u-phone"><div class="u-screen">
+        <div class="u-hdr">Welcome back · Chen Tai Man</div>
+        <div class="u-hero">
+          <div class="t">您的保障已生效</div>
+          <div class="s">在合作医院出示跨境医保码直接结算</div>
+          <div class="u-btn" style="animation:pulse-btn 1.2s infinite">👉 Show Insurance Code</div>
+        </div>
+      </div></div><div style="text-align:center;font-size:10px;color:var(--dim);margin-top:8px">用户点击主 CTA</div>`;
+
+    case 'show-qr': case 'open-qr-pay': case 'pay-qr':
+      return `<div class="u-phone"><div class="u-screen">
+        <div class="u-hdr">${scene === 'pay-qr' ? '结算码' : '签到码'}</div>
+        <div class="u-qrbox"><div id="qr-u" data-policy="AIA-HK-2026-001" data-size="78"></div></div>
+        <div class="u-name">Chen Tai Man</div>
+        <div class="u-pol">AIA-HK-2026-001</div>
+        <div class="u-timer">🛡 60s</div>
+      </div></div><div style="text-align:center;font-size:10px;color:var(--dim);margin-top:8px">二维码展示 · 等待扫描</div>`;
+
+    case 'signin-done':
+      return `<div class="u-phone"><div class="u-screen">
+        <div class="u-hdr">签到完成</div>
+        <div class="u-success">
+          <div class="ck">✓</div>
+          <div class="t">已在 深圳和睦家<br>完成签到</div>
+        </div>
+        <div class="u-banner">🏥 可以开始就诊</div>
+      </div></div>`;
+
+    case 'patient-busy':
+      return `<div class="u-busy">
+        <div class="walking">🚶‍♂️</div>
+        <div style="font-weight:700;color:var(--text)">就诊中...</div>
+        <div style="margin-top:4px">挂号 → 看诊 → 检查<br>→ 取药</div>
+      </div>`;
+
+    case 'pay-prompt':
+      return `<div class="u-phone"><div class="u-screen">
+        <div class="u-hdr">就诊完成</div>
+        <div class="u-banner" style="background:rgba(74,140,217,0.2);border-color:var(--blue);color:var(--blue)">💬 医院提示:<br>请出示商保码结算</div>
+      </div></div>`;
+
+    case 'alipay-pay':
+      return `<div class="u-phone"><div class="u-screen">
+        <div class="u-alipay">
+          <div class="t">支付宝 · 当面付</div>
+          <div class="a">¥ 450.00</div>
+        </div>
+        <div class="u-banner" style="margin-top:4px;background:rgba(85,107,80,0.2);border-color:var(--heroLight);color:var(--heroLight)">✓ 自费部分已扣款</div>
+      </div></div>`;
+
+    case 'refund-ask':
+      return `<div class="u-phone"><div class="u-screen">
+        <div class="u-hdr">退款申请</div>
+        <div class="u-refund">💸 申请退款<br>¥ 450.00</div>
+      </div></div>`;
+
+    case 'refund-notify':
+      return `<div class="u-phone"><div class="u-screen">
+        <div class="u-hdr">退款完成</div>
+        <div class="u-success">
+          <div class="ck">✓</div>
+          <div class="t">¥ 450 已原路退回</div>
+        </div>
+      </div></div>`;
+
+    case 'all-done':
+      return `<div class="u-busy">
+        <div style="font-size:36px">🎉</div>
+        <div style="font-weight:700;color:var(--text);margin-top:8px">全流程闭环完成</div>
+        <div style="margin-top:6px">签到 · 结算 · 报账<br>三方数据对齐</div>
+      </div>`;
+
+    default:
+      return `<div class="lane-idle"><div class="em">—</div>用户等待中</div>`;
+  }
+}
+
+function renderQRGen(scene) {
+  switch (scene) {
+    case 'open-app':
+      return `<div class="lane-idle"><div class="em">⏸</div>等待被唤起</div>`;
+    case 'query-policy':
+      return `<div style="padding:10px 4px">
+        <div style="font-size:11px;color:var(--heroLight);font-weight:700;margin-bottom:8px">⚙️ UserContext 读取</div>
+        <div class="policy-chip">activePolicy:<br>AIA-HK-2026-001</div>
+        <div style="font-size:10px;color:var(--dim);margin:8px 0 4px">📡 调用中台</div>
+        <div class="qh-scr" style="min-height:auto">
+          <div class="req">POST /api/app/qr/issue</div>
+          <pre>{ "policy_id":<br>  "AIA-HK-2026-001" }</pre>
+        </div>
+      </div>`;
+    case 'show-qr': case 'open-qr-pay': case 'pay-qr':
+      return `<div class="qr-gen-box"><div id="qr-big" data-policy="AIA-HK-2026-001" data-size="140"></div></div>
+        <div class="policy-chip">${scene === 'pay-qr' ? '🏥 结算 Token' : '🛡 签到 Token'}</div>
+        <div style="font-size:10px;color:var(--dim);text-align:center">60s 自动刷新</div>`;
+    case 'qh-parse':
+      return `<div class="lane-idle">
+        <div class="em">↔️</div>
+        <div style="color:var(--heroLight)">与 CU Datahub 对接中</div>
+        <div style="margin-top:6px">解析 qr_code 中...</div>
+      </div>`;
+    case 'alipay-return':
+      return `<div class="qh-scr" style="min-height:auto">
+        <div class="ttl">💡 返回人员信息</div>
+        <pre>{
+  "userId": "2088...012",
+  "name": "Chen Tai Man",
+  "certType": "hkid",
+  "certNo": "A1234567",
+  "companyType": "AIA",
+  "policyNo": "AIA-HK-2026-001"
+}</pre>
+      </div>`;
+    case 'alipay-pay':
+      return `<div class="alipay-tag">💳 支付宝当面付</div>
+        <div class="qh-scr" style="min-height:auto">
+          <div class="ttl">扣款流水</div>
+          <div style="color:var(--heroLight);font-weight:700">trade_no:<br>20260513_450_xxx</div>
+          <div style="color:var(--text);margin-top:6px">金额: ¥ 450.00</div>
+          <div style="color:var(--heroLight);margin-top:4px">✓ 支付成功</div>
+        </div>`;
+    case 'alipay-callback':
+      return `<div class="alipay-tag">📬 回调医院 HIS</div>
+        <div class="qh-scr" style="min-height:auto">
+          <pre>{
+  "trade_no": "...",
+  "amount": "450.00",
+  "status": "SUCCESS"
+}</pre>
+        </div>`;
+    case 'refund-call':
+      return `<div class="alipay-tag" style="background:var(--danger)">💸 退款通道</div>
+        <div class="qh-scr" style="min-height:auto">
+          <pre>alipay.refund({
+  trade_no: "...",
+  refund: "450.00"
+})</pre>
+        </div>`;
+    case 'refund-alipay-ok':
+      return `<div class="alipay-tag" style="background:var(--heroLight)">✓ 退款成功</div>
+        <div class="qh-scr" style="min-height:auto">
+          <div style="color:var(--heroLight)">原路退回 ¥ 450</div>
+          <div style="color:var(--dim);margin-top:4px">支付宝 → 用户账户</div>
+        </div>`;
+    default:
+      return `<div class="lane-idle"><div class="em">⏸</div>待机中</div>`;
+  }
+}
+
+function renderHIS(scene) {
+  switch (scene) {
+    case 'his-signin':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 HIS · 深圳和睦家</div>
+        <div class="row new">📷 扫码</div>
+        <div class="row">→ 构建请求体</div>
+        <div class="row new">POST /signIn</div>
+        <div class="row" style="color:var(--gold);margin-top:4px">等待响应...</div>
+      </div>`;
+    case 'qh-to-his':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 HIS · 收到响应</div>
+        <div class="row new">✓ 200 OK</div>
+        <div class="row ok">name: Chen Tai Man</div>
+        <div class="row ok">certNo: A1234567</div>
+        <div class="row ok">policy: AIA-HK-2026-001</div>
+      </div>`;
+    case 'his-tag':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 HIS 内部打标</div>
+        <div class="row">UPDATE patients</div>
+        <div class="row">SET 商保标记 = 1</div>
+        <div class="row">WHERE hkid = 'A1234567'</div>
+        <div class="row new" style="margin-top:4px">✓ 1 row affected</div>
+      </div>`;
+    case 'signin-done':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 登记处</div>
+        <div class="row ok">✓ 签到完成</div>
+        <div class="row">↓ 通知用户</div>
+        <div class="row" style="color:var(--gold)">📣 "您已签到,可开始就诊"</div>
+      </div>`;
+    case 'patient-busy':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 HIS · 就诊流程</div>
+        <div class="row">🏷 挂号 ✓</div>
+        <div class="row">👨‍⚕️ 就诊 ✓</div>
+        <div class="row">🔬 检查 ✓</div>
+        <div class="row">💊 取药 ✓</div>
+      </div>`;
+    case 'bill-ready':
+      return `<div class="bill-card">
+        <div class="bt">📋 今日账单 · CTM-2026-0513</div>
+        <div class="row"><span>挂号费</span><span>¥ 50</span></div>
+        <div class="row"><span>诊疗费</span><span>¥ 200</span></div>
+        <div class="row"><span>检查费</span><span>¥ 150</span></div>
+        <div class="row"><span>药品费</span><span>¥ 50</span></div>
+        <div class="row" style="border-top:1px dashed var(--dim);padding-top:4px;margin-top:4px"><b>合计</b><b style="color:var(--gold)">¥ 450</b></div>
+      </div>`;
+    case 'pay-prompt':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 收费处</div>
+        <div class="row">💬 "请出示商保码"</div>
+        <div class="row" style="color:var(--dim);margin-top:4px">⌛ 等待扫码...</div>
+      </div>`;
+    case 'alipay-pay':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 POS 扫码</div>
+        <div class="row new">📷 扫 QR 成功</div>
+        <div class="row">→ 调用支付宝当面付</div>
+      </div>`;
+    case 'alipay-callback':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 收到支付回调</div>
+        <div class="row ok">✓ trade_no 已存档</div>
+        <div class="row" style="color:var(--gold)">下一步:同步 CU Datahub</div>
+      </div>`;
+    case 'sync-medical':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 商保结算请求</div>
+        <div class="row new">POST /directSettlement</div>
+        <div class="row">账单号: CTM-2026-0513</div>
+        <div class="row">总费用: ¥ 450</div>
+        <div class="row" style="color:var(--gold);margin-top:4px">等待抵扣结果...</div>
+      </div>`;
+    case 'sync-data':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 推送就医与结算数据</div>
+        <div class="row new">POST /syncMedicalData</div>
+        <div class="row">├ 诊断记录 ✓</div>
+        <div class="row">├ 费用明细 ✓</div>
+        <div class="row">├ 检查报告 ✓</div>
+        <div class="row">└ 结算流水 ✓</div>
+      </div>`;
+    case 'sync-ok':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 数据推送完成</div>
+        <div class="row ok">✓ 200 success</div>
+        <div class="row" style="color:var(--gold)">等待 CU Datahub 回执</div>
+      </div>`;
+    case 'refund-call':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 发起退款</div>
+        <div class="row new">POST alipay/refund</div>
+        <div class="row">金额: ¥ 450</div>
+      </div>`;
+    case 'refund-alipay-ok':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 收到退款回执</div>
+        <div class="row ok">✓ 支付宝退款成功</div>
+      </div>`;
+    case 'refund-notify':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 通知用户</div>
+        <div class="row">📲 发送短信/APP 消息</div>
+        <div class="row ok">"¥ 450 已原路退回"</div>
+      </div>`;
+    case 'claim-filing':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 报账状态</div>
+        <div class="row ok">✓ 医院数据已归档</div>
+        <div class="row">等待理赔立案结果</div>
+      </div>`;
+    case 'all-done':
+      return `<div class="his-scr">
+        <div class="ttl">🏥 全流程闭环</div>
+        <div class="row ok">✓ 签到</div>
+        <div class="row ok">✓ 结算</div>
+        <div class="row ok">✓ 报账</div>
+      </div>`;
+    default:
+      return `<div class="lane-idle"><div class="em">⏸</div>HIS 待机</div>`;
+  }
+}
+
+function renderQH(scene) {
+  switch (scene) {
+    case 'his-signin':
+      return `<div class="qh-scr">
+        <div class="ttl">☁️ 收到 signIn 请求</div>
+        <div class="req">POST /api/hospital/signIn</div>
+        <pre>{
+  "hosp_id": "H006",
+  "qr_code": "eyJ0..."
+}</pre>
+        <div style="color:var(--gold);margin-top:4px">↓ 解析商保码</div>
+      </div>`;
+    case 'qh-parse':
+      return `<div class="qh-scr">
+        <div class="ttl">☁️ 调商保码解析接口</div>
+        <div class="req">resolveCode(qr_code)</div>
+        <div style="color:var(--dim);margin-top:4px">⌛ 等待人员信息...</div>
+      </div>`;
+    case 'alipay-return':
+      return `<div class="qh-scr">
+        <div class="ttl">☁️ 拿到人员信息</div>
+        <div class="resp">✓ userId 已获取</div>
+        <div class="resp">✓ policyNo 已关联</div>
+        <div style="color:var(--gold);margin-top:4px">↓ 汇总响应体</div>
+      </div>`;
+    case 'qh-to-his':
+      return `<div class="qh-scr">
+        <div class="ttl">☁️ 返回给医院</div>
+        <div class="resp">RESPONSE → HIS</div>
+        <pre>{
+  "code": 200,
+  "data": { ... }
+}</pre>
+      </div>`;
+    case 'sync-medical':
+      return `<div class="qh-scr">
+        <div class="ttl">☁️ 收到商保结算请求</div>
+        <div class="req">POST /directSettlement</div>
+        <div class="row">├ 验签 ✓</div>
+        <div class="row">├ 保单额度校验 ✓</div>
+        <div class="row">└ 抵扣金额 ¥ 0 ✓</div>
+        <div class="resp" style="margin-top:4px">返回结算结果</div>
+      </div>`;
+    case 'sync-data':
+      return `<div class="qh-scr">
+        <div class="ttl">☁️ 收到就医数据推送</div>
+        <div class="req">POST /syncMedicalData</div>
+        <div class="row">├ 验签 ✓</div>
+        <div class="row">├ 数据落库 ✓</div>
+        <div class="row">└ 理赔材料归集 ✓</div>
+      </div>`;
+    case 'sync-ok':
+      return `<div class="qh-scr">
+        <div class="ttl">☁️ 推送回执</div>
+        <div class="resp">✓ CTM-2026-0513 已落库</div>
+        <div class="resp">流水号: CU20260513-001</div>
+        <div style="color:var(--gold);margin-top:4px">返回医院 HIS</div>
+      </div>`;
+    case 'claim-filing':
+      return `<div class="qh-scr">
+        <div class="ttl">☁️ 发起报账接口</div>
+        <div class="req">POST /claim/file</div>
+        <pre>{
+  "serial_no": "CU20260513-001",
+  "policy_no": "AIA-HK-2026-001"
+}</pre>
+        <div class="resp" style="margin-top:4px">✓ 理赔立案中</div>
+      </div>`;
+    case 'all-done':
+      return `<div class="qh-scr">
+        <div class="ttl">☁️ 三方数据对齐</div>
+        <div class="resp">✓ 签到记录 ×1</div>
+        <div class="resp">✓ 结算流水 ×1</div>
+        <div class="resp">✓ 报账立案 ×1</div>
+      </div>`;
+    default:
+      return `<div class="lane-idle"><div class="em">⏸</div>中台待机</div>`;
+  }
+}
+
+function toast(msg) {
+  const d = document.createElement('div');
+  d.className = 'toast';
+  d.textContent = msg;
+  $('toasts').appendChild(d);
+  setTimeout(() => d.remove(), 3300);
+}
+
+// ============================================================
+// Navigation
+// ============================================================
+async function jumpTo(i) {
+  if (i < 0 || i >= STEPS.length) return;
+  cur = i;
+  renderRibbon();
+  renderPhases();
+  renderStepDesc();
+  renderProgress();
+  renderLaneHeaders();
+  renderLanes();
+  await sleep(60);
+  await playArrow();
+}
+
+function next() { if (cur < STEPS.length - 1) jumpTo(cur + 1); else stopPlay(); }
+function prev() { if (cur > 0) jumpTo(cur - 1); }
+
+async function startPlay() {
+  playing = true;
+  $('play').textContent = '⏸ 暂停';
+  while (playing && cur < STEPS.length - 1) {
+    await sleep(2000);
+    if (!playing) break;
+    next();
+  }
+  stopPlay();
+}
+function stopPlay() {
+  playing = false;
+  $('play').textContent = '▶ 自动播放';
+}
+
+// ============================================================
+// Bind events
+// ============================================================
+$('prev').onclick = prev;
+$('next').onclick = next;
+$('play').onclick = () => playing ? stopPlay() : startPlay();
+$('reset').onclick = () => { stopPlay(); jumpTo(0); };
+$('speed').onchange = e => speed = parseFloat(e.target.value);
+$('lang-toggle').onclick = toggleLang;
+
+document.querySelectorAll('.phase').forEach(p => {
+  p.onclick = () => {
+    const ph = p.dataset.phase;
+    const firstIdx = STEPS.findIndex(s => s.phase === ph);
+    if (firstIdx >= 0) jumpTo(firstIdx);
+  };
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') next();
+  if (e.key === 'ArrowLeft') prev();
+  if (e.key === ' ') { e.preventDefault(); playing ? stopPlay() : startPlay(); }
+});
+
+function validateSteps() {
+  const phaseRanges = {
+    a: [1, 2],
+    b: [3, 7],
+    c: [8, 8],
+    d: [9, 17],
+  };
+  STEPS.forEach((s, i) => {
+    const range = phaseRanges[s.phase];
+    if (s.n !== i + 1) console.warn(`Step index mismatch: array ${i} has n=${s.n}`);
+    if (!range || s.n < range[0] || s.n > range[1]) {
+      console.warn(`Step phase mismatch: Step ${s.n} is phase ${s.phase}`);
+    }
+  });
+}
+
+// Add pulse-btn keyframe for inline use
+const st = document.createElement('style');
+st.textContent = '@keyframes pulse-btn { 0%,100% { box-shadow: 0 0 0 0 rgba(212,168,71,0.7); } 50% { box-shadow: 0 0 0 10px rgba(212,168,71,0); } }';
+document.head.appendChild(st);
+
+validateSteps();
+jumpTo(0);
+</script>
+</body>
+</html>
